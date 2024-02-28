@@ -1,0 +1,141 @@
+---
+title: "Data Preprocessing"
+author: "LST"
+date: "2024-02-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(renv)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(esquisse)
+```
+
+## R Markdown
+
+# Keep rows with unique user_id and highest last_page
+
+```{r}
+data <- read.csv("twitter_data.csv") %>% group_by(user_id) %>% filter(last_page == max(last_page)) %>% ungroup()
+```
+
+Basic data exploration:
+
+```{r}
+# Filter out unnecessary columns
+
+filtered_data <- data %>% select(-c(user_id, submit_date, last_page, start_language, start_date, datestamp, is_adult, ref, origin))
+
+# calculate age
+
+filtered_data <- filtered_data %>% mutate(age = 2023 - year_of_birth)
+
+interesting_data <- filtered_data %>% select(gender, age, hsld_size_2019_, hsld_size_03_2020_, hsld_size_summer_2021_, hsld_size_01_2023_, number_of_children_under_18, highest_educational_qualification, cond_hbp, cond_diabetes, cond_cardio, cond_resp, cond_immuno, cond_cancer, cond_post_c19, cond_none, cond_no_answer)
+
+```
+
+# Some nice plots
+
+```{r}
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ ggplot() +
+ aes(x = gender) +
+ geom_bar(fill = "#112446") +
+ theme_minimal()
+
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ ggplot() +
+ aes(x = age) +
+ geom_histogram(bins = 30L, fill = "#112446") +
+ theme_minimal()
+
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ filter(hsld_size_2019_ >= 
+ 1L & hsld_size_2019_ <= 20L | is.na(hsld_size_2019_)) %>%
+ ggplot() +
+ aes(x = hsld_size_2019_) +
+ geom_histogram(bins = 30L, fill = "#112446") +
+ theme_minimal()
+
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ filter(hsld_size_2019_ >= 
+ 1L & hsld_size_2019_ <= 20L | is.na(hsld_size_2019_)) %>%
+ ggplot() +
+ aes(x = hsld_size_03_2020_) +
+ geom_histogram(bins = 30L, fill = "#112446") +
+ theme_minimal()
+
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ filter(hsld_size_2019_ >= 
+ 1L & hsld_size_2019_ <= 20L | is.na(hsld_size_2019_)) %>%
+ ggplot() +
+ aes(x = hsld_size_summer_2021_) +
+ geom_histogram(bins = 30L, fill = "#112446") +
+ theme_minimal()
+
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ filter(hsld_size_2019_ >= 
+ 1L & hsld_size_2019_ <= 20L | is.na(hsld_size_2019_)) %>%
+ ggplot() +
+ aes(x = hsld_size_01_2023_) +
+ geom_histogram(bins = 30L, fill = "#112446") +
+ theme_minimal()
+
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ filter(hsld_size_2019_ >= 
+ 1L & hsld_size_2019_ <= 20L | is.na(hsld_size_2019_)) %>%
+ filter(hsld_size_01_2023_ >= 1L & hsld_size_01_2023_ <= 
+ 18L | is.na(hsld_size_01_2023_)) %>%
+ ggplot() +
+ aes(x = hsld_size_01_2023_) +
+ geom_histogram(bins = 30L, fill = "#112446") +
+ theme_minimal()
+
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ filter(hsld_size_2019_ >= 
+ 1L & hsld_size_2019_ <= 20L | is.na(hsld_size_2019_)) %>%
+ filter(hsld_size_01_2023_ >= 1L & hsld_size_01_2023_ <= 
+ 18L | is.na(hsld_size_01_2023_)) %>%
+ filter(!(highest_educational_qualification %in% "")) %>%
+ ggplot() +
+ aes(x = highest_educational_qualification) +
+ geom_bar(fill = "#112446") +
+ theme_minimal()
+
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ filter(hsld_size_2019_ >= 
+ 1L & hsld_size_2019_ <= 20L | is.na(hsld_size_2019_)) %>%
+ filter(hsld_size_01_2023_ >= 1L & hsld_size_01_2023_ <= 
+ 18L | is.na(hsld_size_01_2023_)) %>%
+ filter(!(highest_educational_qualification %in% "")) %>%
+ ggplot() +
+ aes(x = number_of_children_under_18) +
+ geom_histogram(bins = 30L, fill = "#112446") +
+ theme_minimal()
+
+interesting_data %>%
+ filter(!(gender %in% c("", "Ich möchte nicht antworten"))) %>%
+ filter(hsld_size_2019_ >= 
+ 1L & hsld_size_2019_ <= 20L | is.na(hsld_size_2019_)) %>%
+ filter(hsld_size_01_2023_ >= 1L & hsld_size_01_2023_ <= 
+ 18L | is.na(hsld_size_01_2023_)) %>%
+ filter(!(highest_educational_qualification %in% "")) %>%
+ filter(!(cond_diabetes %in% 
+ "")) %>%
+ ggplot() +
+ aes(x = cond_diabetes) +
+ geom_bar(fill = "#112446") +
+ theme_minimal()
+```
+
