@@ -18,7 +18,7 @@ library(esquisse)
 # Keep rows with unique user_id and highest last_page
 
 ```{r}
-data <- read.csv("twitter_data.csv") %>% group_by(user_id) %>% filter(last_page == max(last_page)) %>% ungroup()
+data <- read.csv("data/twitter_data.csv") %>% group_by(user_id) %>% filter(last_page == max(last_page)) %>% ungroup()
 ```
 
 Basic data exploration:
