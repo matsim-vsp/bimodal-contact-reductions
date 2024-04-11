@@ -90,7 +90,7 @@ ggsave("TimeFirstInfection.png", dpi = 500, w = 9, h = 4.5)
 
 # Vaccination -------------------------------------------------------------
 
-VaccinationYesNo <- raw_data %>% select(user_id, c19_vaccination_status)
+VaccinationYesNo <- raw_data %>% select(user_id, c19_vaccination_status, year_of_birth)
 VaccinationYesNo <- VaccinationYesNo[!is.na(VaccinationYesNo$user_id),]
 
 VaccinationYesNo$c19_vaccination_status <- factor(VaccinationYesNo$c19_vaccination_status, levels = c("Ja", "Nein", "Weiß ich nicht", "Ich möchte nicht antworten", NA))
@@ -104,8 +104,37 @@ ggplot(VaccinationYesNo) +
   scale_fill_brewer(palette = "Dark2") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  +
   theme(text = element_text(size = 15))
-
 ggsave("FrequencyVaccination.png", dpi = 500, w = 9, h = 6)
+ggsave("FrequencyVaccination.pdf", dpi = 500, w = 9, h = 6)
+
+VaccinationYesNo60Plus <- VaccinationYesNo %>% filter(year_of_birth <= 1962)
+ggplot(VaccinationYesNo60Plus %>% filter(is.na(c19_vaccination_status) == FALSE)) + 
+  geom_bar(aes(x = c19_vaccination_status, y = ..prop.., group = 1), fill = "#1b9e77") +
+  theme_minimal() +
+  ylab("Frequency") +
+  xlab("") +
+  ggtitle("Vaccinated Y/N - 60+") +
+  theme(legend.position = "none") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  +
+  theme(text = element_text(size = 15))
+ggsave("FrequencyVaccination60plus.png", dpi = 500, w = 9, h = 6)
+ggsave("FrequencyVaccination60plus.pdf", dpi = 500, w = 9, h = 6)
+
+VaccinationYesNo1859 <- VaccinationYesNo %>% filter(year_of_birth > 1962)
+VaccinationYesNo1859$c19_vaccination_status <- factor(VaccinationYesNo1859$c19_vaccination_status, levels = c("Ja", "Nein", "Weiß ich nicht", "Ich möchte nicht antworten", NA))
+ggplot(VaccinationYesNo1859 %>% filter(is.na(c19_vaccination_status) == FALSE)) + 
+  geom_bar(aes(x = c19_vaccination_status, y = ..prop.., group = 1), fill = "#1b9e77") +
+  theme_minimal() +
+  ylab("Frequency") +
+  xlab("") +
+  ggtitle("Vaccinated Y/N - 18-59") +
+  theme(legend.position = "none") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  +
+  theme(text = element_text(size = 15))
+ggsave("FrequencyVaccination1859.png", dpi = 500, w = 9, h = 6)
+ggsave("FrequencyVaccination1859.pdf", dpi = 500, w = 9, h = 6)
 
 ggplot(VaccinationYesNo %>% filter(is.na(c19_vaccination_status) == FALSE)) + 
   geom_bar(aes(x = c19_vaccination_status, y = ..prop.., group = 1), fill = "#1b9e77") +
@@ -120,7 +149,6 @@ ggplot(VaccinationYesNo %>% filter(is.na(c19_vaccination_status) == FALSE)) +
 ggsave("FrequencyVaccinationNoNA.png", dpi = 500, w = 9, h = 6)
 
 # Vaccination Supplier ----------------------------------------------------
-
 
 vaccinationData <- raw_data %>% select(user_id, c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
 vaccinationData <- na.omit(vaccinationData)
@@ -188,8 +216,16 @@ HouseholdData <- raw_data %>% select(user_id, hsld_size_2019_, hsld_size_03_2020
 HouseholdData <- na.omit(HouseholdData)
 HouseholdData <- HouseholdData %>% pivot_longer(cols = c("hsld_size_2019_", "hsld_size_03_2020_", "hsld_size_summer_2021_", "hsld_size_01_2023_", "total_hsld_size_persons_under_14", "total_hsld_size_persons_above_14", "number_of_children_under_18"))
 
-HouseholdData$name <- factor(HouseholdData$name, levels = c("hsld_size_2019_", "hsld_size_03_2020_", "hsld_size_summer_2021_", "hsld_size_01_2023_", "total_hsld_size_persons_under_14", "total_hsld_size_persons_above_14", "number_of_children_under_18"))
+#HouseholdData$name <- factor(HouseholdData$name, levels = c("hsld_size_2019_", "hsld_size_03_2020_", "hsld_size_summer_2021_", "hsld_size_01_2023_", "total_hsld_size_persons_under_14", "total_hsld_size_persons_above_14", "number_of_children_under_18"))
 HouseholdData$value <- as.integer(HouseholdData$value)
+HouseholdData <- HouseholdData %>% mutate(name = case_when(name == "hsld_size_2019_" ~ "Household size 2019",
+                                                          name == "hsld_size_03_2020_" ~ "Household size 3/20",
+                                                          name == "hsld_size_summer_2021_" ~ "Household size summmer/21",
+                                                          name == "hsld_size_01_2023_" ~ "Household size 1/23",
+                                                          name == "total_hsld_size_persons_under_14" ~ "Children < 14 in household",
+                                                          name == "total_hsld_size_persons_above_14" ~ "Persons > 14 in household",
+                                                          name == "number_of_children_under_18" ~ "# Children < 18"))
+HouseholdData$name <- factor(HouseholdData$name, levels = c("Household size 2019","Household size 3/20","Household size summmer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
 ggplot(HouseholdData %>% filter(value < 10)) + geom_bar(aes(x= value, y = ..prop.., group = 1, fill = name)) +
   theme_minimal() +
   facet_wrap(~name, nrow=2) +
@@ -200,7 +236,7 @@ ggplot(HouseholdData %>% filter(value < 10)) + geom_bar(aes(x= value, y = ..prop
   scale_x_continuous(breaks=c(0,2,4,6,8)) +
   theme(text = element_text(size = 15))
 
-ggsave("HouseholdSize.png", dpi = 500, w = 9, h = 5)
+ggsave("HouseholdSize.png", dpi = 500, w = 12, h = 4.5)
 
 
 # Gender ------------------------------------------------------------------
@@ -248,6 +284,8 @@ ggplot(comorbidities  %>% filter(!is.na(value))) +
   scale_fill_brewer(palette = "Dark2") +
   theme(text = element_text(size = 15)) 
 
+ggsave("Comorbidities.png", dpi = 500, w = 9, h = 4.5)
+
 smoking <- raw_data %>% select(user_id, smoking_status)
 smoking$smoking_status <- factor(smoking$smoking_status, levels = c("Ich habe noch nie geraucht.", "Nein, nicht mehr", "Ja, gelegentlich", "Ja, täglich", "Ich möchte nicht antworten"))
 ggplot(smoking  %>% filter(!is.na(smoking_status))) + 
@@ -259,6 +297,8 @@ ggplot(smoking  %>% filter(!is.na(smoking_status))) +
   scale_fill_brewer(palette = "Dark2") +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+ggsave("Smoking.png", dpi = 500, w = 9, h = 4.5)
 
 # Education / Occupation --------------------------------------------------
 
@@ -274,6 +314,8 @@ ggplot(educationLevel %>% filter(!is.na(highest_educational_qualification))) +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
+ggsave("Education.png", dpi = 500, w = 9, h = 4.5)
+
 educationLevel$current_occupation <- factor(educationLevel$current_occupation, levels = c("Ich bin als Lehrer:in oder Erzieher:in tätig.", "Ich bin in einem medizinischen oder pflegerischen Beruf bei einem Gesundheitsversorger tätig.", "Ich bin im Studium oder in der Ausbildung.", "Ich bin Rentner:in oder Pensionär:in.", "Andere (z.B. Elternzeit, Sabbatical)", "Ich bin in einem anderen Beruf tätig.", "Ich möchte nicht antworten"))
 ggplot(educationLevel %>% filter(!is.na(current_occupation))) + 
   geom_bar(aes(x= current_occupation, y = ..prop.., group = 1), fill = "#1b9e77") +
@@ -285,9 +327,7 @@ ggplot(educationLevel %>% filter(!is.na(current_occupation))) +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-# Infection Context -------------------------------------------------------
-
-
+ggsave("CurrentOccupation.png", dpi = 500, w = 12, h = 12)
 
 # Behavior Change ---------------------------------------------------------
 
@@ -370,5 +410,44 @@ ggplot(attitudes %>% filter(!is.na(value))) +
   scale_fill_brewer(palette = "Dark2") +
   theme(text = element_text(size = 15)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-ggsave("BehaviorChange.png", dpi = 500, w = 12, h = 9)
-ggsave("BehaviorChange.pdf", dpi = 500, w = 12, h = 9)
+ggsave("Attitudes.png", dpi = 500, w = 12, h = 9)
+ggsave("Attitudes.pdf", dpi = 500, w = 12, h = 9)
+
+
+# Infection context -------------------------------------------------------
+
+ownInfection <- raw_data %>% select(user_id, loc_home, loc_work, loc_school, loc_friends,
+                                    loc_sport_event, loc_health_fac, loc_shopping, loc_party,
+                                    loc_conference, loc_unknown, loc_no_info, loc_other)
+
+ownInfection <- ownInfection %>% pivot_longer(cols = c("loc_home", "loc_work", "loc_school", "loc_friends",
+                                                       "loc_sport_event", "loc_health_fac", "loc_shopping", "loc_party",
+                                                       "loc_conference", "loc_unknown", "loc_no_info", "loc_other"))
+
+ownInfection <- na.omit(ownInfection)
+ownInfection <- ownInfection %>% filter(value != "Nein")
+
+ownInfection %>% count(name)
+
+householdInfections <- raw_data %>% select(user_id, inf_locs_hsld_mbrs_home, inf_locs_hsld_mbrs_workplace, 
+                                           inf_locs_hsld_mbrs_school, inf_locs_hsld_mbrs_friends_meetings,
+                                           inf_locs_hsld_mbrs_sports_event, inf_locs_hsld_mbrs_shopping,
+                                           inf_locs_hsld_mbrs_party, inf_locs_hsld_mbrs_conference,
+                                           inf_locs_hsld_mbrs_health_facility, inf_locs_hsld_mbrs_childcare,
+                                           inf_locs_hsld_mbrs_vacation, inf_locs_hsld_mbrs_public_transport,
+                                           inf_locs_hsld_mbrs_restaurants_bars, inf_locs_hsld_mbrs_unknown,
+                                           inf_locs_hsld_mbrs_no_information, inf_locs_hsld_mbrs_other)
+
+householdInfections <- householdInfections %>% pivot_longer(cols = c("inf_locs_hsld_mbrs_home", "inf_locs_hsld_mbrs_workplace", 
+                                                                     "inf_locs_hsld_mbrs_school", "inf_locs_hsld_mbrs_friends_meetings",
+                                                                     "inf_locs_hsld_mbrs_sports_event", "inf_locs_hsld_mbrs_shopping",
+                                                                     "inf_locs_hsld_mbrs_party", "inf_locs_hsld_mbrs_conference",
+                                                                     "inf_locs_hsld_mbrs_health_facility", "inf_locs_hsld_mbrs_childcare",
+                                                                     "inf_locs_hsld_mbrs_vacation", "inf_locs_hsld_mbrs_public_transport",
+                                                                     "inf_locs_hsld_mbrs_restaurants_bars", "inf_locs_hsld_mbrs_unknown",
+                                                                     "inf_locs_hsld_mbrs_no_information", "inf_locs_hsld_mbrs_other"))
+
+householdInfections <- na.omit(householdInfections)
+householdInfections <- householdInfections %>% filter(value != "Nein")
+
+householdInfections %>% count(name)
