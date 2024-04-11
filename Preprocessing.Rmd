@@ -19,6 +19,10 @@ library(esquisse)
 
 ```{r}
 data <- read.csv("data/twitter_data.csv") %>% group_by(user_id) %>% filter(last_page == max(last_page)) %>% ungroup()
+
+# save all rows of reasons_change_conts_op that contain text into comments
+
+comments <- data %>% filter(!(reasons_change_conts_op %in% "")) %>% select(user_id, reasons_change_conts_op)
 ```
 
 Basic data exploration:
