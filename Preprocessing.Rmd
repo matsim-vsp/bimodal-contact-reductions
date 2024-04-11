@@ -22,7 +22,8 @@ data <- read.csv("data/twitter_data.csv") %>% group_by(user_id) %>% filter(last_
 
 # save all rows of reasons_change_conts_op that contain text into comments
 
-comments <- data %>% filter(!(reasons_change_conts_op %in% "")) %>% select(user_id, reasons_change_conts_op)
+comments_reasons_change_conts_op <- data %>% filter(!(reasons_change_conts_op %in% "")) %>% select(user_id, reasons_change_conts_op)
+comments_expl_new_intense_conts <- data %>% filter(!(expl_new_intense_conts %in% "")) %>% select(user_id, expl_new_intense_conts)
 ```
 
 Basic data exploration:
