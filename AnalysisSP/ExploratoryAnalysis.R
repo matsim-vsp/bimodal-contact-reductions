@@ -154,7 +154,7 @@ vaccinationData <- raw_data %>% select(user_id, c19_vaccination_details_vaccine_
 vaccinationData <- na.omit(vaccinationData)
 vaccinationData <- vaccinationData %>% pivot_longer(cols = c("c19_vaccination_details_vaccine_dose_1", "c19_vaccination_details_vaccine_dose_2", "c19_vaccination_details_vaccine_dose_3", "c19_vaccination_details_vaccine_dose_4"))
 vaccinationData$value <- factor(vaccinationData$value, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/ Johnson & Johnson", "Gamaleya Sputnik V", "Andere", "Ich möchte nicht antworten", "Nicht zutreffend"))
-ggplot(vaccinationData) + 
+ggplot(vaccinationData %>% filter(value != "Nicht zutreffend")) + 
   geom_bar(aes(x = value, y = ..prop.., group = 1, fill = name)) +
   theme_minimal() +
   facet_wrap(~name, nrow=2) +
