@@ -8,7 +8,9 @@ library(igraph)
 # This script compares the answers of the secondary respondents (referred to as 'second responds')
 # to the answers of the initial respondents (referred to as 'first respondent')
 
-raw_data <- read_csv("ENTER PATH HERE") # Read in data
+
+raw_data <- read_csv("/Users/sydney/Downloads/twitter_data.csv")
+
 
 # Reducing data frame to the variables of interest ------------------------
 
@@ -63,12 +65,13 @@ colnames(data_reduced_second_respondents)[which(names(data_reduced_second_respon
 colnames(data_reduced_second_respondents)[which(names(data_reduced_second_respondents) == "wkly_cont_03_2020_school_kinder")] <- "second_school_03_2020"
 colnames(data_reduced_second_respondents)[which(names(data_reduced_second_respondents) == "wkly_cont_summer_2021_school_kinder")] <- "second_school_summer_2021"
 colnames(data_reduced_second_respondents)[which(names(data_reduced_second_respondents) == "wkly_cont_01_2023_school_kinder")] <- "second_school_01_2023"
-colnames(data_reduced_second_respondents)[which(names(data_reduced_second_respondents) == "wkly_cont_2019_leisure")] <- "schond_leisure_2019"
+colnames(data_reduced_second_respondents)[which(names(data_reduced_second_respondents) == "wkly_cont_2019_leisure")] <- "second_leisure_2019"
 colnames(data_reduced_second_respondents)[which(names(data_reduced_second_respondents) == "wkly_cont_03_2020_leisure")] <- "second_leisure_03_2020"
 colnames(data_reduced_second_respondents)[which(names(data_reduced_second_respondents) == "wkly_cont_summer_2021_leisure")] <- "second_leisure_summer_2021"
 colnames(data_reduced_second_respondents)[which(names(data_reduced_second_respondents) == "wkly_cont_01_2023_leisure")] <- "second_leisure_01_2023"
 
-#Setting no of contacts equal to 0 if person DID not answer
+
+#Setting no of contacts equal to 0 if person DID not answer 
 #TODO: How do I differentiate real zeros from introduced 0? Are there even "real zeros"? Check!
 data_reduced_second_respondents <- as.data.frame(data_reduced_second_respondents)
 data_reduced_second_respondents[is.na(data_reduced_second_respondents)] <- 0
@@ -77,9 +80,8 @@ data_reduced_second_respondents <- data_reduced_second_respondents %>% filter(se
 
 data_first_and_second_resp <- data.frame()
 
-# The following loop matches the secondary respondents to the initial respondents
 for(i in 1:nrow(data_reduced_second_respondents)){
-  secondary_respondent <- data_reduced_second_respondents[i, ]
+  secondary_respondent <- data_reduced_second_respondents[i,]
   first_respondent <- data_reduced %>% filter(user_id == secondary_respondent$second_ref)
   
   first_respondent <- first_respondent %>% select(user_id, cc_change_during_pandemic, 
@@ -118,94 +120,113 @@ for(i in 1:nrow(data_reduced_second_respondents)){
   colnames(first_respondent)[which(names(first_respondent) == "cc_hsld_size_during_pandemic_01_2023_num_hsld_members")] <- "first_cc_during_hsld_size_01_2023"
   colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_2019_work_uni_cont")] <- "first_cc_during_work_2019"
   colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_03_2020_work_uni_cont")] <- "first_cc_during_work_03_2020"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_summer_2021_work_uni_cont")] <- "first_during_pre_work_summer_2021"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_01_2023_work_uni_cont")] <- "first_during_pre_work_01_2023"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_2019_school_kg_cont")] <- "first_during_pre_school_2019"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_03_2020_school_kg_cont")] <- "first_during_pre_school_03_2020"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_summer_2021_school_kg_cont")] <- "first_during_pre_school_summer_2021"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_01_2023_school_kg_cont")] <- "first_during_pre_school_01_2023"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_2019_leisure_cont")] <- "first_during_pre_leisure_2019"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_03_2020_leisure_cont")] <- "first_during_pre_leisure_03_2020"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_summer_2021_leisure_cont")] <- "first_during_pre_leisure_summer_2021"
-  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_01_2023_leisure_cont")] <- "first_during_pre_leisure_01_2023"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_summer_2021_work_uni_cont")] <- "first_cc_during_work_summer_2021"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_01_2023_work_uni_cont")] <- "first_cc_during_work_01_2023"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_2019_school_kg_cont")] <- "first_cc_during_school_2019"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_03_2020_school_kg_cont")] <- "first_cc_during_school_03_2020"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_summer_2021_school_kg_cont")] <- "first_cc_during_school_summer_2021"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_01_2023_school_kg_cont")] <- "first_cc_during_school_01_2023"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_2019_leisure_cont")] <- "first_cc_during_leisure_2019"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_03_2020_leisure_cont")] <- "first_cc_during_leisure_03_2020"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_summer_2021_leisure_cont")] <- "first_cc_during_leisure_summer_2021"
+  colnames(first_respondent)[which(names(first_respondent) == "cc_weekly_cont_during_pandemic_01_2023_leisure_cont")] <- "first_cc_during_leisure_01_2023"
 
   secondary_respondent <- cbind(secondary_respondent, first_respondent)
   data_first_and_second_resp <- rbind(data_first_and_second_resp, secondary_respondent)
 }
 
 
+data_first_and_second_resp <- data_first_and_second_resp %>% mutate(diff_hsld_2019 = first_cc_pre_hsld_size_2019 - second_hsld_size_2019,
+                                                                    diff_hsld_03_2020 = first_cc_pre_hsld_size_03_2020 - second_hsld_size_03_2020,
+                                                                    diff_hsld_summer_2021 = first_cc_pre_hsld_size_summer_2021 - second_hsld_size_summer_2021,
+                                                                    diff_hsld_01_2023 = first_cc_pre_hsld_size_01_2023 - second_hsld_size_01_2023,
+                                                                    diff_work_2019 = first_cc_pre_work_2019 - second_work_2019,
+                                                                    diff_work_03_2020  = first_cc_pre_work_03_2020 - second_work_03_2020,
+                                                                    diff_work_summer_2021  = first_cc_pre_work_summer_2021 - second_work_summer_2021,
+                                                                    diff_work_01_2023  = first_cc_pre_work_01_2023 - second_work_01_2023,
+                                                                    diff_school_2019 = first_cc_pre_school_2019 - second_school_2019,
+                                                                    diff_school_03_2020 = first_cc_pre_school_03_2020 - second_school_03_2020,
+                                                                    diff_school_summer_2021 = first_cc_pre_school_summer_2021 - second_school_summer_2021,
+                                                                    diff_school_01_2023 = first_cc_pre_school_01_2023 - second_school_01_2023,
+                                                                    diff_leisure_2019 = first_cc_pre_leisure_2019 - second_leisure_2019,
+                                                                    diff_leisure_03_2020 = first_cc_pre_leisure_03_2020 - second_leisure_03_2020,
+                                                                    diff_leisure_summer_2021 = first_cc_pre_leisure_summer_2021 - second_leisure_summer_2021,
+                                                                    diff_leisure_01_2023 = first_cc_pre_leisure_01_2023 - second_leisure_01_2023)
+
 data_first_and_second_resp <- data_first_and_second_resp %>% pivot_longer(cols=c("second_hsld_size_persons_under_14","second_hsld_size_2019","second_hsld_size_03_2020",             
                                                                           "second_hsld_size_summer_2021", "second_hsld_size_01_2023", 
                                                                           "second_work_2019", "second_work_03_2020", "second_work_summer_2021", "second_work_01_2023",                  
                                                                           "second_school_2019", "second_school_03_2020", "second_school_summer_2021", "second_school_01_2023",              
-                                                                          "schond_leisure_2019", "second_leisure_03_2020", "second_leisure_summer_2021", "second_leisure_01_2023",
+                                                                          "second_leisure_2019", "second_leisure_03_2020", "second_leisure_summer_2021", "second_leisure_01_2023",
                                                                           "first_cc_pre_hsld_size_2019", "first_cc_pre_hsld_size_03_2020", "first_cc_pre_hsld_size_summer_2021", "first_cc_pre_hsld_size_01_2023",
                                                                           "first_cc_during_hsld_size_2019", "first_cc_during_hsld_size_03_2020", "first_cc_during_hsld_size_summer_2021", "first_cc_during_hsld_size_01_2023",    
                                                                           "first_cc_pre_work_2019", "first_cc_pre_work_03_2020", "first_cc_pre_work_summer_2021", "first_cc_pre_work_01_2023",             
-                                                                          "first_cc_during_work_2019", "first_cc_during_work_03_2020", "first_during_work_summer_2021", "first_during_work_01_2023", 
+                                                                          "first_cc_during_work_2019", "first_cc_during_work_03_2020", "first_cc_during_work_summer_2021", "first_cc_during_work_01_2023", 
                                                                           "first_cc_pre_school_2019", "first_cc_pre_school_03_2020", "first_cc_pre_school_summer_2021", "first_cc_pre_school_01_2023",          
-                                                                          "first_during_pre_school_2019", "first_during_pre_school_03_2020", "first_during_pre_school_summer_2021", "first_during_pre_school_01_2023",
+                                                                          "first_cc_during_school_2019", "first_cc_during_school_03_2020", "first_cc_during_school_summer_2021", "first_cc_during_school_01_2023",
                                                                           "first_cc_pre_leisure_2019", "first_cc_pre_leisure_03_2020", "first_cc_pre_leisure_summer_2021", "first_cc_pre_leisure_01_2023", 
-                                                                          "first_during_pre_leisure_2019", "first_during_pre_leisure_03_2020", "first_during_pre_leisure_summer_2021", "first_during_pre_leisure_01_2023"
-                                                                          ))
+                                                                          "first_cc_during_leisure_2019", "first_cc_during_leisure_03_2020", "first_cc_during_leisure_summer_2021", "first_cc_during_leisure_01_2023",
+                                                                          "diff_hsld_2019", "diff_hsld_03_2020", "diff_hsld_summer_2021", "diff_hsld_01_2023",
+                                                                          "diff_work_2019", "diff_work_03_2020", "diff_work_summer_2021", "diff_work_01_2023",
+                                                                          "diff_school_2019", "diff_school_03_2020", "diff_school_summer_2021", "diff_school_01_2023",
+                                                                          "diff_leisure_2019", "diff_leisure_03_2020", "diff_leisure_summer_2021", "diff_leisure_01_2023"))
 
-# Turning variable into factor to make plot prettier
 data_first_and_second_resp$name <- factor(data_first_and_second_resp$name, levels = c("second_hsld_size_persons_under_14",
-                                                                                      "second_hsld_size_2019", "first_cc_pre_hsld_size_2019", "first_during_during_hsld_size_2019",
-                                                                                      "second_hsld_size_03_2020", "first_cc_pre_hsld_size_03_2020", "first_cc_during_hsld_size_03_2020",      
-                                                                                      "second_hsld_size_summer_2021", "first_cc_pre_hsld_size_summer_2021", "first_cc_during_hsld_size_summer_2021",
-                                                                                      "second_hsld_size_01_2023", "first_cc_pre_hsld_size_01_2023", "first_cc_during_hsld_size_01_2023",
-                                                                                      "second_work_2019", "first_cc_pre_work_2019", "first_cc_during_work_2019", 
-                                                                                      "second_work_03_2020", "first_cc_pre_work_03_2020", "first_cc_during_work_03_2020",  
-                                                                                      "second_work_summer_2021", "first_cc_pre_work_summer_2021", "first_cc_during_work_summer_2021",  
-                                                                                      "second_work_01_2023", "first_cc_pre_work_01_2023", "first_cc_during_work_01_2023",
-                                                                                      "second_school_2019", "first_cc_pre_school_2019", "first_cc_during_school_2019",
-                                                                                      "second_school_03_2020", "first_cc_pre_school_03_2020", "first_cc_during_school_03_2020",
-                                                                                      "second_school_summer_2021", "first_cc_pre_school_summer_2021", "first_cc_during_school_summer_2021",
-                                                                                      "second_school_01_2023", "first_cc_pre_school_01_2023", "first_cc_during_school_01_2023",
-                                                                                      "schond_leisure_2019", "first_cc_pre_leisure_2019", "first_cc_during_leisure_2019",
-                                                                                      "second_leisure_03_2020", "first_cc_pre_leisure_03_2020", "first_cc_during_leisure_03_2020",
-                                                                                      "second_leisure_summer_2021", "first_cc_pre_leisure_summer_2021", "first_cc_during_leisure_summer_2021",
-                                                                                      "second_leisure_01_2023", "first_cc_pre_leisure_01_2023", "first_cc_during_leisure_01_2023"
+                                                                                      "second_hsld_size_2019", "first_cc_pre_hsld_size_2019", "first_during_during_hsld_size_2019", "diff_hsld_2019",
+                                                                                      "second_hsld_size_03_2020", "first_cc_pre_hsld_size_03_2020", "first_cc_during_hsld_size_03_2020", "diff_hsld_03_2020",      
+                                                                                      "second_hsld_size_summer_2021", "first_cc_pre_hsld_size_summer_2021", "first_cc_during_hsld_size_summer_2021", "diff_hsld_summer_2021",
+                                                                                      "second_hsld_size_01_2023", "first_cc_pre_hsld_size_01_2023", "first_cc_during_hsld_size_01_2023", "diff_hsld_01_2023",
+                                                                                      "second_work_2019", "first_cc_pre_work_2019", "first_cc_during_work_2019", "diff_work_2019", 
+                                                                                      "second_work_03_2020", "first_cc_pre_work_03_2020", "first_cc_during_work_03_2020", "diff_work_03_2020",  
+                                                                                      "second_work_summer_2021", "first_cc_pre_work_summer_2021", "first_cc_during_work_summer_2021", "diff_work_summer_2021",  
+                                                                                      "second_work_01_2023", "first_cc_pre_work_01_2023", "first_cc_during_work_01_2023", "diff_work_01_2023",
+                                                                                      "second_school_2019", "first_cc_pre_school_2019", "first_cc_during_school_2019", "diff_school_2019",
+                                                                                      "second_school_03_2020", "first_cc_pre_school_03_2020", "first_cc_during_school_03_2020", "diff_school_03_2020",
+                                                                                      "second_school_summer_2021", "first_cc_pre_school_summer_2021", "first_cc_during_school_summer_2021", "diff_school_summer_2021",
+                                                                                      "second_school_01_2023", "first_cc_pre_school_01_2023", "first_cc_during_school_01_2023", "diff_school_01_2023",
+                                                                                      "second_leisure_2019", "first_cc_pre_leisure_2019", "first_cc_during_leisure_2019", "diff_leisure_2019",
+                                                                                      "second_leisure_03_2020", "first_cc_pre_leisure_03_2020", "first_cc_during_leisure_03_2020", "diff_leisure_03_2020",
+                                                                                      "second_leisure_summer_2021", "first_cc_pre_leisure_summer_2021", "first_cc_during_leisure_summer_2021", "diff_leisure_summer_2021",
+                                                                                      "second_leisure_01_2023", "first_cc_pre_leisure_01_2023", "first_cc_during_leisure_01_2023", "diff_leisure_01_2023"
                                                                                       ))
 
-#Adding time variable whose only use is to make the plots prettier
 data_first_and_second_resp <- data_first_and_second_resp %>% mutate(time = case_when(str_detect(name, "2019") ~ "2019",
                                                                                      str_detect(name, "03_2020") ~ "03_2020",
                                                                                      str_detect(name, "summer_2021") ~ "summer_2021",
                                                                                      str_detect(name, "01_2023") ~ "01_2023"))
 
-# Household size plot
-ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "during")) %>% filter(!str_detect(name, "work")) %>% filter(!str_detect(name, "school")) %>% filter(!str_detect(name, "leisure"))) + 
+  #Household size plot
+ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "diff")) %>% filter(!str_detect(name, "during")) %>% filter(!str_detect(name, "work")) %>% filter(!str_detect(name, "school")) %>% filter(!str_detect(name, "leisure"))) + 
   geom_histogram(aes(x = value, y = after_stat(count / sum(count)), fill = time), bins = 10) +
   theme_minimal() +
-  facet_wrap(~name, nrow = 2) +
+  facet_wrap(~name, nrow=2) +
   ylab("Frequency") +
   xlab("") +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15)) +
-  labs(title = paste0("Household Members"))
+  labs(title=paste0("Household Members"))
 
 #ggsave("HouseholdFirstSecondComparison.pdf", dpi = 500, w = 9, h = 6)
 #ggsave("HouseholdFirstSecondComparison.png", dpi = 500, w = 9, h = 6)
 
+
 # Work contacts plot
-ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "during")) %>% filter(!str_detect(name, "hsld")) %>% filter(!str_detect(name, "school")) %>% filter(!str_detect(name, "leisure"))) + 
+ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "diff")) %>% filter(!str_detect(name, "during")) %>% filter(!str_detect(name, "hsld")) %>% filter(!str_detect(name, "school")) %>% filter(!str_detect(name, "leisure"))) + 
   geom_histogram(aes(x = value, y = after_stat(count / sum(count)), fill = time), bins = 10) +
   theme_minimal() +
-  facet_wrap(~name, nrow = 2) +
+  facet_wrap(~name, nrow=2) +
   ylab("Frequency") +
   xlab("") +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))  +
-  labs(title = paste0("Work Contacts"))
+  labs(title=paste0("Work Contacts")) 
 
 #ggsave("WorkFirstSecondComparison.pdf", dpi = 500, w = 9, h = 6)
 #ggsave("WorkFirstSecondComparison.png", dpi = 500, w = 9, h = 6)
 
 
 # School contacts plot
-ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "during")) %>% filter(!str_detect(name, "hsld")) %>% filter(!str_detect(name, "work")) %>% filter(!str_detect(name, "leisure"))) + 
+ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "diff")) %>% filter(!str_detect(name, "during")) %>% filter(!str_detect(name, "hsld")) %>% filter(!str_detect(name, "work")) %>% filter(!str_detect(name, "leisure"))) + 
   geom_histogram(aes(x = value, y = after_stat(count / sum(count)), fill = time), bins = 10) +
   theme_minimal() +
   facet_wrap(~name, nrow=2) +
@@ -213,14 +234,14 @@ ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "during")) %>% fi
   xlab("") +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))  +
-  labs(title = paste0("School Contacts"))
+  labs(title=paste0("School Contacts")) 
 
 #ggsave("SchoolFirstSecondComparison.pdf", dpi = 500, w = 9, h = 6)
 #ggsave("SchoolFirstSecondComparison.png", dpi = 500, w = 9, h = 6)
 
 
 # Leisure contacts plot
-ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "during")) %>% filter(!str_detect(name, "hsld")) %>% filter(!str_detect(name, "work")) %>% filter(!str_detect(name, "school"))) + 
+ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "diff")) %>% filter(!str_detect(name, "during")) %>% filter(!str_detect(name, "hsld")) %>% filter(!str_detect(name, "work")) %>% filter(!str_detect(name, "school"))) + 
   geom_histogram(aes(x = value, y = after_stat(count / sum(count)), fill = time), bins = 10) +
   theme_minimal() +
   facet_wrap(~name, nrow=2) +
@@ -228,7 +249,24 @@ ggplot(data_first_and_second_resp %>% filter(!str_detect(name, "during")) %>% fi
   xlab("") +
   theme(legend.position = "none") +
   theme(text = element_text(size = 15))  +
-  labs(title = paste0("Leisure Contacts"))
+  labs(title=paste0("Leisure Contacts"))
 
 #ggsave("LeisureFirstSecondComparison.pdf", dpi = 500, w = 9, h = 6)
 #ggsave("LeisureFirstSecondComparison.png", dpi = 500, w = 9, h = 6)
+
+# Difference in response plot
+
+#TODO: I am filtering for the cases where the abs(difference) < 10 --> I somewhere need to talk about the outliers too
+
+ggplot(data_first_and_second_resp %>% filter(str_detect(name, "diff")) %>% filter(value < 10) %>% filter(value > -10)) + 
+  geom_histogram(aes(x = value, y = after_stat(count / sum(count)), fill = time), bins = 10) +
+  theme_minimal() +
+  facet_wrap(~name, nrow=2) +
+  ylab("Frequency") +
+  xlab("") +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 15))  +
+  labs(title=paste0("Differences in response"))
+
+#ggsave("DifferenceFirstSecondComparison.pdf", dpi = 500, w = 18, h = 18)
+#ggsave("DifferenceFirstSecondComparison.png", dpi = 500, w = 18, h = 18)
