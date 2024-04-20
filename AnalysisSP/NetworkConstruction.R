@@ -1,6 +1,8 @@
 library(tidyverse)
 library(igraph)
 
+# Author: S. Paltra, contact: paltra@tu-berlin.de
+
 raw_data <- read_csv("ENTER PATH HERE")
 
 # Reducing data frame to the variables of interest ------------------------

@@ -1,6 +1,8 @@
 library(tidyverse)
 library(RColorBrewer)
 
+# Author: S. Paltra, contact: paltra@tu-berlin.de
+
 raw_data <- read_csv("ENTER PATH HERE")
 # Number of infections ----------------------------------------------------
 
