@@ -3,7 +3,8 @@ library(RColorBrewer)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
-raw_data <- read_csv("ENTER PATH HERE")
+raw_data <- read_csv("/Users/sydney/Downloads/twitter_data.csv")
+
 # Number of infections ----------------------------------------------------
 
 no_time_infections <- raw_data %>% select(user_id, num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf) %>%
@@ -453,3 +454,25 @@ householdInfections <- na.omit(householdInfections)
 householdInfections <- householdInfections %>% filter(value != "Nein")
 
 householdInfections %>% count(name)
+
+
+# Change of CC ------------------------------------------------------------
+
+ChangeOfCC <- raw_data %>% select(cc_change_during_pandemic, reasons_change_conts_op)
+
+ChangeOfCC <- ChangeOfCC %>% mutate(cc_change_during_pandemic = case_when(cc_change_during_pandemic == "Ja" ~ "Yes",
+                                                                          cc_change_during_pandemic == "Nein" ~ "No"))
+ChangeOfCC$cc_change_during_pandemic <- factor(ChangeOfCC$cc_change_during_pandemic, levels = c("Yes", "No"))
+ggplot(ChangeOfCC %>% filter(is.na(cc_change_during_pandemic) == FALSE)) + 
+  geom_bar(aes(cc_change_during_pandemic, y = ..prop.., group = 1), fill = "#1b9e77") +
+  theme_minimal() +
+  xlab("Did you change your CC \n during the pandemic?") +
+  ylab("Share") +
+  theme(text = element_text(size = 20)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+ggsave("ChangeOfCC.png", dpi = 500, w = 6, h = 3)
+ggsave("ChangeOfCC.pdf", dpi = 500, w = 6, h = 3)
+
+YesChangeOfCC <- ChangeOfCC %>% filter(cc_change_during_pandemic == "Yes")
+unique(YesChangeOfCC$reasons_change_conts_op)
