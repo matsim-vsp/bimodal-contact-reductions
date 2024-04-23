@@ -18,7 +18,7 @@ library(esquisse)
 Read in filtered data
 
 ```{r}
-data <- readRDS("../data/filtered_data.rds")
+data <- readRDS("../data/filtered_data_lastpage.rds")
 ```
 
 ```{r}
