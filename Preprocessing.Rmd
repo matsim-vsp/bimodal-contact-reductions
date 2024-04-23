@@ -175,18 +175,6 @@ cleaned_data <-
     )
   )
 
-# replace Ja" with "y", "Nein" with "n", "Ich möchte nicht antworten" with "Unwilling to answer and NA with NA) in column c19_vaccination_status
-
-cleaned_data <-
-  cleaned_data %>% mutate(
-    c19_vaccination_status = case_when(
-      c19_vaccination_status == NA ~ NA,
-      c19_vaccination_status == "Ja" ~ "y",
-      c19_vaccination_status == "Nein" ~ "n"
-    )
-  )
-
-
 # replace "Abitur / Fachhochschulabitur" with "A levels / university of applied sciences entrance qualification", "Realschulabschluss" with "High-school diploma", "Haupt/ Volksschulabschluss" with "Secondary modern school qualification" and "Anderer" with "Other" in column highest_educational_qualification
 
 cleaned_data <-

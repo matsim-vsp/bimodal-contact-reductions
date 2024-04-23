@@ -334,7 +334,7 @@ ggsave("CurrentOccupation.png", dpi = 500, w = 12, h = 12)
 
 # Behavior Change ---------------------------------------------------------
 
-behaviorChange <- raw_data %>% select(user_id, beh_change_start_pandemic_avoid_in_person, beh_change_start_pandemic_avoid_careless_contacts, beh_change_start_pandemic_contact_cautious_people,
+behaviorChange <- raw_data %>% filter(c19_vaccination_status == "n") %>% select(beh_change_start_pandemic_avoid_in_person, beh_change_start_pandemic_avoid_careless_contacts, beh_change_start_pandemic_contact_cautious_people,
                                       beh_change_start_pandemic_avoid_peak_hours, beh_change_start_pandemic_maintain_distance,
                                       beh_change_start_pandemic_outdoor_only, beh_change_start_pandemic_no_visit_high_risk, beh_change_start_pandemic_avoid_busy_places,
                                       beh_change_start_pandemic_avoid_public_trans, beh_change_start_pandemic_mask_public_trans, beh_change_start_pandemic_mask_supermarket, beh_change_start_pandemic_work_from_home, 
@@ -360,7 +360,7 @@ behaviorChange <- behaviorChange %>% mutate(name = case_when(name == "beh_change
                                                              name == "beh_change_start_pandemic_children_limited_contacts" ~ "limit children's contacts", 
                                                              name == "beh_change_start_pandemic_meet_close_despite_restrict" ~ "meet close contacts despite restrictions"))
 
-behaviorChange$value <- factor(behaviorChange$value, levels = c("viel weniger", "weniger", "etwas weniger", "genauso", "etwas mehr", "mehr", "viel mehr", "trifft nicht zu", "keine Angabe"))
+behaviorChange$value <- factor(behaviorChange$value, levels = c("a lot less", "less", "a bit less", "equally", "a bit more", "more", "a lot more", "does not apply", "no answer"))
 
 ggplot(behaviorChange %>% filter(!is.na(value))) + 
   geom_bar(aes(x= value, y = ..prop.., group = 1), fill = "#1b9e77") +
@@ -374,6 +374,103 @@ ggplot(behaviorChange %>% filter(!is.na(value))) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ggsave("BehaviorChange.png", dpi = 500, w = 12, h = 9)
 ggsave("BehaviorChange.pdf", dpi = 500, w = 12, h = 9)
+
+
+behaviorChangeNoVacc <-
+  raw_data %>% filter(c19_vaccination_status == "n") %>% select(
+    beh_change_start_pandemic_avoid_in_person,
+    beh_change_start_pandemic_avoid_careless_contacts,
+    beh_change_start_pandemic_contact_cautious_people,
+    beh_change_start_pandemic_avoid_peak_hours,
+    beh_change_start_pandemic_maintain_distance,
+    beh_change_start_pandemic_outdoor_only,
+    beh_change_start_pandemic_no_visit_high_risk,
+    beh_change_start_pandemic_avoid_busy_places,
+    beh_change_start_pandemic_avoid_public_trans,
+    beh_change_start_pandemic_mask_public_trans,
+    beh_change_start_pandemic_mask_supermarket,
+    beh_change_start_pandemic_work_from_home,
+    beh_change_start_pandemic_children_limited_contacts,
+    beh_change_start_pandemic_meet_close_despite_restrict
+  )
+behaviorChangeNoVacc <-
+  behaviorChangeNoVacc %>% pivot_longer(
+    cols = c(
+      "beh_change_start_pandemic_avoid_in_person",
+      "beh_change_start_pandemic_avoid_careless_contacts",
+      "beh_change_start_pandemic_contact_cautious_people",
+      "beh_change_start_pandemic_avoid_peak_hours",
+      "beh_change_start_pandemic_maintain_distance",
+      "beh_change_start_pandemic_outdoor_only",
+      "beh_change_start_pandemic_no_visit_high_risk",
+      "beh_change_start_pandemic_avoid_busy_places",
+      "beh_change_start_pandemic_avoid_public_trans",
+      "beh_change_start_pandemic_mask_public_trans",
+      "beh_change_start_pandemic_mask_supermarket",
+      "beh_change_start_pandemic_work_from_home",
+      "beh_change_start_pandemic_children_limited_contacts",
+      "beh_change_start_pandemic_meet_close_despite_restrict"
+    )
+  )
+
+behaviorChangeNoVacc <-
+  behaviorChangeNoVacc %>% mutate(
+    name = case_when(
+      name == "beh_change_start_pandemic_avoid_in_person" ~ "avoid in person meetings",
+      name == "beh_change_start_pandemic_avoid_careless_contacts" ~ "avoid careless contacts",
+      name == "beh_change_start_pandemic_contact_cautious_people" ~ "meet similarly cautious people",
+      name == "beh_change_start_pandemic_avoid_peak_hours" ~ "no shopping during peak hours",
+      name == "beh_change_start_pandemic_maintain_distance" ~ "keep 1.5m distance to others",
+      name == "beh_change_start_pandemic_outdoor_only" ~ "only meet outdoors",
+      name == "beh_change_start_pandemic_no_visit_high_risk" ~ "avoid visiting of high-risk persons",
+      name == "beh_change_start_pandemic_avoid_busy_places" ~ "avoid crowded places",
+      name == "beh_change_start_pandemic_avoid_public_trans" ~ "avoid public transport",
+      name == "beh_change_start_pandemic_mask_public_trans" ~ "wear mask on public transport",
+      name == "beh_change_start_pandemic_mask_supermarket" ~ "wear mask in supermarket",
+      name == "beh_change_start_pandemic_work_from_home" ~ "work from home",
+      name == "beh_change_start_pandemic_children_limited_contacts" ~ "limit children's contacts",
+      name == "beh_change_start_pandemic_meet_close_despite_restrict" ~ "meet close contacts despite restrictions"
+    )
+  )
+
+behaviorChangeNoVacc$value <-
+  factor(
+    behaviorChangeNoVacc$value,
+    levels = c(
+      "a lot less",
+      "less",
+      "a bit less",
+      "equally",
+      "a bit more",
+      "more",
+      "a lot more",
+      "does not apply",
+      "no answer"
+    )
+  )
+
+ggplot(behaviorChangeNoVacc %>% filter(!is.na(value))) +
+  geom_bar(aes(x = value, y = ..prop.., group = 1), fill = "#1b9e77") +
+  theme_minimal() +
+  ylab("Frequency") +
+  xlab("") +
+  facet_wrap( ~ name) +
+  theme(legend.position = "none") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(text = element_text(size = 15)) +
+  theme(axis.text.x = element_text(
+    angle = 90,
+    vjust = 0.5,
+    hjust = 1
+  ))
+ggsave("BehaviorChangeNoVacc.png",
+       dpi = 500,
+       w = 12,
+       h = 9)
+ggsave("BehaviorChangeNoVacc.pdf",
+       dpi = 500,
+       w = 12,
+       h = 9)
 
 
 # Attitudes ---------------------------------------------------------------
