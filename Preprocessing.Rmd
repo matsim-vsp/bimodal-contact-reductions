@@ -21,6 +21,9 @@ library(esquisse)
 data <- read.csv("data/twitter_data.csv") %>% group_by(user_id) %>% filter(last_page != -1, last_page == max(last_page)) %>% ungroup()
 
 # save all rows of reasons_change_conts_op that contain text into comments
+comments <- data %>% filter(!(comments %in% "")) %>% select(user_id, comments)
+
+# save all rows of reasons_change_conts_op that contain text into comments
 comments_reasons_change_conts_op <- data %>% filter(!(reasons_change_conts_op %in% "")) %>% select(user_id, reasons_change_conts_op)
 
 # save all rows of expl_new_intense_conts that contain text into comments
@@ -32,22 +35,175 @@ Data filtering:
 ```{r}
 # Filter out unnecessary columns
 
+filtered_data_lastpage <- data %>% filter(last_page == 11) %>% select(-c(submit_date, last_page, start_language, start_date, datestamp, is_adult, ref, origin))
+
 filtered_data_time <- data %>% select(-c(user_id, submit_date, last_page, start_language, start_date, datestamp, is_adult, ref, origin))
 
-#filter out timing information
+#filter out timing information and comments
 
-filtered_data <- filtered_data_time %>% select(!ends_with("time"))
+filtered_data <- filtered_data_time %>% select(!ends_with("time"), -c(comments, reasons_change_conts_op, expl_new_intense_conts))
 
-# calculate age
+# calculate age and add column after year_of_birth
 
-filtered_data <- filtered_data %>% mutate(age = 2023 - year_of_birth)
+filtered_data <- filtered_data %>% mutate(age = 2023 - year_of_birth, .after = year_of_birth)
+filtered_data_lastpage <- filtered_data_lastpage %>% mutate(age = 2023 - year_of_birth, .after = year_of_birth)
+
 
 # save filtered datasets
 
 saveRDS(filtered_data, "data/filtered_data.rds")
 saveRDS(filtered_data_time, "data/filtered_data_time.rds")
+saveRDS(filtered_data_lastpage, "data/filtered_data_lastpage.rds")
 ```
 
-```{r}
 
+# Additional data cleaning (some taken from AnalysisSP/ExploratoryAnalysis)
+```{r}
+filtered_data <- readRDS("data/filtered_data.rds")
+
+# replace "Ich habe noch nie geraucht." with "I have never smoked", "Nein, nicht mehr" with "No, not anymore" "Ja, gelegentlich" with "Yes, sometimes", "Ja, täglich" with "Yes, daily" and "Ich möchte nicht antworten" with "Unwilling to answer" in column smoking_status
+
+cleaned_data <-
+  filtered_data %>% mutate(
+    smoking_status = case_when(
+      smoking_status == "Ich habe noch nie geraucht." ~ "I have never smoked",
+      smoking_status == "Nein, nicht mehr" ~ "No, not anymore",
+      smoking_status == "Ja, gelegentlich" ~ "Yes, sometimes",
+      smoking_status == "Ja, täglich" ~ "Yes, daily",
+    )
+  )
+
+# replace "Ja" with "y" and "Nein" with "n" for all occurrences
+
+cleaned_data <-
+  cleaned_data %>% mutate_all( ~ str_replace_all(., "\\bJa\\b", "y")) %>% mutate_all( ~ str_replace_all(., "Nein", "n")) %>% mutate_all( ~ str_replace_all(., "Ich möchte nicht antworten", "Unwilling to answer")) %>% mutate_all( ~ str_replace_all(., "Ich weiß es nicht", "I don't know"))  %>% mutate_all( ~ str_replace_all(., "Weiß nicht", "I don't know")) %>% mutate_all( ~ str_replace_all(., "Nicht zutreffend", "Not applicable"))
+
+# replace Likert scales with translations
+
+cleaned_data <-
+  cleaned_data %>% mutate_all(~ str_replace_all(., "viel mehr", "a lot more")) %>% mutate_all(~ str_replace_all(., "etwas mehr", "a bit more")) %>% mutate_all(~ str_replace_all(., "genauso", "equally")) %>% mutate_all(~ str_replace_all(., "etwas weniger", "a bit less")) %>% mutate_all(~ str_replace_all(., "viel weniger", "a lot less"))  %>% mutate_all(~ str_replace_all(., "trifft nicht zu", "does not apply")) %>%  mutate_all(~ str_replace_all(., "mehr", "more")) %>% mutate_all(~ str_replace_all(., "weniger", "less"))
+
+# replace "Vielleicht" with "maybe", "Auf keinen Fall" with "definitely not" in column vaccination_on_doctor_recommendation_other_diseases
+
+cleaned_data <-
+  cleaned_data %>% mutate(
+    vaccination_on_doctor_recommendation_other_diseases = case_when(
+      vaccination_on_doctor_recommendation_other_diseases == "Vielleicht" ~ "maybe",
+      vaccination_on_doctor_recommendation_other_diseases == "Auf keinen Fall" ~ "definitely not"
+    )
+  )
+
+# replace "Vielleicht" with "maybe", "Auf keinen Fall" with "definitely not" in column plan_to_get_c19_vaccine_this_year
+
+cleaned_data <-
+  cleaned_data %>% mutate(
+    plan_to_get_c19_vaccine_this_year = case_when(
+      plan_to_get_c19_vaccine_this_year == "Vielleicht" ~ "maybe",
+      plan_to_get_c19_vaccine_this_year == "Auf keinen Fall" ~ "definitely not"
+    )
+  )
+
+# replace "Wichtig" with "important", "Besonders wichtig" with "especially important" and "Nicht so wichtig" with "not as important" in columns importance_of_vaccination_against_...
+
+cleaned_data <-
+  cleaned_data %>% mutate(
+    importance_of_vaccination_against_various_diseases_covid_19 = case_when(
+      importance_of_vaccination_against_various_diseases_covid_19 == "Wichtig" ~ "important",
+      importance_of_vaccination_against_various_diseases_covid_19 == "Besonders wichtig" ~ "especially important",
+      importance_of_vaccination_against_various_diseases_covid_19 == "Nicht wichtig" ~ "not as important"
+    ),
+    importance_of_vaccination_against_various_diseases_influenza = case_when(
+      importance_of_vaccination_against_various_diseases_influenza == "Wichtig" ~ "important",
+      importance_of_vaccination_against_various_diseases_influenza == "Besonders wichtig" ~ "especially important",
+      importance_of_vaccination_against_various_diseases_influenza == "Nicht wichtig" ~ "not as important"
+    ),
+    importance_of_vaccination_against_various_diseases_pneumococcus = case_when(
+      importance_of_vaccination_against_various_diseases_pneumococcus == "Wichtig" ~ "important",
+      importance_of_vaccination_against_various_diseases_pneumococcus == "Besonders wichtig" ~ "especially important",
+      importance_of_vaccination_against_various_diseases_pneumococcus == "Nicht wichtig" ~ "not as important"
+    ),
+    importance_of_vaccination_against_various_diseases_tetanus = case_when(
+      importance_of_vaccination_against_various_diseases_tetanus == "Wichtig" ~ "important",
+      importance_of_vaccination_against_various_diseases_tetanus == "Besonders wichtig" ~ "especially important",
+      importance_of_vaccination_against_various_diseases_tetanus == "Nicht wichtig" ~ "not as important"
+    ),
+    importance_of_vaccination_against_various_diseases_measles = case_when(
+      importance_of_vaccination_against_various_diseases_measles == "Wichtig" ~ "important",
+      importance_of_vaccination_against_various_diseases_measles == "Besonders wichtig" ~ "especially important",
+      importance_of_vaccination_against_various_diseases_measles == "Nicht wichtig" ~ "not as important"
+    ),
+  )
+
+# replace "männlich" with "m", "weiblich" with "f" and "Divers" with "d" in column gender
+
+cleaned_data <-
+  cleaned_data %>% mutate(
+    gender = case_when(
+      gender == NA ~ NA,
+      gender == "Männlich" ~ "m",
+      gender ==  "Weiblich" ~ "f",
+      gender ==  "Divers" ~ "d",
+      
+    )
+  )
+
+
+# change num_c19_infs to numeric
+
+cleaned_data <-
+  cleaned_data %>% mutate(
+    num_c19_infs = case_when(
+      num_c19_infs == NA ~ NA,
+      num_c19_infs == "Nie" ~ "0",
+      num_c19_infs == "Einmal" ~ "1",
+      num_c19_infs == "Zweimal" ~ "2",
+      num_c19_infs == "Dreimal" ~ "3",
+      num_c19_infs == "Mehr als dreimal" ~ "3+",
+      
+    )
+  )
+
+# replace "Ja" with "yes" and "Nein" with "no" in column has_children
+
+cleaned_data <-
+  cleaned_data %>% mutate(
+    have_children = case_when(
+      have_children == NA ~ NA,
+      have_children == "Ja" ~ "yes",
+      have_children == "Nein" ~ "no",
+      
+    )
+  )
+
+# replace "Abitur / Fachhochschulabitur" with "A levels / university of applied sciences entrance qualification", "Realschulabschluss" with "High-school diploma", "Haupt/ Volksschulabschluss" with "Secondary modern school qualification" and "Anderer" with "Other" in column highest_educational_qualification
+
+cleaned_data <-
+  cleaned_data %>% mutate(
+    highest_educational_qualification = case_when(
+      highest_educational_qualification == NA ~ NA,
+      highest_educational_qualification == "Abitur / Fachhochschulabitur" ~ "A levels",
+      highest_educational_qualification == "Realschulabschluss" ~ "High-school diploma",
+      highest_educational_qualification == "Haupt-/ Volksschulabschluss" ~ "Secondary school qualification",
+      highest_educational_qualification == "Anderer" ~ "Other",
+    )
+  )
+
+# replace "Ich bin arbeitssuchend." with "jobless", "Ich bin Rentner:in oder Pensionär:in." with "pensioner", "Ich bin im Studium oder in der Ausbildung." with "student", "Ich bin in einem medizinischen oder pflegerischen Beruf bei einem Gesundheitsversorger tätig." with "medical", "Ich bin als Lehrer:in oder Erzieher:in tätig." with "education", "Ich bin in einem anderen Beruf tätig." with "other" and "Andere (z.B. Elternzeit, Sabbatical)" with "sabbatical" in column current_occupation
+
+cleaned_data <-
+  cleaned_data %>% mutate(
+    current_occupation = case_when(
+      current_occupation == NA ~ NA,
+      current_occupation == "Ich bin arbeitssuchend." ~ "jobless",
+      current_occupation == "Ich bin Rentner:in oder Pensionär:in." ~ "pensioner",
+      current_occupation == "Ich bin im Studium oder in der Ausbildung." ~ "student",
+      current_occupation == "Ich bin in einem medizinischen oder pflegerischen Beruf bei einem Gesundheitsversorger tätig." ~ "medical",
+      current_occupation == "Ich bin als Lehrer:in oder Erzieher:in tätig." ~ "education",
+      current_occupation == "Ich bin in einem anderen Beruf tätig." ~ "other",
+      current_occupation == "Andere (z.B. Elternzeit, Sabbatical)" ~ "sabbatical"
+    )
+  )
+
+
+saveRDS(cleaned_data, "data/cleaned_data.rds")
 ```
