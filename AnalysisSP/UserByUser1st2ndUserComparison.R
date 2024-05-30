@@ -161,6 +161,16 @@ ggplot(data_both %>% filter(category == "hsldsize")) +
 ggsave("AssumedMinusActualHousehold.pdf", dpi = 500, w = 21, h = 9)
 ggsave("AssumedMinusActualHousehold.png", dpi = 500, w = 21, h = 9)
 
+ggplot(data_both %>% filter(category == "hsldsize"), aes(time, Diff)) +
+  geom_boxplot() +
+  theme_minimal() +
+  xlab("Time") +
+  ylab("Difference") +
+  theme(text = element_text(size = 22))
+
+ggsave("AssumedMinusActualHouseholdBoxPlot.pdf", dpi = 500, w = 8, h = 4)
+ggsave("AssumedMinusActualHouseholdBoxPlot.png", dpi = 500, w = 8, h = 4)
+
 #Difference work
 ggplot(data_both %>% filter(category == "work")) + 
   geom_point(aes(x = time, y = Diff, colour = factor(category)), size = 3) +
@@ -175,6 +185,16 @@ ggplot(data_both %>% filter(category == "work")) +
 
 ggsave("AssumedMinusActualWork.pdf", dpi = 500, w = 21, h = 9)
 ggsave("AssumedMinusActualWork.png", dpi = 500, w = 21, h = 9)
+
+ggplot(data_both %>% filter(category == "work"), aes(time, Diff)) +
+  geom_boxplot() +
+  theme_minimal() +
+  xlab("Time") +
+  ylab("Difference") +
+  theme(text = element_text(size = 22))
+
+ggsave("AssumedMinusActualWorkBoxPlot.pdf", dpi = 500, w = 8, h = 4)
+ggsave("AssumedMinusActualWorkBoxPlot.png", dpi = 500, w = 8, h = 4)
 
 #Difference school
 ggplot(data_both %>% filter(category == "school")) + 
@@ -191,6 +211,16 @@ ggplot(data_both %>% filter(category == "school")) +
 ggsave("AssumedMinusActualSchool.pdf", dpi = 500, w = 21, h = 9)
 ggsave("AssumedMinusActualSchool.png", dpi = 500, w = 21, h = 9)
 
+ggplot(data_both %>% filter(category == "school"), aes(time, Diff)) +
+  geom_boxplot() +
+  theme_minimal() +
+  xlab("Time") +
+  ylab("Difference") +
+  theme(text = element_text(size = 22))
+
+ggsave("AssumedMinusActualSchoolBoxPlot.pdf", dpi = 500, w = 8, h = 4)
+ggsave("AssumedMinusActualSchoolBoxPlot.png", dpi = 500, w = 8, h = 4)
+
 #Difference leisure
 ggplot(data_both %>% filter(category == "leisure")) + 
   geom_point(aes(x = time, y = Diff, colour = factor(category)), size = 3) +
@@ -205,3 +235,13 @@ ggplot(data_both %>% filter(category == "leisure")) +
 
 ggsave("AssumedMinusActualLeisure.pdf", dpi = 500, w = 21, h = 9)
 ggsave("AssumedMinusActualLeisure.png", dpi = 500, w = 21, h = 9)
+
+ggplot(data_both %>% filter(category == "leisure"), aes(time, Diff)) +
+  geom_boxplot() +
+  theme_minimal() +
+  xlab("Time") +
+  ylab("Difference") +
+  theme(text = element_text(size = 22))
+
+ggsave("AssumedMinusActualLeisureBoxPlot.pdf", dpi = 500, w = 8, h = 4)
+ggsave("AssumedMinusActualLeisureBoxPlot.png", dpi = 500, w = 8, h = 4)
