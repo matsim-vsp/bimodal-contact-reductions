@@ -204,6 +204,14 @@ cleaned_data <-
     )
   )
 
+#replace datetime with date
+
+cleaned_data <- cleaned_data %>%
+  mutate_at(vars(starts_with("date")), ~ as.Date(., format="%Y-%m-%d %H:%M:%S"))
+
+#save cleaned data
 
 saveRDS(cleaned_data, "data/cleaned_data.rds")
+
+#todo: translate loc_other?, NA or empty?, Likert scales to numbers?
 ```
