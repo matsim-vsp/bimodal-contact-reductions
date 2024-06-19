@@ -11,7 +11,7 @@ library(ggiraphExtra)
 # to the answers of the initial respondents (referred to as 'first respondent')
 # (Internal node: Slide 52 f.)
 
-raw_data <- read_csv("ENTER PATH HERE")
+raw_data <- read_csv("ENTERPATHHERE")
 
 
 # Reducing data frame to the variables of interest ------------------------
@@ -31,7 +31,30 @@ data_reduced <- raw_data %>% select(user_id, ref, cc_change_during_pandemic, tot
                                     wkly_cont_2019_leisure, wkly_cont_03_2020_leisure, wkly_cont_summer_2021_leisure, wkly_cont_01_2023_leisure,
                                     hsld_cont__2019_leisure, hsld_cont__03_2020_leisure, hsld_cont__summer_2021_leisure, hsld_cont__01_2023_leisure,
                                     cc_weekly_contacts_2019_leisure_cont, cc_weekly_contacts_03_2020_leisure_cont, cc_weekly_contacts_summer_2021_leisure_cont, cc_weekly_contacts_01_2023_leisure_cont,
-                                    cc_weekly_cont_during_pandemic_2019_leisure_cont, cc_weekly_cont_during_pandemic_03_2020_leisure_cont, cc_weekly_cont_during_pandemic_summer_2021_leisure_cont, cc_weekly_cont_during_pandemic_01_2023_leisure_cont)
+                                    cc_weekly_cont_during_pandemic_2019_leisure_cont, cc_weekly_cont_during_pandemic_03_2020_leisure_cont, cc_weekly_cont_during_pandemic_summer_2021_leisure_cont, cc_weekly_cont_during_pandemic_01_2023_leisure_cont,
+                                    attitudes_precautions_mar2020_low_infection_risk_perception,                
+                                    attitudes_precautions_mar2020_risky_infection_course_assessment,            
+                                    attitudes_precautions_mar2020_high_risk_perception,                         
+                                    attitudes_precautions_mar2020_avoided_risky_situations,                     
+                                    attitudes_precautions_mar2020_aware_distance_rule_effectiveness,         
+                                    attitudes_precautions_mar2020_understood_mask_reduces_risk,                
+                                    attitudes_precautions_mar2020_followed_measures,                         
+                                    attitudes_precautions_mar2020_felt_restricted_by_measures,                  
+                                    attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical,
+                                    beh_change_start_pandemic_avoid_in_person,                                  
+                                    beh_change_start_pandemic_avoid_careless_contacts,                       
+                                    beh_change_start_pandemic_contact_cautious_people,                        
+                                    beh_change_start_pandemic_avoid_peak_hours,                          
+                                    beh_change_start_pandemic_maintain_distance,                                
+                                    beh_change_start_pandemic_outdoor_only,                                     
+                                    beh_change_start_pandemic_no_visit_high_risk,                               
+                                    beh_change_start_pandemic_avoid_busy_places,                               
+                                    beh_change_start_pandemic_avoid_public_trans,                               
+                                    beh_change_start_pandemic_mask_public_trans,                                
+                                    beh_change_start_pandemic_mask_supermarket,                                 
+                                    beh_change_start_pandemic_work_from_home,                                  
+                                    beh_change_start_pandemic_children_limited_contacts,                       
+                                    beh_change_start_pandemic_meet_close_despite_restrict)
 
 
 # Respondents who were forwarded the survey -------------------------------
@@ -854,3 +877,78 @@ correlation_matrix_relative[nrow(correlation_matrix_relative) + 1, ] <- c("all",
 correlation_matrix_relative[nrow(correlation_matrix_relative) + 1, ] <- c("work", "01_2023", "No", "during", cor(data_reduced_no$red_respondent_work_2019_2023, data_reduced_no$red_cc_during_work_2019_2023, use = "pairwise.complete.obs", method = "pearson"))
 correlation_matrix_relative[nrow(correlation_matrix_relative) + 1, ] <- c("leisure", "01_2023", "No", "during", cor(data_reduced_no$red_respondent_leisure_2019_2023, data_reduced_no$red_cc_during_leisure_2019_2023, use = "pairwise.complete.obs", method = "pearson"))
 correlation_matrix_relative[nrow(correlation_matrix_relative) + 1, ] <- c("all", "01_2023", "No", "during", cor(data_reduced_no$red_respondent_all_2019_2023, data_reduced_no$red_cc_during_all_2019_2023, use = "pairwise.complete.obs", method = "pearson"))
+
+
+
+# Correlation Analysis - Separated By Attitudes ---------------------------
+
+attitudes <- c("attitudes_precautions_mar2020_low_infection_risk_perception",                
+"attitudes_precautions_mar2020_risky_infection_course_assessment",            
+"attitudes_precautions_mar2020_high_risk_perception",                         
+"attitudes_precautions_mar2020_avoided_risky_situations",                     
+"attitudes_precautions_mar2020_aware_distance_rule_effectiveness",         
+"attitudes_precautions_mar2020_understood_mask_reduces_risk",                
+"attitudes_precautions_mar2020_followed_measures",                         
+"attitudes_precautions_mar2020_felt_restricted_by_measures",                  
+"attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical",
+"beh_change_start_pandemic_avoid_in_person",                                  
+"beh_change_start_pandemic_avoid_careless_contacts",                       
+"beh_change_start_pandemic_contact_cautious_people",                        
+"beh_change_start_pandemic_avoid_peak_hours",                          
+"beh_change_start_pandemic_maintain_distance",                                
+"beh_change_start_pandemic_outdoor_only",                                     
+"beh_change_start_pandemic_no_visit_high_risk",                               
+"beh_change_start_pandemic_avoid_busy_places",                               
+"beh_change_start_pandemic_avoid_public_trans",                               
+"beh_change_start_pandemic_mask_public_trans",                                
+"beh_change_start_pandemic_mask_supermarket",                                 
+"beh_change_start_pandemic_work_from_home",                                  
+"beh_change_start_pandemic_children_limited_contacts",                       
+"beh_change_start_pandemic_meet_close_despite_restrict")
+
+possible_attitudes <- c("viel weniger",                                              
+                        "genauso",                                                    
+                         "weniger",                                                    
+                         "viel mehr",                                                  
+                         "trifft nicht zu",                                            
+                         "etwas mehr",                                                 
+                         "etwas weniger",                                              
+                         "mehr",                                                       
+                         "keine Angabe")
+
+correlation_matrix <- data.frame(matrix(nrow = 0, ncol = 6))
+colnames(correlation_matrix) <- c("attitude", "answer", "group_size(n)", "year", "context", "correlation_coefficient")
+
+for(i in 1:length(attitudes)){
+  attitude <- attitudes[i]
+  for(possible_attitude in possible_attitudes){
+    grouped_data <- data_reduced %>% filter(!!sym(attitude) == possible_attitude)
+    if(nrow(grouped_data) > 0){
+    times <- c("2019", "03_2020", "summer_2021", "01_2023")
+    for(time in times){
+      correlation_matrix[nrow(correlation_matrix) + 1, ] <- c(attitude,
+                                                              possible_attitude,
+                                                              nrow(grouped_data),
+                                                              time,
+                                                              "work",
+                                                              cor(grouped_data[,paste0("respondent_work_", time)], grouped_data[,paste0("cc_pre_work_", time)], use = "pairwise.complete.obs"))
+      correlation_matrix[nrow(correlation_matrix) + 1, ] <- c(attitude,
+                                                              possible_attitude,
+                                                              nrow(grouped_data),
+                                                              time,
+                                                              "leisure",
+                                                              cor(grouped_data[,paste0("respondent_leisure_", time)], grouped_data[,paste0("cc_pre_leisure_", time)], use = "pairwise.complete.obs"))
+      correlation_matrix[nrow(correlation_matrix) + 1, ] <- c(attitude,
+                                                              possible_attitude,
+                                                              nrow(grouped_data),
+                                                              time,
+                                                              "all",
+                                                              cor(grouped_data[,paste0("respondent_all_", time)], grouped_data[,paste0("cc_pre_all_", time)], use = "pairwise.complete.obs"))
+       }
+    }
+  }
+}
+
+correlation_matrix$answer <- factor(correlation_matrix$answer, levels = c("viel weniger", "weniger", "etwas weniger", "genauso", "etwas mehr", "mehr", "viel mehr", "trifft nicht zu", "keine Angabe"), ordered = TRUE)
+correlation_matrix <- as.data.frame(correlation_matrix)
+correlation_matrix <- correlation_matrix[order(correlation_matrix$answer), ]
