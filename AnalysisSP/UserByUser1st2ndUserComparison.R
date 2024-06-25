@@ -11,7 +11,7 @@ library(ggiraphExtra)
 # to the answers of the initial respondents (referred to as 'first respondent')
 # (Internal node: Slide 52 f.)
 
-raw_data <- read_csv("ENTERPATHHERE")
+raw_data <- read_csv("/Users/sydney/Downloads/twitter_data.csv")
 
 
 # Reducing data frame to the variables of interest ------------------------
@@ -157,18 +157,18 @@ palette <- function() {
 }
 
 #Difference all categories
-ggplot(data_both) + 
+ggplot(data_both %>% filter(id_second_respondent != "c34b67f3-53ca-47e4-82b2-56a7bc7f2c44")) + 
   geom_point(aes(x = time, y = Diff, colour = factor(category)), size = 3) +
   theme_linedraw() +
-  facet_wrap(~id_second_respondent, nrow=2) +
+  facet_wrap(~id_second_respondent, nrow=3) +
   scale_color_manual(values = palette()) +
   ylab("Assumed # Contacts CC - #Actual Contacts CC") +
-  xlab("") +
+  xlab("Point In Time") +
   theme(legend.position = "bottom", legend.title=element_blank()) +
   theme(text = element_text(size = 22)) +
   theme(axis.text.x = element_text(angle = 90))
 
-ggsave("AssumedMinusActual.pdf", dpi = 500, w = 21, h = 9)
+ggsave("AssumedMinusActual.pdf", dpi = 500, w = 16, h = 10)
 ggsave("AssumedMinusActual.png", dpi = 500, w = 21, h = 9)
 
 
@@ -187,15 +187,16 @@ ggplot(data_both %>% filter(category == "hsldsize")) +
 ggsave("AssumedMinusActualHousehold.pdf", dpi = 500, w = 21, h = 9)
 ggsave("AssumedMinusActualHousehold.png", dpi = 500, w = 21, h = 9)
 
-ggplot(data_both %>% filter(category == "hsldsize"), aes(time, Diff)) +
-  geom_boxplot() +
+p1 <- ggplot(data_both %>% filter(category == "hsldsize"), aes(time, Diff)) +
+  geom_boxplot(color = "#E4572E", linewidth = 1.1) +
   theme_minimal() +
-  xlab("Time") +
-  ylab("Difference") +
+  ggtitle("Household Size") +
+  xlab("Point In Time") +
+  ylab("Assumed # Contacts CC \n Minus #Actual Contacts CC") +
   theme(text = element_text(size = 22))
 
-ggsave("AssumedMinusActualHouseholdBoxPlot.pdf", dpi = 500, w = 8, h = 4)
-ggsave("AssumedMinusActualHouseholdBoxPlot.png", dpi = 500, w = 8, h = 4)
+ggsave("AssumedMinusActualHouseholdBoxPlot.pdf", dpi = 500, w = 8, h = 4.5)
+ggsave("AssumedMinusActualHouseholdBoxPlot.png", dpi = 500, w = 8, h = 4.5)
 
 #Difference work
 ggplot(data_both %>% filter(category == "work")) + 
@@ -204,23 +205,24 @@ ggplot(data_both %>% filter(category == "work")) +
   facet_wrap(~id_second_respondent, nrow=2) +
   scale_color_manual(values = palette()) +
   ylab("Assumed # Contacts CC - #Actual Contacts CC") +
-  xlab("") +
+  xlab("Assumed # Contacts CC \n Minus #Actual Contacts CC") +
   theme(legend.position = "bottom", legend.title=element_blank()) +
-  theme(text = element_text(size = 22)) +
+  theme(text = element_text(size = 25)) +
   theme(axis.text.x = element_text(angle = 90)) 
 
 ggsave("AssumedMinusActualWork.pdf", dpi = 500, w = 21, h = 9)
 ggsave("AssumedMinusActualWork.png", dpi = 500, w = 21, h = 9)
 
-ggplot(data_both %>% filter(category == "work"), aes(time, Diff)) +
-  geom_boxplot() +
+p2 <- ggplot(data_both %>% filter(category == "work"), aes(time, Diff)) +
+  geom_boxplot(color = "#E4572E", linewidth = 1.1) +
   theme_minimal() +
   xlab("Time") +
-  ylab("Difference") +
-  theme(text = element_text(size = 22))
+  ggtitle("Work Contacts") +
+  ylab("Assumed # Contacts CC \n Minus #Actual Contacts CC") +
+  theme(text = element_text(size = 25))
 
-ggsave("AssumedMinusActualWorkBoxPlot.pdf", dpi = 500, w = 8, h = 4)
-ggsave("AssumedMinusActualWorkBoxPlot.png", dpi = 500, w = 8, h = 4)
+ggsave("AssumedMinusActualWorkBoxPlot.pdf", dpi = 500, w = 8, h = 4.5)
+ggsave("AssumedMinusActualWorkBoxPlot.png", dpi = 500, w = 8, h = 4.5)
 
 #Difference school
 ggplot(data_both %>% filter(category == "school")) + 
@@ -262,21 +264,23 @@ ggplot(data_both %>% filter(category == "leisure")) +
 ggsave("AssumedMinusActualLeisure.pdf", dpi = 500, w = 21, h = 9)
 ggsave("AssumedMinusActualLeisure.png", dpi = 500, w = 21, h = 9)
 
-ggplot(data_both %>% filter(category == "leisure"), aes(time, Diff)) +
-  geom_boxplot() +
+p3 <- ggplot(data_both %>% filter(category == "leisure"), aes(time, Diff)) +
+  geom_boxplot(color = "#E4572E", linewidth = 1.1) +
   theme_minimal() +
   xlab("Time") +
-  ylab("Difference") +
-  theme(text = element_text(size = 22))
+  ggtitle("Leisure Contacts") +
+  ylab("") +
+  theme(text = element_text(size = 25))
 
-ggsave("AssumedMinusActualLeisureBoxPlot.pdf", dpi = 500, w = 8, h = 4)
-ggsave("AssumedMinusActualLeisureBoxPlot.png", dpi = 500, w = 8, h = 4)
+p <- arrangeGrob(p2,p3, nrow=1)
+ggsave("AssumedMinusActualBoxPlot.pdf", p, dpi = 500, w = 24, h = 5)
+ggsave("AssumedMinusActualBoxPlot.png", p, dpi = 500, w = 24, h = 5)
+
+ggsave("AssumedMinusActualLeisureBoxPlot.pdf", dpi = 500, w = 8, h = 4.5)
+ggsave("AssumedMinusActualLeisureBoxPlot.png", dpi = 500, w = 8, h = 4.5)
 
 
-
-# Correlation Analysis ----------------------------------------------------
-
-# Aim of SECOND PART of this script: Try to understand if there's a correlation between the no of contacts of the respondent and the no. of contacts of their cc
+# 0th order Results -------------------------------------------------------
 
 ## Respondent
 colnames(data_reduced)[which(names(data_reduced) == "cc_change_during_pandemic")] <- "respondent_cc_change"
@@ -298,11 +302,150 @@ colnames(data_reduced)[which(names(data_reduced) == "wkly_cont_03_2020_leisure")
 colnames(data_reduced)[which(names(data_reduced) == "wkly_cont_summer_2021_leisure")] <- "respondent_leisure_summer_2021"
 colnames(data_reduced)[which(names(data_reduced) == "wkly_cont_01_2023_leisure")] <- "respondent_leisure_01_2023"
 
-data_reduced <- data_reduced %>% mutate(respondent_all_2019 = respondent_hsld_size_2019 + respondent_school_2019 + respondent_work_2019 + respondent_leisure_2019) %>% 
-  mutate(respondent_all_03_2020 = respondent_hsld_size_03_2020 + respondent_school_03_2020 + respondent_work_03_2020 + respondent_leisure_03_2020) %>%
-  mutate(respondent_all_summer_2021 = respondent_hsld_size_summer_2021 + respondent_school_summer_2021 +respondent_work_summer_2021 + respondent_leisure_summer_2021) %>%
-  mutate(respondent_all_01_2023 = respondent_hsld_size_01_2023 + respondent_school_01_2023 +respondent_work_01_2023 + respondent_leisure_01_2023)
+## RESPONDENT'S CONTACTS
+# WORK CONTACTS
+summary(data_reduced$respondent_work_2019)
+sum(!is.na(data_reduced$respondent_work_2019))
 
+summary(data_reduced$respondent_work_03_2020)
+sum(!is.na(data_reduced$respondent_work_03_2020))
+ 
+summary(data_reduced$respondent_work_summer_2021)
+sum(!is.na(data_reduced$respondent_work_summer_2021))
+
+summary(data_reduced$respondent_work_01_2023)
+sum(!is.na(data_reduced$respondent_work_01_2023))
+
+# Leisure CONTACTS
+summary(data_reduced$respondent_leisure_2019)
+sum(!is.na(data_reduced$respondent_leisure_2019))
+
+summary(data_reduced$respondent_leisure_03_2020)
+sum(!is.na(data_reduced$respondent_leisure_03_2020))
+ 
+summary(data_reduced$respondent_leisure_summer_2021)
+sum(!is.na(data_reduced$respondent_leisure_summer_2021))
+
+summary(data_reduced$respondent_leisure_01_2023)
+sum(!is.na(data_reduced$respondent_leisure_01_2023))
+
+# ALL CONTACTS
+summary(data_reduced$respondent_all_2019)
+sum(!is.na(data_reduced$respondent_all_2019))
+
+summary(data_reduced$respondent_all_03_2020)
+sum(!is.na(data_reduced$respondent_all_03_2020))
+ 
+summary(data_reduced$respondent_all_summer_2021)
+sum(!is.na(data_reduced$respondent_all_summer_2021))
+
+summary(data_reduced$respondent_all_01_2023)
+sum(!is.na(data_reduced$respondent_all_01_2023))
+
+
+# Boxplots ----------------------------------------------------------------
+
+all_contacts <- raw_data %>% select(user_id, hsld_size_2019_, hsld_size_03_2020_, hsld_size_summer_2021_, hsld_size_01_2023_, 
+                                    wkly_cont_2019_work_uni, wkly_cont_03_2020_work_uni, wkly_cont_summer_2021_work_uni, wkly_cont_01_2023_work_uni,
+                                    wkly_cont_2019_school_kinder, wkly_cont_03_2020_school_kinder, wkly_cont_summer_2021_school_kinder, wkly_cont_01_2023_school_kinder,
+                                    wkly_cont_2019_leisure, wkly_cont_03_2020_leisure, wkly_cont_summer_2021_leisure, wkly_cont_01_2023_leisure)
+
+all_contacts <- all_contacts %>% mutate(all2019 = hsld_size_2019_ +  wkly_cont_2019_work_uni + wkly_cont_2019_school_kinder + wkly_cont_2019_leisure,
+                                        all032020 = hsld_size_03_2020_ + wkly_cont_03_2020_work_uni + wkly_cont_03_2020_school_kinder + wkly_cont_03_2020_leisure,
+                                        allsummer21 = hsld_size_summer_2021_ + wkly_cont_summer_2021_work_uni + wkly_cont_summer_2021_school_kinder + wkly_cont_summer_2021_leisure,
+                                        all23 = hsld_size_01_2023_ + wkly_cont_01_2023_work_uni + wkly_cont_01_2023_school_kinder + wkly_cont_01_2023_leisure)
+
+all_contacts <- all_contacts %>% select(user_id, all2019, all032020, allsummer21, all23) %>% pivot_longer(cols = c("all2019", "all032020", "allsummer21", "all23"))
+
+
+all_contacts <- all_contacts %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "all2019" ~ "2019",
+                                                                                               name == "all032020" ~ "03/2020",
+                                                                                               name == "allsummer21" ~ "Summer 21",
+                                                                                               name == "all23" ~ "01/2023")) %>% mutate(context = "all Contacts")
+          
+
+## BOXPLOTS RESPONDENT
+WorkDataRespondent <- data_reduced %>% select(user_id, respondent_work_2019, respondent_work_03_2020, respondent_work_summer_2021, respondent_work_01_2023) %>%
+  pivot_longer(cols = c("respondent_work_2019", "respondent_work_03_2020", "respondent_work_summer_2021", "respondent_work_01_2023"))
+WorkDataRespondent$name <- factor(WorkDataRespondent$name, levels = c("respondent_work_2019", "respondent_work_03_2020", "respondent_work_summer_2021", "respondent_work_01_2023"))
+WorkDataRespondent$value <- as.integer(WorkDataRespondent$value)
+
+WorkDataRespondent <- WorkDataRespondent %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "respondent_work_2019" ~ "2019",
+                                                                                              name == "respondent_work_03_2020" ~ "03/2020",
+                                                                                              name == "respondent_work_summer_2021" ~ "Summer 21",
+                                                                                              name == "respondent_work_01_2023" ~ "01/2023")) %>%
+                                                                      mutate(context = "work")
+
+LeisureDataRespondent <- data_reduced %>% select(user_id, respondent_leisure_2019, respondent_leisure_03_2020, respondent_leisure_summer_2021, respondent_leisure_01_2023) %>% 
+pivot_longer(cols = c("respondent_leisure_2019", "respondent_leisure_03_2020", "respondent_leisure_summer_2021", "respondent_leisure_01_2023"))
+LeisureDataRespondent$name <- factor(LeisureDataRespondent$name, levels = c("respondent_leisure_2019", "respondent_leisure_03_2020", "respondent_leisure_summer_2021", "respondent_leisure_01_2023"))
+LeisureDataRespondent$value <- as.integer(LeisureDataRespondent$value)
+
+LeisureDataRespondent <- LeisureDataRespondent %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "respondent_leisure_2019" ~ "2019",
+                                                                                               name == "respondent_leisure_03_2020" ~ "03/2020",
+                                                                                               name == "respondent_leisure_summer_2021" ~ "Summer 21",
+                                                                                               name == "respondent_leisure_01_2023" ~ "01/2023")) %>% 
+                                                                                               mutate(context = "leisure")
+
+allDataRespondent <- data_reduced %>% select(user_id, respondent_all_2019, respondent_all_03_2020, respondent_all_summer_2021, respondent_all_01_2023) %>% 
+pivot_longer(cols = c("respondent_all_2019", "respondent_all_03_2020", "respondent_all_summer_2021", "respondent_all_01_2023"))
+allDataRespondent$name <- factor(allDataRespondent$name, levels = c("respondent_all_2019", "respondent_all_03_2020", "respondent_all_summer_2021", "respondent_all_01_2023"))
+allDataRespondent$value <- as.integer(allDataRespondent$value)
+
+allDataRespondent <- allDataRespondent %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "respondent_all_2019" ~ "2019",
+                                                                                               name == "respondent_all_03_2020" ~ "03/2020",
+                                                                                               name == "respondent_all_summer_2021" ~ "Summer 21",
+                                                                                               name == "respondent_all_01_2023" ~ "01/2023")) %>% 
+                                                                                               mutate(context = "all")
+
+data_full <- rbind(WorkDataRespondent, LeisureDataRespondent) 
+data_full <- rbind(data_full, allDataRespondent)
+
+data_full$time <- factor(data_full$time, levels = c("2019", "03/2020", "Summer 21", "01/2023"))
+data_full <- data_full[order(data_full$time, decreasing = TRUE), ]
+
+palette <- function() {
+  c("#E4572E", "#29335C", "#F3A712", "#A8C686", "#669BBC")
+}
+
+leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22))
+  
+ggsave("LeisureBoxplot.pdf", leisure, dpi = 500, w = 9, h = 4.5)
+ggsave("LeisureBoxplot.png", leisure, dpi = 500, w = 9, h = 4.5)
+
+
+work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22))
+
+ggsave("WorkBoxplot.pdf", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplot.png", work, dpi = 500, w = 9, h = 4.5)
+
+all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22))
+
+ggsave("AllBoxplot.pdf", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplot.png", all, dpi = 500, w = 9, h = 4.5)
+
+## CC'S CONTACTS
 ## CC pre pandemic
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_2019_num_hsld_members")] <- "cc_pre_hsld_size_2019"
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_03_2020_num_hsld_members")] <- "cc_pre_hsld_size_03_2020"
@@ -326,6 +469,135 @@ data_reduced <- data_reduced %>% mutate(cc_pre_all_2019 = cc_pre_hsld_size_2019 
   mutate(cc_pre_all_summer_2021 = cc_pre_hsld_size_summer_2021 + cc_pre_school_summer_2021 +cc_pre_work_summer_2021 + cc_pre_leisure_summer_2021) %>%
   mutate(cc_pre_all_01_2023 = cc_pre_hsld_size_01_2023 + cc_pre_school_01_2023 +cc_pre_work_01_2023 + cc_pre_leisure_01_2023)
 
+# WORK CONTACTS
+summary(data_reduced$cc_pre_work_2019)
+sum(!is.na(data_reduced$cc_pre_work_2019))
+
+summary(data_reduced$cc_pre_work_03_2020)
+sum(!is.na(data_reduced$cc_pre_work_03_2020))
+ 
+summary(data_reduced$cc_pre_work_summer_2021)
+sum(!is.na(data_reduced$cc_pre_work_summer_2021))
+
+summary(data_reduced$cc_pre_work_01_2023)
+sum(!is.na(data_reduced$cc_pre_work_01_2023))
+
+# Leisure CONTACTS
+summary(data_reduced$cc_pre_leisure_2019)
+sum(!is.na(data_reduced$cc_pre_leisure_2019))
+
+summary(data_reduced$cc_pre_leisure_03_2020)
+sum(!is.na(data_reduced$cc_pre_leisure_03_2020))
+ 
+summary(data_reduced$cc_pre_leisure_summer_2021)
+sum(!is.na(data_reduced$cc_pre_leisure_summer_2021))
+
+summary(data_reduced$cc_pre_leisure_01_2023)
+sum(!is.na(data_reduced$cc_pre_leisure_01_2023))
+
+# ALL CONTACTS
+summary(data_reduced$cc_pre_all_2019)
+sum(!is.na(data_reduced$cc_pre_all_2019))
+
+summary(data_reduced$cc_pre_all_03_2020)
+sum(!is.na(data_reduced$cc_pre_all_03_2020))
+ 
+summary(data_reduced$cc_pre_all_summer_2021)
+sum(!is.na(data_reduced$cc_pre_all_summer_2021))
+
+summary(data_reduced$cc_pre_all_01_2023)
+sum(!is.na(data_reduced$cc_pre_all_01_2023))
+
+## BOXPLOTS CC
+WorkDatacc_pre <- data_reduced %>% select(user_id, cc_pre_work_2019, cc_pre_work_03_2020, cc_pre_work_summer_2021, cc_pre_work_01_2023) %>%
+  pivot_longer(cols = c("cc_pre_work_2019", "cc_pre_work_03_2020", "cc_pre_work_summer_2021", "cc_pre_work_01_2023"))
+WorkDatacc_pre$name <- factor(WorkDatacc_pre$name, levels = c("cc_pre_work_2019", "cc_pre_work_03_2020", "cc_pre_work_summer_2021", "cc_pre_work_01_2023"))
+WorkDatacc_pre$value <- as.integer(WorkDatacc_pre$value)
+
+WorkDatacc_pre <- WorkDatacc_pre %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "cc_pre_work_2019" ~ "2019",
+                                                                                              name == "cc_pre_work_03_2020" ~ "03/2020",
+                                                                                              name == "cc_pre_work_summer_2021" ~ "Summer 21",
+                                                                                              name == "cc_pre_work_01_2023" ~ "01/2023")) %>%
+                                                                      mutate(context = "work")
+
+LeisureDatacc_pre <- data_reduced %>% select(user_id, cc_pre_leisure_2019, cc_pre_leisure_03_2020, cc_pre_leisure_summer_2021, cc_pre_leisure_01_2023) %>% 
+pivot_longer(cols = c("cc_pre_leisure_2019", "cc_pre_leisure_03_2020", "cc_pre_leisure_summer_2021", "cc_pre_leisure_01_2023"))
+LeisureDatacc_pre$name <- factor(LeisureDatacc_pre$name, levels = c("cc_pre_leisure_2019", "cc_pre_leisure_03_2020", "cc_pre_leisure_summer_2021", "cc_pre_leisure_01_2023"))
+LeisureDatacc_pre$value <- as.integer(LeisureDatacc_pre$value)
+
+LeisureDatacc_pre <- LeisureDatacc_pre %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "cc_pre_leisure_2019" ~ "2019",
+                                                                                               name == "cc_pre_leisure_03_2020" ~ "03/2020",
+                                                                                               name == "cc_pre_leisure_summer_2021" ~ "Summer 21",
+                                                                                               name == "cc_pre_leisure_01_2023" ~ "01/2023")) %>% 
+                                                                                               mutate(context = "leisure")
+
+allDatacc_pre <- data_reduced %>% select(user_id, cc_pre_all_2019, cc_pre_all_03_2020, cc_pre_all_summer_2021, cc_pre_all_01_2023) %>% 
+pivot_longer(cols = c("cc_pre_all_2019", "cc_pre_all_03_2020", "cc_pre_all_summer_2021", "cc_pre_all_01_2023"))
+allDatacc_pre$name <- factor(allDatacc_pre$name, levels = c("cc_pre_all_2019", "cc_pre_all_03_2020", "cc_pre_all_summer_2021", "cc_pre_all_01_2023"))
+allDatacc_pre$value <- as.integer(allDatacc_pre$value)
+
+allDatacc_pre <- allDatacc_pre %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "cc_pre_all_2019" ~ "2019",
+                                                                                               name == "cc_pre_all_03_2020" ~ "03/2020",
+                                                                                               name == "cc_pre_all_summer_2021" ~ "Summer 21",
+                                                                                               name == "cc_pre_all_01_2023" ~ "01/2023")) %>% 
+                                                                                               mutate(context = "all")
+
+data_full <- rbind(WorkDatacc_pre, LeisureDatacc_pre) 
+data_full <- rbind(data_full, allDatacc_pre)
+
+data_full$time <- factor(data_full$time, levels = c("2019", "03/2020", "Summer 21", "01/2023"))
+data_full <- data_full[order(data_full$time, decreasing = TRUE), ]
+
+palette <- function() {
+  c("#E4572E", "#29335C", "#F3A712", "#A8C686", "#669BBC")
+}
+
+leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22))
+  
+ggsave("LeisureBoxplotCCPre.pdf", leisure, dpi = 500, w = 9, h = 4.5)
+ggsave("LeisureBoxplotCCPre.png", leisure, dpi = 500, w = 9, h = 4.5)
+
+
+work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22))
+
+ggsave("WorkBoxplotCCPre.pdf", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplotCCPre.png", work, dpi = 500, w = 9, h = 4.5)
+
+all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22))
+
+ggsave("AllBoxplotCCPre.pdf", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplotCCPre.png", all, dpi = 500, w = 9, h = 4.5)
+
+
+# Correlation Analysis ----------------------------------------------------
+
+# Aim of SECOND PART of this script: Try to understand if there's a correlation between the no of contacts of the respondent and the no. of contacts of their cc
+
+data_reduced <- data_reduced %>% mutate(respondent_all_2019 = respondent_hsld_size_2019 + respondent_school_2019 + respondent_work_2019 + respondent_leisure_2019) %>% 
+  mutate(respondent_all_03_2020 = respondent_hsld_size_03_2020 + respondent_school_03_2020 + respondent_work_03_2020 + respondent_leisure_03_2020) %>%
+  mutate(respondent_all_summer_2021 = respondent_hsld_size_summer_2021 + respondent_school_summer_2021 +respondent_work_summer_2021 + respondent_leisure_summer_2021) %>%
+  mutate(respondent_all_01_2023 = respondent_hsld_size_01_2023 + respondent_school_01_2023 +respondent_work_01_2023 + respondent_leisure_01_2023)
 ## CC during pandemic
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_during_pandemic_2019_num_hsld_members")] <- "cc_during_hsld_size_2019"
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_during_pandemic_03_2020_num_hsld_members")] <- "cc_during_hsld_size_03_2020"
@@ -598,8 +870,9 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "03_2020", "Yes",
 p1_2020 <- ggplot(data_reduced_yes) + 
   geom_point(aes(x=respondent_work_03_2020, y = cc_during_work_03_2020), color = "#669BBC") +
   theme_minimal() +
-  xlim(0,60) +
-  ylim(0,60) +
+  #xlim(0,60) +
+  scale_x_log10(breaks=c(1,10,100,1000)) + 
+  scale_y_log10(breaks=c(1,10,100,1000)) +
   ggtitle("Work Contacts (2020)") +
   xlab("#Contacts Respondent") +
   ylab("#Contacts CC (during)") +
@@ -610,8 +883,10 @@ p1_2020 <- ggplot(data_reduced_yes) +
 p2_2020 <- ggplot(data_reduced_yes) + 
   geom_point(aes(x=respondent_leisure_03_2020, y = cc_during_leisure_03_2020), color = "#669BBC") +
   theme_minimal() +
-  xlim(0,25) +
-  ylim(0,25) +
+  #xlim(0,25) +
+  #ylim(0,25) +
+  scale_x_log10(breaks=c(1,10,100,1000)) + 
+  scale_y_log10(breaks=c(1,10,100,1000)) +
   ggtitle("Leisure Contacts (2020)") +
   xlab("#Contacts Respondent") +
   ylab("#Contacts CC (during)") +
@@ -622,8 +897,10 @@ p2_2020 <- ggplot(data_reduced_yes) +
 p3_2020 <- ggplot(data_reduced_yes) + 
   geom_point(aes(x=respondent_all_03_2020, y = cc_during_all_03_2020), color = "#669BBC") +
   theme_minimal() +
-  xlim(0,100) +
-  ylim(0,100) +
+  #xlim(0,100) +
+  #ylim(0,100) +
+  scale_x_log10() + 
+  scale_y_log10() +
   ggtitle("All Contacts (2020)") +
   xlab("#Contacts Respondent") +
   ylab("#Contacts CC (during)") +
@@ -641,11 +918,13 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("leisure", "summer_2021"
 correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "summer_2021", "Yes", "during", cor(data_reduced_yes$respondent_all_summer_2021, data_reduced_yes$cc_during_all_summer_2021, use = "pairwise.complete.obs", method = "pearson"))
 
 
-p1_2021 <- ggplot(data_reduced_yes) + 
+p1_2021 <- ggplot(data_reduced_yes %>% filter(respondent_work_summer_2021 < 200)) + 
   geom_point(aes(x=respondent_work_summer_2021, y = cc_during_work_summer_2021), color = "#669BBC") +
   theme_minimal() +
-  xlim(0,110) +
-  ylim(0,110) +
+  #xlim(0,110) +
+  #ylim(0,110) +
+  scale_x_log10(breaks=c(1,10,100,1000)) + 
+  scale_y_log10(breaks=c(1,10,100,1000)) +
   ggtitle("Work Contacts (2021)") +
   xlab("#Contacts Respondent") +
   ylab("#Contacts CC (during)") +
@@ -659,6 +938,8 @@ p2_2021 <- ggplot(data_reduced_yes) +
   ggtitle("Leisure Contacts (2021)") +
   #  xlim(0,60) +
   # ylim(0,100) +
+  scale_x_log10(breaks=c(1,10,100,1000)) + 
+  scale_y_log10(breaks=c(1,10,100,1000)) +
   xlab("#Contacts Respondent") +
   ylab("#Contacts CC (during)") +
   theme(axis.ticks.x = element_line(),
@@ -668,8 +949,10 @@ p2_2021 <- ggplot(data_reduced_yes) +
 p3_2021 <- ggplot(data_reduced_yes) + 
   geom_point(aes(x=respondent_all_summer_2021, y = cc_during_all_summer_2021), color = "#669BBC") +
   theme_minimal() +
-  xlim(0,150) +
-  ylim(0,150) +
+  #xlim(0,150) +
+  #ylim(0,150) +
+  scale_x_log10(breaks=c(1,10,100,1000)) + 
+  scale_y_log10(breaks=c(1,10,100,1000)) +
   ggtitle("All Contacts (2021)") +
   xlab("#Contacts Respondent") +
   ylab("#Contacts CC (during)") +
@@ -685,11 +968,13 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("work", "01_2023", "Yes"
 correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("leisure", "01_2023", "Yes", "during", cor(data_reduced_yes$respondent_leisure_01_2023, data_reduced_yes$cc_during_leisure_01_2023, use = "pairwise.complete.obs", method = "pearson"))
 correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "01_2023", "Yes", "during", cor(data_reduced_yes$respondent_all_01_2023, data_reduced_yes$cc_during_all_01_2023, use = "pairwise.complete.obs", method = "pearson"))
 
-p1_2023 <- ggplot(data_reduced_yes) + 
+p1_2023 <- ggplot(data_reduced_yes %>% filter(respondent_work_01_2023 < 200)) + 
   geom_point(aes(x=respondent_work_01_2023, y = cc_during_work_01_2023), color = "#669BBC") +
   theme_minimal() +
-  xlim(0,150) +
-  ylim(0,150) +
+  #xlim(0,150) +
+  #ylim(0,150) +
+  scale_x_log10(breaks=c(1,10,100,1000)) + 
+  scale_y_log10(breaks=c(1,10,100,1000)) +
   ggtitle("Work Contacts (2023)") +
   xlab("#Contacts Respondent") +
   ylab("#Contacts CC (during)") +
@@ -697,12 +982,15 @@ p1_2023 <- ggplot(data_reduced_yes) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-p2_2023 <- ggplot(data_reduced_yes) + 
+p2_2023 <- ggplot(data_reduced_yes %>% filter(cc_during_leisure_01_2023 < 200)) + 
   geom_point(aes(x=respondent_leisure_01_2023, y = cc_during_leisure_01_2023), color = "#669BBC") +
   theme_minimal() +
   ggtitle("Leisure Contacts (2023)") +
   #xlim(0,60) +
   #ylim(0,60) +
+  scale_x_log10(breaks=c(1,10,100,1000)) + 
+  scale_y_log10(breaks=c(1,10,100,1000)) +
+  #xlim(1, 1000) +
   xlab("#Contacts Respondent") +
   ylab("#Contacts CC (during)") +
   theme(axis.ticks.x = element_line(),
@@ -712,8 +1000,10 @@ p2_2023 <- ggplot(data_reduced_yes) +
 p3_2023 <- ggplot(data_reduced_yes) + 
   geom_point(aes(x=respondent_all_01_2023, y = cc_during_all_01_2023), color = "#669BBC") +
   theme_minimal() +
-  xlim(0,150) +
-  ylim(0,150) +
+  #xlim(0,150) +
+  #ylim(0,150) +
+  scale_x_log10(breaks=c(1,10,100,1000)) + 
+  scale_y_log10(breaks=c(1,10,100,1000)) +
   ggtitle("All Contacts (2023)") +
   xlab("#Contacts Respondent") +
   ylab("#Contacts CC (during)") +
@@ -721,14 +1011,14 @@ p3_2023 <- ggplot(data_reduced_yes) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-p <- arrangeGrob(p1_2019, p2_2019, p3_2019,
-                 p1_2020, p2_2020, p3_2020,
-                 p1_2021, p2_2021, p3_2021,
-                 p1_2023, p2_2023, p3_2023,
-                 nrow = 4)
+p <- arrangeGrob(#p1_2019, p2_2019, p3_2019,
+                 p1_2020, p2_2020,
+                 p1_2021, p2_2021,
+                 p1_2023, p2_2023,
+                 nrow = 3)
 
-ggsave("CorrelationPlotsChangedCCRespondents.pdf", p, dpi = 500, w = 10, h = 10)
-ggsave("CorrelationPlotsChangedCCRespondents.png", p, dpi = 500, w = 10, h = 10)
+ggsave("CorrelationPlotsChangedCCRespondents.pdf", p, dpi = 500, w = 6, h = 9)
+ggsave("CorrelationPlotsChangedCCRespondents.png", p, dpi = 500, w = 6, h = 9)
 
 #Respondents who did NOT change their CC
 data_reduced_no <- data_reduced %>% filter(respondent_cc_change == "Nein")
@@ -952,3 +1242,18 @@ for(i in 1:length(attitudes)){
 correlation_matrix$answer <- factor(correlation_matrix$answer, levels = c("viel weniger", "weniger", "etwas weniger", "genauso", "etwas mehr", "mehr", "viel mehr", "trifft nicht zu", "keine Angabe"), ordered = TRUE)
 correlation_matrix <- as.data.frame(correlation_matrix)
 correlation_matrix <- correlation_matrix[order(correlation_matrix$answer), ]
+
+# Order Zero Results - Reduction of Contacts ------------------------------
+
+zero_order <- data_reduced %>% select(user_id,
+                                      respondent_work_2019,                                     
+                                      respondent_work_03_2020                                        
+                                      respondent_work_summer_2021,                                    
+                                      respondent_work_01_2023,
+                                      respondent_leisure_2019,                                       
+                                      respondent_leisure_03_2020,                                    
+                                      respondent_leisure_summer_2021,                                 
+                                      respondent_leisure_01_2023,
+                                      )
+
+
