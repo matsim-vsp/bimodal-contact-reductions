@@ -409,24 +409,6 @@ sum_stat_reductions$NoWhoAnswered <- as.integer(sum_stat_reductions$NoWhoAnswere
 sum_stat_reductions <- sum_stat_reductions %>% mutate(ShareWhoReduced = NoWhoReduced/NoWhoAnswered)
 
 ## CC'S CONTACTS
-## CC pre pandemic
-colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_2019_num_hsld_members")] <- "cc_pre_hsld_size_2019"
-colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_03_2020_num_hsld_members")] <- "cc_pre_hsld_size_03_2020"
-colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_summer_2021_num_hsld_members")] <- "cc_pre_hsld_size_summer_2021"
-colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_01_2023_num_hsld_members")] <- "cc_pre_hsld_size_01_2023"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_2019_work_uni_cont")] <- "cc_pre_work_2019"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_03_2020_work_uni_cont")] <- "cc_pre_work_03_2020"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_summer_2021_work_uni_cont")] <- "cc_pre_work_summer_2021"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_01_2023_work_uni_cont")] <- "cc_pre_work_01_2023"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_2019_school_kinder_cont")] <- "cc_pre_school_2019"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_03_2020_school_kinder_cont")] <- "cc_pre_school_03_2020"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_summer_2021_school_kinder_cont")] <- "cc_pre_school_summer_2021"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_01_2023_school_kinder_cont")] <- "cc_pre_school_01_2023"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_2019_leisure_cont")] <- "cc_pre_leisure_2019"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_03_2020_leisure_cont")] <- "cc_pre_leisure_03_2020"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_summer_2021_leisure_cont")] <- "cc_pre_leisure_summer_2021"
-colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_contacts_01_2023_leisure_cont")] <- "cc_pre_leisure_01_2023"
-
 data_reduced <- data_reduced %>% mutate(cc_pre_all_2019 = cc_pre_hsld_size_2019 + cc_pre_school_2019 + cc_pre_work_2019 + cc_pre_leisure_2019) %>% 
   mutate(cc_pre_all_03_2020 = cc_pre_hsld_size_03_2020 + cc_pre_school_03_2020 + cc_pre_work_03_2020 + cc_pre_leisure_03_2020) %>%
   mutate(cc_pre_all_summer_2021 = cc_pre_hsld_size_summer_2021 + cc_pre_school_summer_2021 +cc_pre_work_summer_2021 + cc_pre_leisure_summer_2021) %>%
