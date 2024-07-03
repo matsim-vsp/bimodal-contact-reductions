@@ -519,3 +519,245 @@ all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>%
 
 ggsave("AllBoxplotCCPreRel.pdf", all, dpi = 500, w = 9, h = 4.5)
 ggsave("AllBoxplotCCPreRel.png", all, dpi = 500, w = 9, h = 4.5)
+
+
+## Household members's CONTACTS
+# WORK CONTACTS
+summary(data_reduced$hhmember_work_2019)
+sum(!is.na(data_reduced$hhmember_work_2019))
+
+summary(data_reduced$hhmember_work_03_2020)
+sum(!is.na(data_reduced$hhmember_work_03_2020))
+ 
+summary(data_reduced$hhmember_work_summer_2021)
+sum(!is.na(data_reduced$hhmember_work_summer_2021))
+
+summary(data_reduced$hhmember_work_01_2023)
+sum(!is.na(data_reduced$hhmember_work_01_2023))
+
+# Leisure CONTACTS
+summary(data_reduced$hhmember_leisure_2019)
+sum(!is.na(data_reduced$hhmember_leisure_2019))
+
+summary(data_reduced$hhmember_leisure_03_2020)
+sum(!is.na(data_reduced$hhmember_leisure_03_2020))
+ 
+summary(data_reduced$hhmember_leisure_summer_2021)
+sum(!is.na(data_reduced$hhmember_leisure_summer_2021))
+
+summary(data_reduced$hhmember_leisure_01_2023)
+sum(!is.na(data_reduced$hhmember_leisure_01_2023))
+
+# ALL CONTACTS
+summary(data_reduced$hhmember_all_2019)
+sum(!is.na(data_reduced$hhmember_all_2019))
+
+summary(data_reduced$hhmember_all_03_2020)
+sum(!is.na(data_reduced$hhmember_all_03_2020))
+ 
+summary(data_reduced$hhmember_all_summer_2021)
+sum(!is.na(data_reduced$hhmember_all_summer_2021))
+
+summary(data_reduced$hhmember_all_01_2023)
+sum(!is.na(data_reduced$hhmember_all_01_2023))
+
+## BOXPLOTS CC
+WorkDatahhmember <- data_reduced %>% select(user_id, hhmember_work_2019, hhmember_work_03_2020, hhmember_work_summer_2021, hhmember_work_01_2023) %>%
+  pivot_longer(cols = c("hhmember_work_2019", "hhmember_work_03_2020", "hhmember_work_summer_2021", "hhmember_work_01_2023"))
+WorkDatahhmember$name <- factor(WorkDatahhmember$name, levels = c("hhmember_work_2019", "hhmember_work_03_2020", "hhmember_work_summer_2021", "hhmember_work_01_2023"))
+WorkDatahhmember$value <- as.integer(WorkDatahhmember$value)
+
+WorkDatahhmember <- WorkDatahhmember %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "hhmember_work_2019" ~ "2019",
+                                                                                              name == "hhmember_work_03_2020" ~ "03/2020",
+                                                                                              name == "hhmember_work_summer_2021" ~ "Summer 21",
+                                                                                              name == "hhmember_work_01_2023" ~ "01/2023")) %>%
+                                                                      mutate(context = "work")
+
+LeisureDatahhmember <- data_reduced %>% select(user_id, hhmember_leisure_2019, hhmember_leisure_03_2020, hhmember_leisure_summer_2021, hhmember_leisure_01_2023) %>% 
+pivot_longer(cols = c("hhmember_leisure_2019", "hhmember_leisure_03_2020", "hhmember_leisure_summer_2021", "hhmember_leisure_01_2023"))
+LeisureDatahhmember$name <- factor(LeisureDatahhmember$name, levels = c("hhmember_leisure_2019", "hhmember_leisure_03_2020", "hhmember_leisure_summer_2021", "hhmember_leisure_01_2023"))
+LeisureDatahhmember$value <- as.integer(LeisureDatahhmember$value)
+
+LeisureDatahhmember <- LeisureDatahhmember %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "hhmember_leisure_2019" ~ "2019",
+                                                                                               name == "hhmember_leisure_03_2020" ~ "03/2020",
+                                                                                               name == "hhmember_leisure_summer_2021" ~ "Summer 21",
+                                                                                               name == "hhmember_leisure_01_2023" ~ "01/2023")) %>% 
+                                                                                               mutate(context = "leisure")
+
+allDatahhmember <- data_reduced %>% select(user_id, hhmember_all_2019, hhmember_all_03_2020, hhmember_all_summer_2021, hhmember_all_01_2023) %>% 
+pivot_longer(cols = c("hhmember_all_2019", "hhmember_all_03_2020", "hhmember_all_summer_2021", "hhmember_all_01_2023"))
+allDatahhmember$name <- factor(allDatahhmember$name, levels = c("hhmember_all_2019", "hhmember_all_03_2020", "hhmember_all_summer_2021", "hhmember_all_01_2023"))
+allDatahhmember$value <- as.integer(allDatahhmember$value)
+
+allDatahhmember <- allDatahhmember %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "hhmember_all_2019" ~ "2019",
+                                                                                               name == "hhmember_all_03_2020" ~ "03/2020",
+                                                                                               name == "hhmember_all_summer_2021" ~ "Summer 21",
+                                                                                               name == "hhmember_all_01_2023" ~ "01/2023")) %>% 
+                                                                                               mutate(context = "all")
+
+data_full <- rbind(WorkDatahhmember, LeisureDatahhmember) 
+data_full <- rbind(data_full, allDatahhmember)
+
+data_full$time <- factor(data_full$time, levels = c("2019", "03/2020", "Summer 21", "01/2023"))
+data_full <- data_full[order(data_full$time, decreasing = TRUE), ]
+
+palette <- function() {
+  c("#E4572E", "#29335C", "#F3A712", "#A8C686", "#669BBC")
+}
+
+leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22))
+  
+ggsave("LeisureBoxplotHHMember.pdf", leisure, dpi = 500, w = 9, h = 4.5)
+ggsave("LeisureBoxplotHHMember.png", leisure, dpi = 500, w = 9, h = 4.5)
+
+
+work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22))
+
+ggsave("WorkBoxplotHHMember.pdf", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplotHHMember.png", work, dpi = 500, w = 9, h = 4.5)
+
+all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22))
+
+ggsave("AllBoxplotHHMember.pdf", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplotHHMember.png", all, dpi = 500, w = 9, h = 4.5)
+
+## Contact reductions of household member
+data_reduced <- data_reduced %>% mutate(hhmember_work_rel_2019_2020 = 100/hhmember_work_2019*hhmember_work_03_2020) %>%
+                                  mutate(hhmember_work_rel_2019_2021 = 100/hhmember_work_2019*hhmember_work_summer_2021) %>%
+                                  mutate(hhmember_work_rel_2019_2023 = 100/hhmember_work_2019*hhmember_work_01_2023) %>%
+                                  mutate(hhmember_leisure_rel_2019_2020 = 100/hhmember_leisure_2019*hhmember_leisure_03_2020) %>%
+                                  mutate(hhmember_leisure_rel_2019_2021 = 100/hhmember_leisure_2019*hhmember_leisure_summer_2021) %>%
+                                  mutate(hhmember_leisure_rel_2019_2023 = 100/hhmember_leisure_2019*hhmember_leisure_01_2023) %>%
+                                  mutate(hhmember_all_rel_2019_2020 = 100/hhmember_all_2019*hhmember_all_03_2020) %>%
+                                  mutate(hhmember_all_rel_2019_2021 = 100/hhmember_all_2019*hhmember_all_summer_2021) %>%
+                                  mutate(hhmember_all_rel_2019_2023 = 100/hhmember_all_2019*hhmember_all_01_2023)
+
+workedIn2019 <- data_reduced %>% filter(!(hhmember_work_2019 == 0 & hhmember_work_03_2020 > 0))
+summary(workedIn2019$hhmember_work_rel_2019_2020)
+sum(!is.na(workedIn2019$hhmember_work_rel_2019_2020))
+workedIn2019 <- data_reduced %>% filter(!(hhmember_work_2019 == 0 & hhmember_work_summer_2021 > 0))
+summary(workedIn2019$hhmember_work_rel_2019_2021)
+sum(!is.na(workedIn2019$hhmember_work_rel_2019_2021))
+workedIn2019 <- data_reduced %>% filter(!(hhmember_work_2019 == 0 & hhmember_work_01_2023 > 0))
+summary(workedIn2019$hhmember_work_rel_2019_2023)
+sum(!is.na(workedIn2019$hhmember_work_rel_2019_2023))
+
+# Leisure CONTACTS
+leisureIn2019 <- data_reduced %>% filter(!(hhmember_leisure_2019 == 0 & hhmember_leisure_03_2020 > 0))
+summary(leisureIn2019$hhmember_leisure_rel_2019_2020)
+sum(!is.na(leisureIn2019$hhmember_leisure_rel_2019_2020))
+leisureIn2019 <- data_reduced %>% filter(!(hhmember_leisure_2019 == 0 & hhmember_leisure_summer_2021 > 0))
+summary(leisureIn2019$hhmember_leisure_rel_2019_2021)
+sum(!is.na(leisureIn2019$hhmember_leisure_rel_2019_2021))
+leisureIn2019 <- data_reduced %>% filter(!(hhmember_leisure_2019 == 0 & hhmember_leisure_01_2023 > 0))
+summary(leisureIn2019$hhmember_leisure_rel_2019_2023)
+sum(!is.na(leisureIn2019$hhmember_leisure_rel_2019_2023))
+
+# ALL CONTACTS
+allIn2019 <- data_reduced %>% filter(!(hhmember_all_2019 == 0 & hhmember_all_03_2020 > 0))
+summary(allIn2019$hhmember_all_rel_2019_2020)
+sum(!is.na(allIn2019$hhmember_all_rel_2019_2020))
+allIn2019 <- data_reduced %>% filter(!(hhmember_all_2019 == 0 & hhmember_all_summer_2021 > 0))
+summary(allIn2019$hhmember_all_rel_2019_2021)
+sum(!is.na(allIn2019$hhmember_all_rel_2019_2021))
+allIn2019 <- data_reduced %>% filter(!(hhmember_all_2019 == 0 & hhmember_all_01_2023 > 0))
+summary(allIn2019$hhmember_all_rel_2019_2023)
+sum(!is.na(allIn2019$hhmember_all_rel_2019_2023))
+
+WorkDatahhmember <- data_reduced %>% select(user_id, hhmember_work_rel_2019_2020, hhmember_work_rel_2019_2021, hhmember_work_rel_2019_2023) %>%
+  pivot_longer(cols = c("hhmember_work_rel_2019_2020", "hhmember_work_rel_2019_2021", "hhmember_work_rel_2019_2023"))
+WorkDatahhmember$name <- factor(WorkDatahhmember$name, levels = c("hhmember_work_rel_2019_2020", "hhmember_work_rel_2019_2021", "hhmember_work_rel_2019_2023"))
+WorkDatahhmember$value <- as.integer(WorkDatahhmember$value)
+
+WorkDatahhmember <- WorkDatahhmember %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "hhmember_work_rel_2019_2020" ~ "2020 (rel. to 2019)",
+                                                                                              name == "hhmember_work_rel_2019_2021" ~ "2021 (rel. to 2019)",
+                                                                                              name == "hhmember_work_rel_2019_2023" ~ "2023 (rel. to 2019)")) %>%
+                                                                      mutate(context = "work")
+
+LeisureDatahhmember <- data_reduced %>% select(user_id, hhmember_leisure_rel_2019_2020, hhmember_leisure_rel_2019_2021, hhmember_leisure_rel_2019_2023) %>% 
+pivot_longer(cols = c("hhmember_leisure_rel_2019_2020", "hhmember_leisure_rel_2019_2021", "hhmember_leisure_rel_2019_2023"))
+LeisureDatahhmember$name <- factor(LeisureDatahhmember$name, levels = c("hhmember_leisure_rel_2019_2020", "hhmember_leisure_rel_2019_2021", "hhmember_leisure_rel_2019_2023"))
+LeisureDatahhmember$value <- as.integer(LeisureDatahhmember$value)
+
+LeisureDatahhmember <- LeisureDatahhmember %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "hhmember_leisure_rel_2019_2020" ~ "2020 (rel. to 2019)",
+                                                                                               name == "hhmember_leisure_rel_2019_2021" ~ "2021 (rel. to 2019)",
+                                                                                               name == "hhmember_leisure_rel_2019_2023" ~ "2023 (rel. to 2019)")) %>% 
+                                                                                               mutate(context = "leisure")
+
+allDatahhmember <- data_reduced %>% select(user_id, hhmember_all_rel_2019_2020, hhmember_all_rel_2019_2021, hhmember_all_rel_2019_2023) %>% 
+pivot_longer(cols = c("hhmember_all_rel_2019_2020", "hhmember_all_rel_2019_2021", "hhmember_all_rel_2019_2023"))
+allDatahhmember$name <- factor(allDatahhmember$name, levels = c("hhmember_all_rel_2019_2020", "hhmember_all_rel_2019_2021", "hhmember_all_rel_2019_2023"))
+allDatahhmember$value <- as.integer(allDatahhmember$value)
+
+allDatahhmember <- allDatahhmember %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "hhmember_all_rel_2019_2020" ~ "2020 (rel. to 2019)",
+                                                                                               name == "hhmember_all_rel_2019_2021" ~ "2021 (rel. to 2019)",
+                                                                                               name == "hhmember_all_rel_2019_2023" ~ "2023 (rel. to 2019)")) %>% 
+                                                                                               mutate(context = "all")
+
+data_full <- rbind(WorkDatahhmember, LeisureDatahhmember) 
+data_full <- rbind(data_full, allDatahhmember)
+
+data_full$time <- factor(data_full$time, levels = c("2020 (rel. to 2019)", "2021 (rel. to 2019)", "2023 (rel. to 2019)"))
+data_full <- data_full[order(data_full$time, decreasing = TRUE), ]
+
+palette <- function() {
+  c("#E4572E", "#29335C", "#F3A712", "#A8C686", "#669BBC")
+}
+
+leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Rel. # Of Work\nContacts (CC, pre)") +
+  theme(text = element_text(size = 22))
+  
+ggsave("LeisureBoxplotHHMemberRel.pdf", leisure, dpi = 500, w = 9, h = 4.5)
+ggsave("LeisureBoxplotHHmemberRel.png", leisure, dpi = 500, w = 9, h = 4.5)
+
+
+work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Rel. # Of Work\nContacts (CC, pre)") +
+  theme(text = element_text(size = 22))
+
+ggsave("WorkBoxplotHHmemberRel.pdf", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplotHHmemberRel.png", work, dpi = 500, w = 9, h = 4.5)
+
+all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
+  geom_boxplot(color = "#29335C") +
+  #facet_wrap(~time) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  xlab("Point In Time") +
+  ylab("Rel. # Of All \nContacts (CC, pre)") +
+  theme(text = element_text(size = 22))
+
+ggsave("AllBoxplotHHmemberRel.pdf", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplotHHmemberRel.png", all, dpi = 500, w = 9, h = 4.5)
