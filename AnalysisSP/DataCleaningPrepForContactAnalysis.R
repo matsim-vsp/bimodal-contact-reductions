@@ -78,6 +78,26 @@ data_reduced <- data_reduced %>% mutate(respondent_all_2019 = respondent_hsld_si
   mutate(respondent_all_summer_2021 = respondent_hsld_size_summer_2021 + respondent_school_summer_2021 +respondent_work_summer_2021 + respondent_leisure_summer_2021) %>%
   mutate(respondent_all_01_2023 = respondent_hsld_size_01_2023 + respondent_school_01_2023 +respondent_work_01_2023 + respondent_leisure_01_2023)
 
+#Renaming done for house hold member of respondent
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__2019_work_uni")] <- "hhmember_work_2019"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__03_2020_work_uni")] <- "hhmember_work_03_2020"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__summer_2021_work_uni")] <- "hhmember_work_summer_2021"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__01_2023_work_uni")] <- "hhmember_work_01_2023"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__2019_school_kinder")] <- "hhmember_school_2019"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__03_2020_school_kinder")] <- "hhmember_school_03_2020"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__summer_2021_school_kinder")] <- "hhmember_school_summer_2021"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__01_2023_school_kinder")] <- "hhmember_school_01_2023"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__2019_leisure")] <- "hhmember_leisure_2019"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__03_2020_leisure")] <- "hhmember_leisure_03_2020"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__summer_2021_leisure")] <- "hhmember_leisure_summer_2021"
+colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__01_2023_leisure")] <- "hhmember_leisure_01_2023"
+
+data_reduced <- data_reduced %>% mutate(hhmember_all_2019 = respondent_hsld_size_2019 + hhmember_school_2019 + hhmember_work_2019 + hhmember_leisure_2019) %>% 
+  mutate(hhmember_all_03_2020 = respondent_hsld_size_03_2020 + hhmember_school_03_2020 + hhmember_work_03_2020 + hhmember_leisure_03_2020) %>%
+  mutate(hhmember_all_summer_2021 = respondent_hsld_size_summer_2021 + hhmember_school_summer_2021 + hhmember_work_summer_2021 + hhmember_leisure_summer_2021) %>%
+  mutate(hhmember_all_01_2023 = respondent_hsld_size_01_2023 + hhmember_school_01_2023 + hhmember_work_01_2023 + hhmember_leisure_01_2023)
+
+
 # Renaming done for CC PRE pandemic
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_2019_num_hsld_members")] <- "cc_pre_hsld_size_2019"
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_03_2020_num_hsld_members")] <- "cc_pre_hsld_size_03_2020"
