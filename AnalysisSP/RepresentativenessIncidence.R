@@ -25,7 +25,7 @@ mutate(date = MMWRweek2Date(MMWRyear = year,
                         MMWRday = 1))
 
 
-count_no_infections <- no_time_infections %>% group_by(date) %>% count() 
+count_no_infections <- no_time_infections %>% group_by(date) %>% count()
 colnames(count_no_infections) <- c("Date", "CountPer1096")
 count_no_infections <- count_no_infections %>% 
                         ungroup() %>%
