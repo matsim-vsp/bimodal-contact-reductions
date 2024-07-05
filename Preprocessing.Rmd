@@ -20,6 +20,10 @@ library(esquisse)
 ```{r}
 data <- read.csv("data/twitter_data.csv") %>% group_by(user_id) %>% filter(last_page != -1, last_page == max(last_page)) %>% ungroup()
 
+#filter out speeders: speeders are participants whose response time is less than a third of the median response time.
+
+data <- data %>% filter(interviewtime >= median(data$interviewtime)/3)
+
 # save all rows of reasons_change_conts_op that contain text into comments
 comments <- data %>% filter(!(comments %in% "")) %>% select(user_id, comments)
 
@@ -214,4 +218,10 @@ cleaned_data <- cleaned_data %>%
 saveRDS(cleaned_data, "data/cleaned_data.rds")
 
 #todo: translate loc_other?, NA or empty?, Likert scales to numbers?
+```
+
+#cleaned data
+```{r}
+
+cleaned_data <- readRDS("data/cleaned_data.rds")
 ```
