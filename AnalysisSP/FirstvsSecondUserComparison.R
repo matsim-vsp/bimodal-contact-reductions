@@ -13,7 +13,7 @@ raw_data <- read_csv("ENTER PATH HERE")
 
 # Reducing data frame to the variables of interest ------------------------
 
-data_reduced <- raw_data %>% select(user_id, ref, cc_change_during_pandemic, total_hsld_size_persons_under_14,
+data_reduced <- raw_data %>% select(user_id, ref, cc_change_during_pandemic, total_hsld_size_persons_under_14, number_of_children_under_18_time
                                     hsld_size_2019_, hsld_size_03_2020_, hsld_size_summer_2021_, hsld_size_01_2023_, 
                                     cc_hsld_size_pre_pandemic_2019_num_hsld_members, cc_hsld_size_pre_pandemic_03_2020_num_hsld_members, cc_hsld_size_pre_pandemic_summer_2021_num_hsld_members, cc_hsld_size_pre_pandemic_01_2023_num_hsld_members,
                                     cc_hsld_size_during_pandemic_2019_num_hsld_members, cc_hsld_size_during_pandemic_03_2020_num_hsld_members, cc_hsld_size_during_pandemic_summer_2021_num_hsld_members, cc_hsld_size_during_pandemic_01_2023_num_hsld_members,
