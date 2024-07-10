@@ -247,6 +247,10 @@ $RECYCLE.BIN/
 # Data folder
 data/
 data/**.csv
+raw_data/
+raw_data/**.csv
+
+*.csv
 
 Pictures/Graphs
 *.png
