@@ -9,7 +9,7 @@ raw_data <- read_csv("/Users/sydney/Downloads/twitter_data.csv")
 
 reduced_data <- raw_data %>% select(num_c19_infs, user_id, date_f1_inf, date_s2_inf, date_t3_inf) %>% 
 filter(!is.na(num_c19_infs)) %>% 
-select( user_id, date_f1_inf, date_s2_inf, date_t3_inf)
+select(user_id, date_f1_inf, date_s2_inf, date_t3_inf)
 
 no_time_infections <- reduced_data %>% pivot_longer(cols=c("date_f1_inf", "date_s2_inf", "date_t3_inf"))
 no_time_infections <- no_time_infections %>% 
@@ -188,7 +188,10 @@ attitudesAndBehaviors <- c("attitudes_precautions_mar2020_low_infection_risk_per
 
 comparedToAverage <- c("AverageOrLessThanAverage", "MoreThanAverage")
 
-reduced_data <- reduced_data %>% filter(date_f1_inf > "2020-01-01") %>% filter(date_f1_inf < "2023-10-01")
+reduced_data <- reduced_data %>% filter(user_id != "ebd2141d-accb-48a3-80ec-0f274691f9e6") %>% # entered date of 1st inf. 1922-03-01
+                                filter(user_id != "0048e8e6-56fd-4a1c-8639-3c2362afdcaa") %>% #filter(date_f1_inf != "1965-06-12") %>%
+                                filter(user_id != "3f1397c7-1c31-4e5f-b510-d29eb6102609") %>% #filter(date_f1_inf != "2000-12-13") %>%
+                                filter(user_id != "c02a51b2-8a80-496f-9ef8-1c4b99e025da") #date_f1_inf != "2019-12-21")
 
 summaryStats <- data.frame(matrix(nrow = 0, ncol = 10))
 colnames(summaryStats) <- c("attitude", "average", "min", "firstquartile", "median", "mean", "thirdquartile", "max", "numbersanswers", "numbernoinfections")
@@ -206,16 +209,87 @@ for(attBeh in attitudesAndBehaviors){
     summaryStats[nrow(summaryStats) + 1, 1] <- attBeh
     summaryStats[nrow(summaryStats), 2] <- avg
     summaryStats[nrow(summaryStats), 3] <- min(reduced_data_filtered$date_f1_inf, na.rm=TRUE)
-    summaryStats[nrow(summaryStats), 4] <- unname(quantile(reduced_data_filtered$date_f1_inf, type=1))[2]
-    summaryStats[nrow(summaryStats), 5] <- unname(quantile(reduced_data_filtered$date_f1_inf, type=1))[3]
+    summaryStats[nrow(summaryStats), 4] <- unname(quantile(reduced_data_filtered$date_f1_inf, type=1, na.rm=TRUE))[2]
+    summaryStats[nrow(summaryStats), 5] <- unname(quantile(reduced_data_filtered$date_f1_inf, type=1, na.rm=TRUE))[3]
     summaryStats[nrow(summaryStats), 6] <- mean(reduced_data_filtered$date_f1_inf, na.rm=TRUE)
-    summaryStats[nrow(summaryStats), 7] <- unname(quantile(reduced_data_filtered$date_f1_inf, type=1))[4]
+    summaryStats[nrow(summaryStats), 7] <- unname(quantile(reduced_data_filtered$date_f1_inf, type=1, na.rm=TRUE))[4]
     summaryStats[nrow(summaryStats), 8] <- max(reduced_data_filtered$date_f1_inf, na.rm=TRUE)
     summaryStats[nrow(summaryStats), 9] <- length(reduced_data_filtered$date_f1_inf)
     summaryStats[nrow(summaryStats), 10] <- reduced_data_noInf
     }
 }
 
+reduced_data <- reduced_data %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("2025-01-01"),
+                                        .default = as.Date(as.character(date_f1_inf))))
+
+for(attBeh in attitudesAndBehaviors){
+ggplot(reduced_data %>% filter(!is.na(!!sym(attBeh))), aes(date_f1_inf, color = !!sym(attBeh))) +
+stat_ecdf(geom="step", size = 2) +
+theme_minimal() +
+ggtitle(attBeh) +
+ylab("Empirical Cumulative \n Density Function") +
+xlab("Date Of 1st Infection") +
+coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
+theme(text = element_text(size = 22)) +
+theme(legend.title = element_blank(), legend.position = "bottom") +
+guides(color = guide_legend(nrow=2))
+ggsave(paste0(attBeh, "ECDF.pdf"), dpi = 500, w = 12, h = 8)
+ggsave(paste0(attBeh, "ECDF.png"), dpi = 500, w = 12, h = 8)
+}
+
+# Convert Responses to Attitude Questions to Integers such that I can compute a "carefulness score"
+reduced_data <- reduced_data %>% mutate(attitudes_precautions_mar2020_low_infection_risk_perception = case_when(attitudes_precautions_mar2020_low_infection_risk_perception == "AverageOrLessThanAverage" ~ 1,
+                                                                                                                attitudes_precautions_mar2020_low_infection_risk_perception == "MoreThanAverage" ~ 0),
+                                         attitudes_precautions_mar2020_risky_infection_course_assessment = case_when(attitudes_precautions_mar2020_risky_infection_course_assessment == "AverageOrLessThanAverage" ~ 0,
+                                                    attitudes_precautions_mar2020_risky_infection_course_assessment =="MoreThanAverage" ~ 1),
+                                         attitudes_precautions_mar2020_high_risk_perception = case_when(attitudes_precautions_mar2020_high_risk_perception == "AverageOrLessThanAverage" ~ 0,
+                                                    attitudes_precautions_mar2020_high_risk_perception == "MoreThanAverage" ~ 1),
+                                         attitudes_precautions_mar2020_avoided_risky_situations = case_when(attitudes_precautions_mar2020_avoided_risky_situations == "AverageOrLessThanAverage" ~ 0,
+                                                    attitudes_precautions_mar2020_avoided_risky_situations == "MoreThanAverage" ~ 1),
+                                         attitudes_precautions_mar2020_aware_distance_rule_effectiveness = case_when(attitudes_precautions_mar2020_aware_distance_rule_effectiveness == "AverageOrLessThanAverage" ~ 0,
+                                                    attitudes_precautions_mar2020_aware_distance_rule_effectiveness == "MoreThanAverage" ~ 1),
+                                         attitudes_precautions_mar2020_understood_mask_reduces_risk = case_when(attitudes_precautions_mar2020_understood_mask_reduces_risk == "AverageOrLessThanAverage" ~ 0,
+                                                    attitudes_precautions_mar2020_understood_mask_reduces_risk == "MoreThanAverage" ~ 1),
+                                         attitudes_precautions_mar2020_followed_measures = case_when(attitudes_precautions_mar2020_followed_measures == "AverageOrLessThanAverage" ~ 0,
+                                                    attitudes_precautions_mar2020_followed_measures == "MoreThanAverage" ~ 1),
+                                         attitudes_precautions_mar2020_felt_restricted_by_measures = case_when(attitudes_precautions_mar2020_felt_restricted_by_measures == "AverageOrLessThanAverage" ~ 1,
+                                                    attitudes_precautions_mar2020_felt_restricted_by_measures == "MoreThanAverage" ~ 0),
+                                         attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical = case_when(attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical == "AverageOrLessThanAverage" ~ 0,
+                                                    attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical =="MoreThanAverage" ~ 1))                                                                                                             
+
+reduced_data$attitudes_precautions_mar2020_low_infection_risk_perception  <- as.integer(reduced_data$attitudes_precautions_mar2020_low_infection_risk_perception)
+reduced_data$attitudes_precautions_mar2020_risky_infection_course_assessment <- as.integer(reduced_data$attitudes_precautions_mar2020_risky_infection_course_assessment)
+reduced_data$attitudes_precautions_mar2020_high_risk_perception <- as.integer(reduced_data$attitudes_precautions_mar2020_high_risk_perception)
+reduced_data$attitudes_precautions_mar2020_avoided_risky_situations <- as.integer(reduced_data$attitudes_precautions_mar2020_avoided_risky_situations)
+reduced_data$attitudes_precautions_mar2020_aware_distance_rule_effectiveness <- as.integer(reduced_data$attitudes_precautions_mar2020_aware_distance_rule_effectiveness)     
+reduced_data$attitudes_precautions_mar2020_understood_mask_reduces_risk <- as.integer(reduced_data$attitudes_precautions_mar2020_understood_mask_reduces_risk)
+reduced_data$attitudes_precautions_mar2020_followed_measures <- as.integer(reduced_data$attitudes_precautions_mar2020_followed_measures)
+reduced_data$attitudes_precautions_mar2020_felt_restricted_by_measures <- as.integer(reduced_data$attitudes_precautions_mar2020_felt_restricted_by_measures)
+reduced_data$attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical <- as.integer(reduced_data$attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical)
+
+reduced_data <- reduced_data %>% mutate(attitudeScore = attitudes_precautions_mar2020_low_infection_risk_perception +                
+                                    attitudes_precautions_mar2020_risky_infection_course_assessment +            
+                                    attitudes_precautions_mar2020_high_risk_perception +                     
+                                    attitudes_precautions_mar2020_avoided_risky_situations +                     
+                                    attitudes_precautions_mar2020_aware_distance_rule_effectiveness +         
+                                    attitudes_precautions_mar2020_understood_mask_reduces_risk +                
+                                    attitudes_precautions_mar2020_followed_measures +                        
+                                    attitudes_precautions_mar2020_felt_restricted_by_measures +                
+                                    attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical)
+
+reduced_data$attitudeScore <- factor(reduced_data$attitudeScore)
+
+ggplot(reduced_data %>% filter(!is.na(attitudeScore)), aes(date_f1_inf, color = attitudeScore)) +
+stat_ecdf(geom="step", size = 2) +
+theme_minimal() +
+ylab("Empirical Cumulative \n Density Function") +
+xlab("Date Of 1st Infection") +
+#coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
+theme(text = element_text(size = 22)) +
+theme(legend.title = element_blank(), legend.position = "bottom") +
+guides(color = guide_legend(nrow = 2))
+
+#Summary stats for NUMBER of Infections
 reduced_data <- reduced_data %>% mutate(noInfInt = case_when(num_c19_infs == "Nie" ~ 0,
                                                             num_c19_infs == "Einmal" ~ 1,
                                                             num_c19_infs == "Zweimal" ~ 2,
@@ -245,7 +319,6 @@ reduced_data <- reduced_data %>% mutate(noInfInt = case_when(num_c19_infs == "Ni
                                                             num_c19_infs == "Dreimal" ~ 3,
                                                             num_c19_infs == "Mehr als dreimal" ~ 4))
 
-
 summaryStats <- data.frame(matrix(nrow = 0, ncol = 8))
 colnames(summaryStats) <- c("attitude", "average", "min", "firstquartile", "median", "mean", "thirdquartile", "max")
 for(attBeh in attitudesAndBehaviors){
@@ -254,10 +327,10 @@ for(attBeh in attitudesAndBehaviors){
     summaryStats[nrow(summaryStats) + 1, 1] <- attBeh
     summaryStats[nrow(summaryStats), 2] <- avg
     summaryStats[nrow(summaryStats), 3] <- min(reduced_data_filtered$noInfInt, na.rm=TRUE)
-    summaryStats[nrow(summaryStats), 4] <- unname(quantile(reduced_data_filtered$noInfInt, type=1))[2]
-    summaryStats[nrow(summaryStats), 5] <- unname(quantile(reduced_data_filtered$noInfInt, type=1))[3]
+    summaryStats[nrow(summaryStats), 4] <- unname(quantile(reduced_data_filtered$noInfInt, type=1, na.rm=TRUE))[2]
+    summaryStats[nrow(summaryStats), 5] <- unname(quantile(reduced_data_filtered$noInfInt, type=1, na.rm=TRUE))[3]
     summaryStats[nrow(summaryStats), 6] <- mean(reduced_data_filtered$noInfInt, na.rm=TRUE)
-    summaryStats[nrow(summaryStats), 7] <- unname(quantile(reduced_data_filtered$noInfInt, type=1))[4]
+    summaryStats[nrow(summaryStats), 7] <- unname(quantile(reduced_data_filtered$noInfInt, type=1, na.rm=TRUE))[4]
     summaryStats[nrow(summaryStats), 8] <- max(reduced_data_filtered$noInfInt, na.rm=TRUE)
     }
 }
