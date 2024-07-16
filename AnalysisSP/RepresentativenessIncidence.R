@@ -365,7 +365,7 @@ for(attBeh in attitudesAndBehaviors){
 
 # Carefulness Due To Old Age ----------------------------------------------
 
-reduced_data <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf, year_of_birth) %>%
+reduced_data <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf, year_of_birth, cond_none) %>%
                             mutate(age_group = case_when (year_of_birth <= 1960 ~ "60+",
                                                             year_of_birth > 1960 ~ "18-59"))
 
@@ -377,7 +377,7 @@ reduced_data <- reduced_data %>% mutate(date_f1_inf = case_when(is.na(date_f1_in
                                 filter(date_f1_inf != as.Date("2019-12-21")) 
 
 palette <- function() {
-  c("#7b3294", "#008837")
+  c("#8F2D56", "#006BA6")
 }
 
 ggplot(reduced_data %>% filter(!is.na(age_group)), aes(date_f1_inf, color = age_group)) +
@@ -400,4 +400,57 @@ reduced_data <- reduced_data %>% mutate(noInfInt = case_when(num_c19_infs == "Ni
                                                             num_c19_infs == "Zweimal" ~ 2,
                                                             num_c19_infs == "Dreimal" ~ 3,
                                                             num_c19_infs == "Mehr als dreimal" ~ 4))
-  
+
+# Carefulness Due To Comorbidities ----------------------------------------
+
+reduced_data <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf,
+                                    cond_hbp, cond_diabetes, cond_cardio, cond_resp,
+                                    cond_immuno, cond_cancer, cond_post_c19, cond_none)
+
+reduced_data <- reduced_data %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("2025-01-01"),
+                                        .default = as.Date(as.character(date_f1_inf)))) %>%
+                                filter(date_f1_inf != as.Date("1922-03-01")) %>%
+                                filter(date_f1_inf != as.Date("1965-06-12")) %>%
+                                filter(date_f1_inf != as.Date("2000-12-13")) %>%
+                                filter(date_f1_inf != as.Date("2019-12-21")) 
+
+palette <- function() {
+  c("#8F2D56", "#006BA6")
+}
+
+reduced_data <- reduced_data %>% mutate(cond_hbp = case_when(cond_hbp == "Ja" ~ "Yes",
+                                cond_hbp == "Nicht Gewählt" ~ "No")) %>% 
+                                mutate(cond_diabetes = case_when(cond_diabetes == "Ja" ~ "Yes",
+                                cond_diabetes == "Nicht Gewählt" ~ "No")) %>% 
+                                mutate(cond_cardio = case_when(cond_cardio == "Ja" ~ "Yes",
+                                cond_cardio == "Nicht Gewählt" ~ "No")) %>% 
+                                mutate(cond_resp = case_when(cond_resp == "Ja" ~ "Yes",
+                                cond_resp == "Nicht Gewählt" ~ "No")) %>% 
+                                mutate(cond_immuno = case_when(cond_immuno == "Ja" ~ "Yes",
+                                cond_immuno == "Nicht Gewählt" ~ "No")) %>% 
+                                mutate(cond_cancer = case_when(cond_cancer == "Ja" ~ "Yes",
+                                cond_cancer == "Nicht Gewählt" ~ "No")) %>%
+                                mutate(cond_post_c19 = case_when(cond_post_c19 == "Ja" ~ "Yes",
+                                cond_post_c19 == "Nicht Gewählt" ~ "No")) %>%
+                                mutate(cond_none = case_when(cond_none == "Ja" ~ "No Comorbidities",
+                                cond_none == "Nicht Gewählt" ~ "Comorbidities"))
+
+comorbidities <- c("cond_hbp", "cond_diabetes", "cond_cardio", "cond_resp",
+                    "cond_immuno", "cond_cancer", "cond_post_c19", "cond_none")
+
+for(com in comorbidities){
+ggplot(reduced_data %>% filter(!is.na(!!sym(com))), aes(date_f1_inf, color = !!sym(com))) +
+stat_ecdf(geom="smooth", size = 2) +
+theme_minimal() +
+ylab("Empirical Cumulative \n Density Function") +
+xlab("Date Of First Infection") +
+coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01")), ylim=c(0, 0.75)) +
+theme(text = element_text(size = 22)) +
+theme(legend.position = "bottom") +
+labs(color=com) +
+guides(color = guide_legend(nrow = 2)) +
+scale_color_manual(values = palette())
+
+ggsave(paste0(com, "_timingOfFirstInf_ECDF.pdf"), dpi = 500, w = 9, h = 9)
+ggsave(paste0(com, "_timingOfFirstInf_ECDF.png"), dpi = 500, w = 9, h = 9)
+}
