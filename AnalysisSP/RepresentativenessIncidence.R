@@ -1,11 +1,12 @@
 library(tidyverse)
 library(MMWRweek)
+library(see)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
 #In the first part of this script we compare the incidence of the respondents of the survey to the official incidence reported by RKI
 
-raw_data <- read_csv("/Users/sydney/Downloads/twitter_data.csv")
+raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds")
 
 reduced_data <- raw_data %>% select(num_c19_infs, user_id, date_f1_inf, date_s2_inf, date_t3_inf) %>% 
 filter(!is.na(num_c19_infs)) %>% 
@@ -90,7 +91,7 @@ ggsave("VizComparisonIncidenceSurveyRKILin.png", dpi = 500, w = 15, h = 5)
 
 # Did careful attitudes/behaviors result in less/later infections? --------
 
-reduced_data <- raw_data %>% select(num_c19_infs, user_id, date_f1_inf, date_s2_inf, date_t3_inf,
+reduced_data <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf,
                                     attitudes_precautions_mar2020_low_infection_risk_perception,                
                                     attitudes_precautions_mar2020_risky_infection_course_assessment,            
                                     attitudes_precautions_mar2020_high_risk_perception,                         
@@ -115,52 +116,75 @@ reduced_data <- raw_data %>% select(num_c19_infs, user_id, date_f1_inf, date_s2_
                                     beh_change_start_pandemic_children_limited_contacts,                       
                                     beh_change_start_pandemic_meet_close_despite_restrict)
 
-reduced_data <- reduced_data %>% mutate(attitudes_precautions_mar2020_low_infection_risk_perception = case_when(attitudes_precautions_mar2020_low_infection_risk_perception %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                attitudes_precautions_mar2020_low_infection_risk_perception %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                
-                        attitudes_precautions_mar2020_risky_infection_course_assessment = case_when(attitudes_precautions_mar2020_risky_infection_course_assessment %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                attitudes_precautions_mar2020_risky_infection_course_assessment %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                   
-                        attitudes_precautions_mar2020_high_risk_perception = case_when(attitudes_precautions_mar2020_high_risk_perception %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                attitudes_precautions_mar2020_high_risk_perception %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                
-                        attitudes_precautions_mar2020_avoided_risky_situations = case_when(attitudes_precautions_mar2020_avoided_risky_situations %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                attitudes_precautions_mar2020_avoided_risky_situations %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                            
-                        attitudes_precautions_mar2020_aware_distance_rule_effectiveness = case_when(attitudes_precautions_mar2020_aware_distance_rule_effectiveness %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                attitudes_precautions_mar2020_aware_distance_rule_effectiveness %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),     
-                        attitudes_precautions_mar2020_understood_mask_reduces_risk = case_when(attitudes_precautions_mar2020_understood_mask_reduces_risk %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                attitudes_precautions_mar2020_understood_mask_reduces_risk %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                 
-                        attitudes_precautions_mar2020_followed_measures = case_when(attitudes_precautions_mar2020_followed_measures %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                attitudes_precautions_mar2020_followed_measures %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                
-                        attitudes_precautions_mar2020_felt_restricted_by_measures = case_when(attitudes_precautions_mar2020_felt_restricted_by_measures %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                attitudes_precautions_mar2020_felt_restricted_by_measures %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                         
-                        attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical = case_when(attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),       
-                        beh_change_start_pandemic_avoid_in_person = case_when(beh_change_start_pandemic_avoid_in_person %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_avoid_in_person %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                         
-                        beh_change_start_pandemic_avoid_careless_contacts = case_when(beh_change_start_pandemic_avoid_careless_contacts %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_avoid_careless_contacts %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                              
-                        beh_change_start_pandemic_contact_cautious_people = case_when(beh_change_start_pandemic_contact_cautious_people %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_contact_cautious_people %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                               
-                        beh_change_start_pandemic_avoid_peak_hours = case_when(beh_change_start_pandemic_avoid_peak_hours %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_avoid_peak_hours %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                 
-                        beh_change_start_pandemic_maintain_distance = case_when(beh_change_start_pandemic_maintain_distance %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_maintain_distance %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                       
-                        beh_change_start_pandemic_outdoor_only = case_when(beh_change_start_pandemic_outdoor_only %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_outdoor_only %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                            
-                        beh_change_start_pandemic_no_visit_high_risk = case_when(beh_change_start_pandemic_no_visit_high_risk %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_no_visit_high_risk %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                      
-                        beh_change_start_pandemic_avoid_busy_places = case_when(beh_change_start_pandemic_avoid_busy_places %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_avoid_busy_places %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                      
-                        beh_change_start_pandemic_avoid_public_trans = case_when(beh_change_start_pandemic_avoid_public_trans %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_avoid_public_trans %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                      
-                        beh_change_start_pandemic_mask_public_trans = case_when(beh_change_start_pandemic_mask_public_trans %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_mask_public_trans %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                       
-                        beh_change_start_pandemic_mask_supermarket = case_when(beh_change_start_pandemic_mask_supermarket %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_mask_supermarket %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                        
-                        beh_change_start_pandemic_work_from_home = case_when(beh_change_start_pandemic_work_from_home %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_work_from_home %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                                         
-                        beh_change_start_pandemic_children_limited_contacts = case_when(beh_change_start_pandemic_children_limited_contacts %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_children_limited_contacts %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"),                              
-                        beh_change_start_pandemic_meet_close_despite_restrict = case_when(beh_change_start_pandemic_meet_close_despite_restrict %in% c("viel weniger", "weniger", "etwas weniger", "genauso") ~ "AverageOrLessThanAverage",
-                                                                                                beh_change_start_pandemic_meet_close_despite_restrict %in% c("etwas mehr", "mehr") ~ "MoreThanAverage"))
+reduced_data <- reduced_data %>% mutate(attitudes_precautions_mar2020_low_infection_risk_perception = case_when(attitudes_precautions_mar2020_low_infection_risk_perception %in% c("viel weniger", "weniger", "etwas weniger") ~ "Careful",
+                                                                                                attitudes_precautions_mar2020_low_infection_risk_perception == "genauso" ~ "Neutral",
+                                                                                                attitudes_precautions_mar2020_low_infection_risk_perception %in% c("etwas mehr", "mehr", "viel mehr") ~ "Risky"),                
+                        attitudes_precautions_mar2020_risky_infection_course_assessment = case_when(attitudes_precautions_mar2020_risky_infection_course_assessment %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                attitudes_precautions_mar2020_risky_infection_course_assessment == "genauso" ~ "Neutral",
+                                                                                                attitudes_precautions_mar2020_risky_infection_course_assessment %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                   
+                        attitudes_precautions_mar2020_high_risk_perception = case_when(attitudes_precautions_mar2020_high_risk_perception %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                attitudes_precautions_mar2020_high_risk_perception == "genauso" ~ "Neutral",
+                                                                                                attitudes_precautions_mar2020_high_risk_perception %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                
+                        attitudes_precautions_mar2020_avoided_risky_situations = case_when(attitudes_precautions_mar2020_avoided_risky_situations %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                attitudes_precautions_mar2020_avoided_risky_situations == "genauso" ~ "Neutral",
+                                                                                                attitudes_precautions_mar2020_avoided_risky_situations %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                            
+                        attitudes_precautions_mar2020_aware_distance_rule_effectiveness = case_when(attitudes_precautions_mar2020_aware_distance_rule_effectiveness %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                attitudes_precautions_mar2020_aware_distance_rule_effectiveness == "genauso" ~ "Neutral",
+                                                                                                attitudes_precautions_mar2020_aware_distance_rule_effectiveness %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),     
+                        attitudes_precautions_mar2020_understood_mask_reduces_risk = case_when(attitudes_precautions_mar2020_understood_mask_reduces_risk %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                attitudes_precautions_mar2020_understood_mask_reduces_risk == "genauso" ~ "Neutral",
+                                                                                                attitudes_precautions_mar2020_understood_mask_reduces_risk %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                 
+                        attitudes_precautions_mar2020_followed_measures = case_when(attitudes_precautions_mar2020_followed_measures %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                attitudes_precautions_mar2020_followed_measures == "genauso" ~ "Neutral",
+                                                                                                attitudes_precautions_mar2020_followed_measures %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),
+                        attitudes_precautions_mar2020_felt_restricted_by_measures = case_when(attitudes_precautions_mar2020_felt_restricted_by_measures %in% c("viel weniger", "weniger", "etwas weniger") ~ "Careful",
+                                                                                                attitudes_precautions_mar2020_felt_restricted_by_measures == "genauso" ~ "Neutral",
+                                                                                                attitudes_precautions_mar2020_felt_restricted_by_measures %in% c("etwas mehr", "mehr", "viel mehr") ~ "Risky"),                         
+                        attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical = case_when(attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical == "genauso" ~ "Neutral",
+                                                                                                attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),       
+                        beh_change_start_pandemic_avoid_in_person = case_when(beh_change_start_pandemic_avoid_in_person %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_avoid_in_person == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_avoid_in_person %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                         
+                        beh_change_start_pandemic_avoid_careless_contacts = case_when(beh_change_start_pandemic_avoid_careless_contacts %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_avoid_careless_contacts == "genauso" ~ "Neutral", 
+                                                                                                beh_change_start_pandemic_avoid_careless_contacts %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                              
+                        beh_change_start_pandemic_contact_cautious_people = case_when(beh_change_start_pandemic_contact_cautious_people %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_contact_cautious_people == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_contact_cautious_people %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                               
+                        beh_change_start_pandemic_avoid_peak_hours = case_when(beh_change_start_pandemic_avoid_peak_hours %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_avoid_peak_hours == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_avoid_peak_hours %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                 
+                        beh_change_start_pandemic_maintain_distance = case_when(beh_change_start_pandemic_maintain_distance %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_maintain_distance == "genauso" ~ "Neutral", 
+                                                                                                beh_change_start_pandemic_maintain_distance %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                       
+                        beh_change_start_pandemic_outdoor_only = case_when(beh_change_start_pandemic_outdoor_only %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_outdoor_only == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_outdoor_only %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                            
+                        beh_change_start_pandemic_no_visit_high_risk = case_when(beh_change_start_pandemic_no_visit_high_risk %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_no_visit_high_risk == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_no_visit_high_risk %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                      
+                        beh_change_start_pandemic_avoid_busy_places = case_when(beh_change_start_pandemic_avoid_busy_places %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_avoid_busy_places == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_avoid_busy_places %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                      
+                        beh_change_start_pandemic_avoid_public_trans = case_when(beh_change_start_pandemic_avoid_public_trans %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_avoid_public_trans == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_avoid_public_trans %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                      
+                        beh_change_start_pandemic_mask_public_trans = case_when(beh_change_start_pandemic_mask_public_trans %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_mask_public_trans == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_mask_public_trans %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                       
+                        beh_change_start_pandemic_mask_supermarket = case_when(beh_change_start_pandemic_mask_supermarket %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_mask_supermarket == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_mask_supermarket %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                        
+                        beh_change_start_pandemic_work_from_home = case_when(beh_change_start_pandemic_work_from_home %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_work_from_home == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_work_from_home %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                                         
+                        beh_change_start_pandemic_children_limited_contacts = case_when(beh_change_start_pandemic_children_limited_contacts %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risky",
+                                                                                                beh_change_start_pandemic_children_limited_contacts == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_children_limited_contacts %in% c("etwas mehr", "mehr", "viel mehr") ~ "Careful"),                              
+                        beh_change_start_pandemic_meet_close_despite_restrict = case_when(beh_change_start_pandemic_meet_close_despite_restrict %in% c("viel weniger", "weniger", "etwas weniger") ~ "Careful",
+                                                                                                beh_change_start_pandemic_meet_close_despite_restrict == "genauso" ~ "Neutral",
+                                                                                                beh_change_start_pandemic_meet_close_despite_restrict %in% c("etwas mehr", "mehr", "viel mehr") ~ "Risky"))
 
 attitudesAndBehaviors <- c("attitudes_precautions_mar2020_low_infection_risk_perception",                
                                     "attitudes_precautions_mar2020_risky_infection_course_assessment",            
@@ -188,10 +212,12 @@ attitudesAndBehaviors <- c("attitudes_precautions_mar2020_low_infection_risk_per
 
 comparedToAverage <- c("AverageOrLessThanAverage", "MoreThanAverage")
 
-reduced_data <- reduced_data %>% filter(user_id != "ebd2141d-accb-48a3-80ec-0f274691f9e6") %>% # entered date of 1st inf. 1922-03-01
-                                filter(user_id != "0048e8e6-56fd-4a1c-8639-3c2362afdcaa") %>% #filter(date_f1_inf != "1965-06-12") %>%
-                                filter(user_id != "3f1397c7-1c31-4e5f-b510-d29eb6102609") %>% #filter(date_f1_inf != "2000-12-13") %>%
-                                filter(user_id != "c02a51b2-8a80-496f-9ef8-1c4b99e025da") #date_f1_inf != "2019-12-21")
+reduced_data <- reduced_data %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("2025-01-01"),
+                                        .default = as.Date(as.character(date_f1_inf)))) %>%
+                                filter(date_f1_inf != as.Date("1922-03-01")) %>%
+                                filter(date_f1_inf != as.Date("1965-06-12")) %>%
+                                filter(date_f1_inf != as.Date("2000-12-13")) %>%
+                                filter(date_f1_inf != as.Date("2019-12-21")) 
 
 summaryStats <- data.frame(matrix(nrow = 0, ncol = 10))
 colnames(summaryStats) <- c("attitude", "average", "min", "firstquartile", "median", "mean", "thirdquartile", "max", "numbersanswers", "numbernoinfections")
@@ -219,22 +245,24 @@ for(attBeh in attitudesAndBehaviors){
     }
 }
 
-reduced_data <- reduced_data %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("2025-01-01"),
-                                        .default = as.Date(as.character(date_f1_inf))))
+palette <- function() {
+  c("#006BA6", "#FFBC42", "#8F2D56")
+}
 
 for(attBeh in attitudesAndBehaviors){
 ggplot(reduced_data %>% filter(!is.na(!!sym(attBeh))), aes(date_f1_inf, color = !!sym(attBeh))) +
-stat_ecdf(geom="step", size = 2) +
+stat_ecdf(geom="smooth", size = 2) +
 theme_minimal() +
 ggtitle(attBeh) +
 ylab("Empirical Cumulative \n Density Function") +
 xlab("Date Of 1st Infection") +
+scale_color_manual(values = palette()) +
 coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
 theme(text = element_text(size = 22)) +
 theme(legend.title = element_blank(), legend.position = "bottom") +
 guides(color = guide_legend(nrow=2))
-ggsave(paste0(attBeh, "ECDF.pdf"), dpi = 500, w = 12, h = 8)
-ggsave(paste0(attBeh, "ECDF.png"), dpi = 500, w = 12, h = 8)
+ggsave(paste0(attBeh, "ECDF.pdf"), dpi = 500, w = 9, h = 9)
+ggsave(paste0(attBeh, "ECDF.png"), dpi = 500, w = 9, h = 9)
 }
 
 # Convert Responses to Attitude Questions to Integers such that I can compute a "carefulness score"
@@ -334,3 +362,42 @@ for(attBeh in attitudesAndBehaviors){
     summaryStats[nrow(summaryStats), 8] <- max(reduced_data_filtered$noInfInt, na.rm=TRUE)
     }
 }
+
+# Carefulness Due To Old Age ----------------------------------------------
+
+reduced_data <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf, year_of_birth) %>%
+                            mutate(age_group = case_when (year_of_birth <= 1960 ~ "60+",
+                                                            year_of_birth > 1960 ~ "18-59"))
+
+reduced_data <- reduced_data %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("2025-01-01"),
+                                        .default = as.Date(as.character(date_f1_inf)))) %>%
+                                filter(date_f1_inf != as.Date("1922-03-01")) %>%
+                                filter(date_f1_inf != as.Date("1965-06-12")) %>%
+                                filter(date_f1_inf != as.Date("2000-12-13")) %>%
+                                filter(date_f1_inf != as.Date("2019-12-21")) 
+
+palette <- function() {
+  c("#7b3294", "#008837")
+}
+
+ggplot(reduced_data %>% filter(!is.na(age_group)), aes(date_f1_inf, color = age_group)) +
+stat_ecdf(geom="smooth", size = 2) +
+theme_minimal() +
+ylab("Empirical Cumulative \n Density Function") +
+xlab("Date Of First Infection") +
+coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01")), ylim=c(0, 0.75)) +
+theme(text = element_text(size = 22)) +
+theme(legend.position = "bottom") +
+labs(color="Age Group") +
+guides(color = guide_legend(nrow = 2)) +
+scale_color_manual(values = palette())
+
+ggsave("TimingOfInfectionByAge.pdf", dpi = 500, w = 9, h = 9)
+ggsave("TimingOfInfectionByAge.png", dpi = 500, w = 9, h = 9)
+
+reduced_data <- reduced_data %>% mutate(noInfInt = case_when(num_c19_infs == "Nie" ~ 0,
+                                                            num_c19_infs == "Einmal" ~ 1,
+                                                            num_c19_infs == "Zweimal" ~ 2,
+                                                            num_c19_infs == "Dreimal" ~ 3,
+                                                            num_c19_infs == "Mehr als dreimal" ~ 4))
+  
