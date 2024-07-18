@@ -49,7 +49,7 @@ sum(!is.na(data_reduced$respondent_all_01_2023))
 
 # Boxplots ----------------------------------------------------------------
 
-all_contacts <- raw_data %>% select(user_id, hsld_size_2019_, hsld_size_03_2020_, hsld_size_summer_2021_, hsld_size_01_2023_, 
+all_contacts <- raw_data %>% select(hsld_size_2019_, hsld_size_03_2020_, hsld_size_summer_2021_, hsld_size_01_2023_, 
                                     wkly_cont_2019_work_uni, wkly_cont_03_2020_work_uni, wkly_cont_summer_2021_work_uni, wkly_cont_01_2023_work_uni,
                                     wkly_cont_2019_school_kinder, wkly_cont_03_2020_school_kinder, wkly_cont_summer_2021_school_kinder, wkly_cont_01_2023_school_kinder,
                                     wkly_cont_2019_leisure, wkly_cont_03_2020_leisure, wkly_cont_summer_2021_leisure, wkly_cont_01_2023_leisure)
@@ -562,7 +562,7 @@ summary(data_reduced$hhmember_all_01_2023)
 sum(!is.na(data_reduced$hhmember_all_01_2023))
 
 ## BOXPLOTS CC
-WorkDatahhmember <- data_reduced %>% select(user_id, hhmember_work_2019, hhmember_work_03_2020, hhmember_work_summer_2021, hhmember_work_01_2023) %>%
+WorkDatahhmember <- data_reduced %>% select(hhmember_work_2019, hhmember_work_03_2020, hhmember_work_summer_2021, hhmember_work_01_2023) %>%
   pivot_longer(cols = c("hhmember_work_2019", "hhmember_work_03_2020", "hhmember_work_summer_2021", "hhmember_work_01_2023"))
 WorkDatahhmember$name <- factor(WorkDatahhmember$name, levels = c("hhmember_work_2019", "hhmember_work_03_2020", "hhmember_work_summer_2021", "hhmember_work_01_2023"))
 WorkDatahhmember$value <- as.integer(WorkDatahhmember$value)
@@ -761,3 +761,48 @@ all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>%
 
 ggsave("AllBoxplotHHmemberRel.pdf", all, dpi = 500, w = 9, h = 4.5)
 ggsave("AllBoxplotHHmemberRel.png", all, dpi = 500, w = 9, h = 4.5)
+
+
+# --- Turning data into tidy format
+data_reduced <- data_reduced %>% select(-c(respondent_cc_change, respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
+                                  select(-contains("attitudes")) %>%
+                                  select(-contains("beh_change"))
+
+data_reduced <- data_reduced %>% pivot_longer(cols = 1:76)
+
+data_reduced <- data_reduced  %>% mutate(time = case_when(str_detect(name, "2019") ~ "2019",
+                                                          str_detect(name, "2020") ~ "03/2020",
+                                                          str_detect(name, "2021") ~ "Summer 2021",
+                                                          str_detect(name, "2023") ~ "01/2023")) %>%
+                                  mutate(WhoseContacts = case_when(str_detect(name, "respondent") ~ "Respondent",
+                                  str_detect(name, "cc_pre") ~ "Closest Contact (Pre-Covid)",
+                                  str_detect(name, "cc_during") ~ "Closest Contact (During-Covid)",
+                                  str_detect(name, "hhmember") ~ "Household Member")) %>%
+                                  mutate(TypeOfContact = case_when(str_detect(name, "work") ~ "Work",
+                                  str_detect(name, "school") ~ "School",
+                                  str_detect(name, "leisure") ~ "Leisure",
+                                  str_detect(name, "all") ~ "All"))
+
+data_reduced$time <- factor(data_reduced$time, levels = c("2019", "03/2020", "Summer 2021", "01/2023"))
+data_reduced$TypeOfContact <- factor(data_reduced$TypeOfContact, levels = c("Work", "Leisure", "All"))
+data_reduced$WhoseContacts <- factor(data_reduced$WhoseContacts, levels = c("Respondent", "Household Member", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
+
+
+palette <- function() {
+  c("#006BA6", "#FFBC42", "#8F2D56", "#C93E78")
+}
+
+ggplot(data_reduced %>% filter(value < 100) %>% filter(TypeOfContact != "School") %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
+  geom_boxplot(aes(color = WhoseContacts), size = 1.3) +
+  scale_color_manual(values = palette()) +
+  facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22)) +
+  theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
+  theme(legend.position = "bottom", legend.title = element_blank())
+  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+ggsave("CollectionBoxplots.pdf", dpi = 500, w = 13, h = 12)
+ggsave("CollectionBoxplots.png", dpi = 500, w = 13, h = 12)
