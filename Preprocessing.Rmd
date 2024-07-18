@@ -1,73 +1,92 @@
 ---
 title: "Data Preprocessing"
 author: "LST"
-date: "2024-02-28"
+date: "2024-07-09"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 library(renv)
 library(tidyverse)
-library(dplyr)
-library(ggplot2)
-library(esquisse)
 ```
 
-## R Markdown
-
-# Keep rows with highest last_page (people that at least started the survey)
+## Read in raw data from LimeSurvey and csv Export
 
 ```{r}
-data <- read.csv("data/twitter_data.csv") %>% group_by(user_id) %>% filter(last_page != -1, last_page == max(last_page)) %>% ungroup()
+# Read in raw data from the LimeSurvey export (automatically labels data)
+source("survey_415684_R_syntax_file.R")
 
+# Read in csv data, group by user_id and keep rows with highest last_page (people that at least started the survey)
+csv_data <- read.csv("raw_data/twitter_data.csv") %>% group_by(user_id) %>% filter(last_page != -1, last_page == max(last_page)) %>% ungroup()
+
+# filter out valid surveys, ip addresses, seeds and refurls
+filtered_data <- data %>% group_by(ID) %>% filter(lastpage != -1, lastpage == max(lastpage)) %>% ungroup() %>% select(-c(id, ipaddr, seed, refurl))
+
+# filter out unnecessary columns
+filtered_data <- filtered_data %>% select(-c(submitdate, startlanguage, startdate, datestamp, AC, ref, origin, ID))
+
+# filter out unnecessary columns
+csv_data <- csv_data %>% select(-c(user_id, submit_date, start_language, start_date, datestamp, is_adult, ref, origin))
+
+# transfer names from csv_data to filtered data
+names(filtered_data) <- names(csv_data)
+```
+
+## More data cleaning: removing speeders and comments 
+
+```{r}
 #filter out speeders: speeders are participants whose response time is less than a third of the median response time.
 
-data <- data %>% filter(interviewtime >= median(data$interviewtime)/3)
+filtered_data <- filtered_data %>% filter(interviewtime >= median(filtered_data$interviewtime)/3)
 
 # save all rows of reasons_change_conts_op that contain text into comments
-comments <- data %>% filter(!(comments %in% "")) %>% select(user_id, comments)
+comments <- filtered_data %>% filter(!(comments %in% "")) %>% select(comments)
 
 # save all rows of reasons_change_conts_op that contain text into comments
-comments_reasons_change_conts_op <- data %>% filter(!(reasons_change_conts_op %in% "")) %>% select(user_id, reasons_change_conts_op)
+comments_reasons_change_conts_op <- filtered_data %>% filter(!(reasons_change_conts_op %in% "")) %>% select(reasons_change_conts_op)
 
 # save all rows of expl_new_intense_conts that contain text into comments
-comments_expl_new_intense_conts <- data %>% filter(!(expl_new_intense_conts %in% "")) %>% select(user_id, expl_new_intense_conts)
+comments_expl_new_intense_conts <- filtered_data %>% filter(!(expl_new_intense_conts %in% "")) %>% select(expl_new_intense_conts)
 ```
 
-Data filtering:
+## Data filtering: Complete surveys and timing information
 
 ```{r}
-# Filter out unnecessary columns
+# Filter completed surveys
 
-filtered_data_lastpage <- data %>% filter(last_page == 11) %>% select(-c(submit_date, last_page, start_language, start_date, datestamp, is_adult, ref, origin))
-
-filtered_data_time <- data %>% select(-c(user_id, submit_date, last_page, start_language, start_date, datestamp, is_adult, ref, origin))
+filtered_data_lastpage <- filtered_data %>% filter(last_page == 11) %>% select(-last_page)
 
 #filter out timing information and comments
 
-filtered_data <- filtered_data_time %>% select(!ends_with("time"), -c(comments, reasons_change_conts_op, expl_new_intense_conts))
+cleaned_data <- filtered_data %>% select(!ends_with("time"), -c(last_page, comments,  reasons_change_conts_op, expl_new_intense_conts))
 
 # calculate age and add column after year_of_birth
 
-filtered_data <- filtered_data %>% mutate(age = 2023 - year_of_birth, .after = year_of_birth)
 filtered_data_lastpage <- filtered_data_lastpage %>% mutate(age = 2023 - year_of_birth, .after = year_of_birth)
 
+# rename all labels
+source("rename.R")
 
 # save filtered datasets
 
+# filtered data with timing information
 saveRDS(filtered_data, "data/filtered_data.rds")
-saveRDS(filtered_data_time, "data/filtered_data_time.rds")
+
+#filtered data of completed survey with timing information
 saveRDS(filtered_data_lastpage, "data/filtered_data_lastpage.rds")
+
+#cleaned data without timing information including incomplete survey
+saveRDS(cleaned_data, "data/cleaned_data.rds")
 ```
 
 
-# Additional data cleaning (some taken from AnalysisSP/ExploratoryAnalysis)
+# Translation
 ```{r}
-filtered_data <- readRDS("data/filtered_data.rds")
+#filtered_data <- readRDS("data/filtered_data.rds")
 
 # replace "Ich habe noch nie geraucht." with "I have never smoked", "Nein, nicht mehr" with "No, not anymore" "Ja, gelegentlich" with "Yes, sometimes", "Ja, täglich" with "Yes, daily" and "Ich möchte nicht antworten" with "Unwilling to answer" in column smoking_status
 
-cleaned_data <-
+translated_data <-
   filtered_data %>% mutate(
     smoking_status = case_when(
       smoking_status == "Ich habe noch nie geraucht." ~ "I have never smoked",
@@ -79,18 +98,18 @@ cleaned_data <-
 
 # replace "Ja" with "y" and "Nein" with "n" for all occurrences
 
-cleaned_data <-
-  cleaned_data %>% mutate_all( ~ str_replace_all(., "\\bJa\\b", "y")) %>% mutate_all( ~ str_replace_all(., "Nein", "n")) %>% mutate_all( ~ str_replace_all(., "Ich möchte nicht antworten", "Unwilling to answer")) %>% mutate_all( ~ str_replace_all(., "Ich weiß es nicht", "I don't know"))  %>% mutate_all( ~ str_replace_all(., "Weiß nicht", "I don't know")) %>% mutate_all( ~ str_replace_all(., "Nicht zutreffend", "Not applicable"))
+translated_data <-
+  translated_data %>% mutate_all( ~ str_replace_all(., "\\bJa\\b", "y")) %>% mutate_all( ~ str_replace_all(., "Nein", "n")) %>% mutate_all( ~ str_replace_all(., "Ich möchte nicht antworten", "Unwilling to answer")) %>% mutate_all( ~ str_replace_all(., "Ich weiß es nicht", "I don't know"))  %>% mutate_all( ~ str_replace_all(., "Weiß nicht", "I don't know")) %>% mutate_all( ~ str_replace_all(., "Nicht zutreffend", "Not applicable"))
 
 # replace Likert scales with translations
 
-cleaned_data <-
-  cleaned_data %>% mutate_all(~ str_replace_all(., "viel mehr", "a lot more")) %>% mutate_all(~ str_replace_all(., "etwas mehr", "a bit more")) %>% mutate_all(~ str_replace_all(., "genauso", "equally")) %>% mutate_all(~ str_replace_all(., "etwas weniger", "a bit less")) %>% mutate_all(~ str_replace_all(., "viel weniger", "a lot less"))  %>% mutate_all(~ str_replace_all(., "trifft nicht zu", "does not apply")) %>%  mutate_all(~ str_replace_all(., "mehr", "more")) %>% mutate_all(~ str_replace_all(., "weniger", "less"))
+translated_data <-
+  translated_data %>% mutate_all(~ str_replace_all(., "viel mehr", "a lot more")) %>% mutate_all(~ str_replace_all(., "etwas mehr", "a bit more")) %>% mutate_all(~ str_replace_all(., "genauso", "equally")) %>% mutate_all(~ str_replace_all(., "etwas weniger", "a bit less")) %>% mutate_all(~ str_replace_all(., "viel weniger", "a lot less"))  %>% mutate_all(~ str_replace_all(., "trifft nicht zu", "does not apply")) %>%  mutate_all(~ str_replace_all(., "mehr", "more")) %>% mutate_all(~ str_replace_all(., "weniger", "less"))
 
 # replace "Vielleicht" with "maybe", "Auf keinen Fall" with "definitely not" in column vaccination_on_doctor_recommendation_other_diseases
 
-cleaned_data <-
-  cleaned_data %>% mutate(
+translated_data <-
+  translated_data %>% mutate(
     vaccination_on_doctor_recommendation_other_diseases = case_when(
       vaccination_on_doctor_recommendation_other_diseases == "Vielleicht" ~ "maybe",
       vaccination_on_doctor_recommendation_other_diseases == "Auf keinen Fall" ~ "definitely not"
@@ -99,8 +118,8 @@ cleaned_data <-
 
 # replace "Vielleicht" with "maybe", "Auf keinen Fall" with "definitely not" in column plan_to_get_c19_vaccine_this_year
 
-cleaned_data <-
-  cleaned_data %>% mutate(
+translated_data <-
+  translated_data %>% mutate(
     plan_to_get_c19_vaccine_this_year = case_when(
       plan_to_get_c19_vaccine_this_year == "Vielleicht" ~ "maybe",
       plan_to_get_c19_vaccine_this_year == "Auf keinen Fall" ~ "definitely not"
@@ -109,8 +128,8 @@ cleaned_data <-
 
 # replace "Wichtig" with "important", "Besonders wichtig" with "especially important" and "Nicht so wichtig" with "not as important" in columns importance_of_vaccination_against_...
 
-cleaned_data <-
-  cleaned_data %>% mutate(
+translated_data <-
+  translated_data %>% mutate(
     importance_of_vaccination_against_various_diseases_covid_19 = case_when(
       importance_of_vaccination_against_various_diseases_covid_19 == "Wichtig" ~ "important",
       importance_of_vaccination_against_various_diseases_covid_19 == "Besonders wichtig" ~ "especially important",
@@ -140,8 +159,8 @@ cleaned_data <-
 
 # replace "männlich" with "m", "weiblich" with "f" and "Divers" with "d" in column gender
 
-cleaned_data <-
-  cleaned_data %>% mutate(
+translated_data <-
+  translated_data %>% mutate(
     gender = case_when(
       gender == NA ~ NA,
       gender == "Männlich" ~ "m",
@@ -154,8 +173,8 @@ cleaned_data <-
 
 # change num_c19_infs to numeric
 
-cleaned_data <-
-  cleaned_data %>% mutate(
+translated_data <-
+  translated_data %>% mutate(
     num_c19_infs = case_when(
       num_c19_infs == NA ~ NA,
       num_c19_infs == "Nie" ~ "0",
@@ -169,8 +188,8 @@ cleaned_data <-
 
 # replace "Ja" with "yes" and "Nein" with "no" in column has_children
 
-cleaned_data <-
-  cleaned_data %>% mutate(
+translated_data <-
+  translated_data %>% mutate(
     have_children = case_when(
       have_children == NA ~ NA,
       have_children == "Ja" ~ "yes",
@@ -181,8 +200,8 @@ cleaned_data <-
 
 # replace "Abitur / Fachhochschulabitur" with "A levels / university of applied sciences entrance qualification", "Realschulabschluss" with "High-school diploma", "Haupt/ Volksschulabschluss" with "Secondary modern school qualification" and "Anderer" with "Other" in column highest_educational_qualification
 
-cleaned_data <-
-  cleaned_data %>% mutate(
+translated_data <-
+  translated_data %>% mutate(
     highest_educational_qualification = case_when(
       highest_educational_qualification == NA ~ NA,
       highest_educational_qualification == "Abitur / Fachhochschulabitur" ~ "A levels",
@@ -194,8 +213,8 @@ cleaned_data <-
 
 # replace "Ich bin arbeitssuchend." with "jobless", "Ich bin Rentner:in oder Pensionär:in." with "pensioner", "Ich bin im Studium oder in der Ausbildung." with "student", "Ich bin in einem medizinischen oder pflegerischen Beruf bei einem Gesundheitsversorger tätig." with "medical", "Ich bin als Lehrer:in oder Erzieher:in tätig." with "education", "Ich bin in einem anderen Beruf tätig." with "other" and "Andere (z.B. Elternzeit, Sabbatical)" with "sabbatical" in column current_occupation
 
-cleaned_data <-
-  cleaned_data %>% mutate(
+translated_data <-
+  translated_data %>% mutate(
     current_occupation = case_when(
       current_occupation == NA ~ NA,
       current_occupation == "Ich bin arbeitssuchend." ~ "jobless",
@@ -210,18 +229,12 @@ cleaned_data <-
 
 #replace datetime with date
 
-cleaned_data <- cleaned_data %>%
+translated_data <- translated_data %>%
   mutate_at(vars(starts_with("date")), ~ as.Date(., format="%Y-%m-%d %H:%M:%S"))
 
 #save cleaned data
 
-saveRDS(cleaned_data, "data/cleaned_data.rds")
+saveRDS(translated_data, "data/translated_data.rds")
 
 #todo: translate loc_other?, NA or empty?, Likert scales to numbers?
-```
-
-#cleaned data
-```{r}
-
-cleaned_data <- readRDS("data/cleaned_data.rds")
 ```
