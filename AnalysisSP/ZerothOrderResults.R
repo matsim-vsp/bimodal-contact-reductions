@@ -764,11 +764,14 @@ ggsave("AllBoxplotHHmemberRel.png", all, dpi = 500, w = 9, h = 4.5)
 
 
 # --- Turning data into tidy format
-data_reduced <- data_reduced %>% select(-c(respondent_cc_change, respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
+
+source("DataCleaningPrepForContactAnalysis.R")
+
+data_reduced <- data_reduced %>% select(-c(respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
                                   select(-contains("attitudes")) %>%
                                   select(-contains("beh_change"))
 
-data_reduced <- data_reduced %>% pivot_longer(cols = 1:76)
+data_reduced <- data_reduced %>% pivot_longer(cols = 2:76)
 
 data_reduced <- data_reduced  %>% mutate(time = case_when(str_detect(name, "2019") ~ "2019",
                                                           str_detect(name, "2020") ~ "03/2020",
@@ -806,3 +809,96 @@ ggplot(data_reduced %>% filter(value < 100) %>% filter(TypeOfContact != "School"
 
 ggsave("CollectionBoxplots.pdf", dpi = 500, w = 13, h = 12)
 ggsave("CollectionBoxplots.png", dpi = 500, w = 13, h = 12)
+
+
+ggplot(data_reduced %>% filter(value < 100) %>% filter(TypeOfContact != "School") %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
+  geom_boxplot(aes(color = WhoseContacts), size = 1.3) +
+  scale_color_manual(values = palette()) +
+  facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22)) +
+  theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
+  theme(legend.position = "bottom", legend.title = element_blank())
+  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# Relative no. of contacts
+
+source("DataCleaningPrepForContactAnalysis.R")
+
+data_reduced <- data_reduced %>% mutate(respondent_work_rel_2019_2020 = 100/respondent_work_2019*respondent_work_03_2020) %>%
+                                  mutate(respondent_work_rel_2019_2021 = 100/respondent_work_2019*respondent_work_summer_2021) %>%
+                                  mutate(respondent_work_rel_2019_2023 = 100/respondent_work_2019*respondent_work_01_2023) %>%
+                                  mutate(respondent_leisure_rel_2019_2020 = 100/respondent_leisure_2019*respondent_leisure_03_2020) %>%
+                                  mutate(respondent_leisure_rel_2019_2021 = 100/respondent_leisure_2019*respondent_leisure_summer_2021) %>%
+                                  mutate(respondent_leisure_rel_2019_2023 = 100/respondent_leisure_2019*respondent_leisure_01_2023) %>%
+                                  mutate(respondent_all_rel_2019_2020 = 100/respondent_all_2019*respondent_all_03_2020) %>%
+                                  mutate(respondent_all_rel_2019_2021 = 100/respondent_all_2019*respondent_all_summer_2021) %>%
+                                  mutate(respondent_all_rel_2019_2023 = 100/respondent_all_2019*respondent_all_01_2023)
+
+data_reduced <- data_reduced %>% mutate(hhmember_work_rel_2019_2020 = 100/hhmember_work_2019*hhmember_work_03_2020) %>%
+                                  mutate(hhmember_work_rel_2019_2021 = 100/hhmember_work_2019*hhmember_work_summer_2021) %>%
+                                  mutate(hhmember_work_rel_2019_2023 = 100/hhmember_work_2019*hhmember_work_01_2023) %>%
+                                  mutate(hhmember_leisure_rel_2019_2020 = 100/hhmember_leisure_2019*hhmember_leisure_03_2020) %>%
+                                  mutate(hhmember_leisure_rel_2019_2021 = 100/hhmember_leisure_2019*hhmember_leisure_summer_2021) %>%
+                                  mutate(hhmember_leisure_rel_2019_2023 = 100/hhmember_leisure_2019*hhmember_leisure_01_2023) %>%
+                                  mutate(hhmember_all_rel_2019_2020 = 100/hhmember_all_2019*hhmember_all_03_2020) %>%
+                                  mutate(hhmember_all_rel_2019_2021 = 100/hhmember_all_2019*hhmember_all_summer_2021) %>%
+                                  mutate(hhmember_all_rel_2019_2023 = 100/hhmember_all_2019*hhmember_all_01_2023)
+
+data_reduced <- data_reduced %>% mutate(cc_pre_work_rel_2019_2020 = 100/cc_pre_work_2019*cc_pre_work_03_2020) %>%
+                                  mutate(cc_pre_work_rel_2019_2021 = 100/cc_pre_work_2019*cc_pre_work_summer_2021) %>%
+                                  mutate(cc_pre_work_rel_2019_2023 = 100/cc_pre_work_2019*cc_pre_work_01_2023) %>%
+                                  mutate(cc_pre_leisure_rel_2019_2020 = 100/cc_pre_leisure_2019*cc_pre_leisure_03_2020) %>%
+                                  mutate(cc_pre_leisure_rel_2019_2021 = 100/cc_pre_leisure_2019*cc_pre_leisure_summer_2021) %>%
+                                  mutate(cc_pre_leisure_rel_2019_2023 = 100/cc_pre_leisure_2019*cc_pre_leisure_01_2023) %>%
+                                  mutate(cc_pre_all_rel_2019_2020 = 100/cc_pre_all_2019*cc_pre_all_03_2020) %>%
+                                  mutate(cc_pre_all_rel_2019_2021 = 100/cc_pre_all_2019*cc_pre_all_summer_2021) %>%
+                                  mutate(cc_pre_all_rel_2019_2023 = 100/cc_pre_all_2019*cc_pre_all_01_2023)
+
+data_reduced <- data_reduced %>% mutate(cc_during_work_rel_2019_2020 = 100/cc_during_work_2019*cc_during_work_03_2020) %>%
+                                  mutate(cc_during_work_rel_2019_2021 = 100/cc_during_work_2019*cc_during_work_summer_2021) %>%
+                                  mutate(cc_during_work_rel_2019_2023 = 100/cc_during_work_2019*cc_during_work_01_2023) %>%
+                                  mutate(cc_during_leisure_rel_2019_2020 = 100/cc_during_leisure_2019*cc_during_leisure_03_2020) %>%
+                                  mutate(cc_during_leisure_rel_2019_2021 = 100/cc_during_leisure_2019*cc_during_leisure_summer_2021) %>%
+                                  mutate(cc_during_leisure_rel_2019_2023 = 100/cc_during_leisure_2019*cc_during_leisure_01_2023) %>%
+                                  mutate(cc_during_all_rel_2019_2020 = 100/cc_during_all_2019*cc_during_all_03_2020) %>%
+                                  mutate(cc_during_all_rel_2019_2021 = 100/cc_during_all_2019*cc_during_all_summer_2021) %>%
+                                  mutate(cc_during_all_rel_2019_2023 = 100/cc_during_all_2019*cc_during_all_01_2023)
+
+data_reduced <- data_reduced %>% select(contains(c("respondent_cc_change", "rel_")))
+
+data_reduced <- data_reduced %>% pivot_longer(cols = 2:37)
+
+data_reduced <- data_reduced  %>% mutate(time = case_when(str_detect(name, "2020") ~ "03/2020",
+                                                          str_detect(name, "2021") ~ "Summer 2021",
+                                                          str_detect(name, "2023") ~ "01/2023")) %>%
+                                  mutate(WhoseContacts = case_when(str_detect(name, "respondent") ~ "Respondent",
+                                  str_detect(name, "cc_pre") ~ "Closest Contact (Pre-Covid)",
+                                  str_detect(name, "cc_during") ~ "Closest Contact (During-Covid)",
+                                  str_detect(name, "hhmember") ~ "Household Member")) %>%
+                                  mutate(TypeOfContact = case_when(str_detect(name, "work") ~ "Work",
+                                  str_detect(name, "school") ~ "School",
+                                  str_detect(name, "leisure") ~ "Leisure",
+                                  str_detect(name, "all") ~ "All"))
+
+data_reduced$time <- factor(data_reduced$time, levels = c("2019", "03/2020", "Summer 2021", "01/2023"))
+data_reduced$TypeOfContact <- factor(data_reduced$TypeOfContact, levels = c("Work", "Leisure", "All"))
+data_reduced$WhoseContacts <- factor(data_reduced$WhoseContacts, levels = c("Respondent", "Household Member", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
+
+
+palette <- function() {
+  c("#006BA6", "#FFBC42", "#8F2D56", "#C93E78")
+}
+
+ggplot(data_reduced %>% filter(value < 200) %>% filter(TypeOfContact != "School") %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
+  geom_boxplot(aes(color = WhoseContacts), size = 1.3) +
+  scale_color_manual(values = palette()) +
+  facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
+  theme_minimal() +
+  scale_color_manual(values = palette()) +
+  ylab("Reported # Of Contacts") +
+  theme(text = element_text(size = 22)) +
+  theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
+  theme(legend.position = "bottom", legend.title = element_blank())
