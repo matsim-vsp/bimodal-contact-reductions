@@ -114,6 +114,7 @@ palette <- function() {
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -127,6 +128,7 @@ ggsave("LeisureBoxplot.png", leisure, dpi = 500, w = 9, h = 4.5)
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -139,6 +141,7 @@ ggsave("WorkBoxplot.png", work, dpi = 500, w = 9, h = 4.5)
 
 all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -204,6 +207,7 @@ WorkDataRespondent <- WorkDataRespondent %>% filter(!is.na(value)) %>% mutate(ti
 
 work <-ggplot(WorkDataRespondent %>% filter(value < 1000), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -226,6 +230,7 @@ LeisureDataRespondent <- LeisureDataRespondent %>% filter(!is.na(value)) %>% mut
 
 leisure <- ggplot(LeisureDataRespondent %>% filter(value < 1000), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -248,6 +253,7 @@ AllDataRespondent <- AllDataRespondent %>% filter(!is.na(value)) %>% mutate(time
 
 all <- ggplot(AllDataRespondent %>% filter(value < 1000), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -365,6 +371,7 @@ palette <- function() {
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -378,6 +385,7 @@ ggsave("LeisureBoxplotCCPre.png", leisure, dpi = 500, w = 9, h = 4.5)
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -390,6 +398,7 @@ ggsave("WorkBoxplotCCPre.png", work, dpi = 500, w = 9, h = 4.5)
 
 all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -485,6 +494,7 @@ palette <- function() {
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -498,6 +508,7 @@ ggsave("LeisureBoxplotCCPreRel.png", leisure, dpi = 500, w = 9, h = 4.5)
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -510,12 +521,13 @@ ggsave("WorkBoxplotCCPreRel.png", work, dpi = 500, w = 9, h = 4.5)
 
 all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
   xlab("Point In Time") +
   ylab("Rel. # Of All \nContacts (CC, pre)") +
-  theme(text = element_text(size = 22))
+  theme(text = element_text(size = 22)) +
 
 ggsave("AllBoxplotCCPreRel.pdf", all, dpi = 500, w = 9, h = 4.5)
 ggsave("AllBoxplotCCPreRel.png", all, dpi = 500, w = 9, h = 4.5)
@@ -607,6 +619,7 @@ palette <- function() {
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -620,6 +633,7 @@ ggsave("LeisureBoxplotHHMember.png", leisure, dpi = 500, w = 9, h = 4.5)
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -727,6 +741,7 @@ palette <- function() {
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -740,6 +755,7 @@ ggsave("LeisureBoxplotHHmemberRel.png", leisure, dpi = 500, w = 9, h = 4.5)
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -752,6 +768,7 @@ ggsave("WorkBoxplotHHmemberRel.png", work, dpi = 500, w = 9, h = 4.5)
 
 all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
   geom_boxplot(color = "#29335C") +
+  #geom_violin(color = "#29335C") +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -797,6 +814,7 @@ palette <- function() {
 
 ggplot(data_reduced %>% filter(value < 100) %>% filter(TypeOfContact != "School") %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
   geom_boxplot(aes(color = WhoseContacts), size = 1.3) +
+  #geom_violin(aes(color = WhoseContacts), size = 1.3) +
   scale_color_manual(values = palette()) +
   facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
   theme_minimal() +
@@ -813,6 +831,7 @@ ggsave("CollectionBoxplots.png", dpi = 500, w = 13, h = 12)
 
 ggplot(data_reduced %>% filter(value < 100) %>% filter(TypeOfContact != "School") %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
   geom_boxplot(aes(color = WhoseContacts), size = 1.3) +
+  #geom_violin(aes(color=WhoseContacts)) +
   scale_color_manual(values = palette()) +
   facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
   theme_minimal() +
@@ -894,6 +913,7 @@ palette <- function() {
 
 ggplot(data_reduced %>% filter(value < 200) %>% filter(TypeOfContact != "School") %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
   geom_boxplot(aes(color = WhoseContacts), size = 1.3) +
+  #geom_violin(aes(color=WhoseContacts), size = 1.3) +
   scale_color_manual(values = palette()) +
   facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
   theme_minimal() +
