@@ -238,7 +238,7 @@ ggsave("AssumedMinusActualLeisureBoxPlot.png", dpi = 500, w = 8, h = 4.5)
 # Correlation Analysis ----------------------------------------------------
 
 # Aim of SECOND PART of this script: Try to understand if there's a correlation between the no of contacts of the respondent and the no. of contacts of their cc
-data_reduced <- data_reduced %>% filter(!is.na(user_id))
+#data_reduced <- data_reduced %>% filter(!is.na(user_id))
 
 correlation_matrix <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(correlation_matrix) <- c("context", "year", "change_of_cc", "pre_or_during", "correlation_coefficient")
@@ -249,7 +249,7 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("leisure", "2019", "ALL"
 correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "2019", "ALL", "pre", cor(data_reduced$respondent_all_2019, data_reduced$cc_pre_all_2019, use = "pairwise.complete.obs", method = "pearson"))
 
 p1_2019 <-ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_work_2019, y = cc_pre_work_2019), color = "#669BBC") +
+  geom_point(aes(x=respondent_work_2019, y = cc_pre_work_2019), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -261,7 +261,7 @@ p1_2019 <-ggplot(data_reduced) +
         axis.ticks.length = unit(5, "pt"))
 
 p2_2019 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_leisure_2019, y = cc_pre_leisure_2019), color = "#669BBC") +
+  geom_point(aes(x=respondent_leisure_2019, y = cc_pre_leisure_2019), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -273,7 +273,7 @@ p2_2019 <- ggplot(data_reduced) +
         axis.ticks.length = unit(5, "pt"))
 
 p3_2019 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_all_2019, y = cc_pre_all_2019), color = "#669BBC") +
+  geom_point(aes(x=respondent_all_2019, y = cc_pre_all_2019), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -293,7 +293,7 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("leisure", "03_2020", "A
 correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "03_2020", "ALL", "pre", cor(data_reduced$respondent_all_03_2020, data_reduced$cc_pre_all_03_2020, use = "pairwise.complete.obs", method = "pearson"))
 
 p1_2020 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_work_03_2020, y = cc_pre_work_03_2020), color = "#669BBC") +
+  geom_point(aes(x=respondent_work_03_2020, y = cc_pre_work_03_2020), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -305,7 +305,7 @@ p1_2020 <- ggplot(data_reduced) +
         axis.ticks.length = unit(5, "pt"))
 
 p2_2020 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_leisure_03_2020, y = cc_pre_leisure_03_2020), color = "#669BBC") +
+  geom_point(aes(x=respondent_leisure_03_2020, y = cc_pre_leisure_03_2020), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -317,7 +317,7 @@ p2_2020 <- ggplot(data_reduced) +
         axis.ticks.length = unit(5, "pt"))
 
 p3_2020 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_all_03_2020, y = cc_pre_all_03_2020), color = "#669BBC") +
+  geom_point(aes(x=respondent_all_03_2020, y = cc_pre_all_03_2020), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -341,7 +341,7 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("leisure", "summer_2021"
 correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "summer_2021", "ALL", "during", cor(data_reduced$respondent_all_summer_2021, data_reduced$cc_during_all_summer_2021, use = "pairwise.complete.obs", method = "pearson"))
 
 p1_2021 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_work_summer_2021, y = cc_pre_work_summer_2021), color = "#669BBC") +
+  geom_point(aes(x=respondent_work_summer_2021, y = cc_pre_work_summer_2021), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -353,7 +353,7 @@ p1_2021 <- ggplot(data_reduced) +
         axis.ticks.length = unit(5, "pt"))
 
 p2_2021 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_leisure_summer_2021, y = cc_pre_leisure_summer_2021), color = "#669BBC") +
+  geom_point(aes(x=respondent_leisure_summer_2021, y = cc_pre_leisure_summer_2021), color = "#006BA6") +
   theme_minimal() +
   ggtitle("Leisure Contacts (2021)") +
   scale_x_log10(limits=c(1,1100))+
@@ -365,7 +365,7 @@ p2_2021 <- ggplot(data_reduced) +
         axis.ticks.length = unit(5, "pt"))
 
 p3_2021 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_all_summer_2021, y = cc_pre_all_summer_2021), color = "#669BBC") +
+  geom_point(aes(x=respondent_all_summer_2021, y = cc_pre_all_summer_2021), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -386,7 +386,7 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "01_2023", "ALL",
 
 
 p1_2023 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_work_01_2023, y = cc_pre_work_01_2023), color = "#669BBC") +
+  geom_point(aes(x=respondent_work_01_2023, y = cc_pre_work_01_2023), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -398,7 +398,7 @@ p1_2023 <- ggplot(data_reduced) +
         axis.ticks.length = unit(5, "pt"))
 
 p2_2023 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_leisure_01_2023, y = cc_pre_leisure_01_2023), color = "#669BBC") +
+  geom_point(aes(x=respondent_leisure_01_2023, y = cc_pre_leisure_01_2023), color = "#006BA6") +
   theme_minimal() +
   ggtitle("Leisure Contacts (2023)") +
   scale_x_log10(limits=c(1,1100))+
@@ -410,7 +410,7 @@ p2_2023 <- ggplot(data_reduced) +
         axis.ticks.length = unit(5, "pt"))
 
 p3_2023 <- ggplot(data_reduced) + 
-  geom_point(aes(x=respondent_all_01_2023, y = cc_pre_all_01_2023), color = "#669BBC") +
+  geom_point(aes(x=respondent_all_01_2023, y = cc_pre_all_01_2023), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -421,14 +421,13 @@ p3_2023 <- ggplot(data_reduced) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-p <- arrangeGrob(p1_2019, p2_2019, p3_2019,
-                 p1_2020, p2_2020, p3_2020,
-                 p1_2021, p2_2021, p3_2021,
-                 p1_2023, p2_2023, p3_2023,
-                 nrow = 4)
+p <- arrangeGrob(p1_2019, p1_2020, p1_2021, p1_2023,
+                  p2_2019, p2_2020, p2_2021, p2_2023,
+                  p3_2019, p3_2020, p3_2021, p3_2023,
+                 nrow = 3)
 
-ggsave("CorrelationPlotsAllRespondents.pdf", p, dpi = 500, w = 10, h = 10)
-ggsave("CorrelationPlotsAllRespondents.png", p, dpi = 500, w = 10, h = 10)
+ggsave("CorrelationPlotsRespondent.pdf", p, dpi = 500, w = 12, h = 9)
+ggsave("CorrelationPlotsRespondent.png", p, dpi = 500, w = 12, h = 9)
 
 #Respondents who CHANGED their cc
 data_reduced_yes <- data_reduced %>% filter(respondent_cc_change == "Ja")
@@ -441,7 +440,7 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("leisure", "2019", "Yes"
 correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "2019", "Yes", "during", cor(data_reduced_yes$respondent_all_2019, data_reduced_yes$cc_during_all_2019, use = "pairwise.complete.obs", method = "pearson"))
 
 p1_2019 <-ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_work_2019, y = cc_during_work_2019), color = "#669BBC") +
+  geom_point(aes(x=respondent_work_2019, y = cc_during_work_2019), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -453,7 +452,7 @@ p1_2019 <-ggplot(data_reduced_yes) +
         axis.ticks.length = unit(5, "pt"))
 
 p2_2019 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_leisure_2019, y = cc_during_leisure_2019), color = "#669BBC") +
+  geom_point(aes(x=respondent_leisure_2019, y = cc_during_leisure_2019), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -465,7 +464,7 @@ p2_2019 <- ggplot(data_reduced_yes) +
         axis.ticks.length = unit(5, "pt"))
 
 p3_2019 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_all_2019, y = cc_during_all_2019), color = "#669BBC") +
+  geom_point(aes(x=respondent_all_2019, y = cc_during_all_2019), color = "#006BA6") +
   theme_minimal() +
   scale_x_log10(limits=c(1,1100))+
   scale_y_log10(limits=c(1,1100))+
@@ -485,7 +484,7 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("leisure", "03_2020", "Y
 correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "03_2020", "Yes", "during", cor(data_reduced_yes$respondent_all_03_2020, data_reduced_yes$cc_during_all_03_2020, use = "pairwise.complete.obs", method = "pearson"))
 
 p1_2020 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_work_03_2020, y = cc_during_work_03_2020), color = "#669BBC") +
+  geom_point(aes(x=respondent_work_03_2020, y = cc_during_work_03_2020), color = "#006BA6") +
   theme_minimal() +
   #xlim(0,60) +
   scale_x_log10(limits=c(1,1100))+
@@ -498,7 +497,7 @@ p1_2020 <- ggplot(data_reduced_yes) +
         axis.ticks.length = unit(5, "pt"))
 
 p2_2020 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_leisure_03_2020, y = cc_during_leisure_03_2020), color = "#669BBC") +
+  geom_point(aes(x=respondent_leisure_03_2020, y = cc_during_leisure_03_2020), color = "#006BA6") +
   theme_minimal() +
   #xlim(0,25) +
   #ylim(0,25) +
@@ -512,7 +511,7 @@ p2_2020 <- ggplot(data_reduced_yes) +
         axis.ticks.length = unit(5, "pt"))
 
 p3_2020 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_all_03_2020, y = cc_during_all_03_2020), color = "#669BBC") +
+  geom_point(aes(x=respondent_all_03_2020, y = cc_during_all_03_2020), color = "#006BA6") +
   theme_minimal() +
   #xlim(0,100) +
   #ylim(0,100) +
@@ -536,7 +535,7 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "summer_2021", "Y
 
 
 p1_2021 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_work_summer_2021, y = cc_during_work_summer_2021), color = "#669BBC") +
+  geom_point(aes(x=respondent_work_summer_2021, y = cc_during_work_summer_2021), color = "#006BA6") +
   theme_minimal() +
   #xlim(0,110) +
   #ylim(0,110) +
@@ -550,7 +549,7 @@ p1_2021 <- ggplot(data_reduced_yes) +
         axis.ticks.length = unit(5, "pt"))
 
 p2_2021 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_leisure_summer_2021, y = cc_during_leisure_summer_2021), color = "#669BBC") +
+  geom_point(aes(x=respondent_leisure_summer_2021, y = cc_during_leisure_summer_2021), color = "#006BA6") +
   theme_minimal() +
   ggtitle("Leisure Contacts (2021)") +
   #  xlim(0,60) +
@@ -564,7 +563,7 @@ p2_2021 <- ggplot(data_reduced_yes) +
         axis.ticks.length = unit(5, "pt"))
 
 p3_2021 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_all_summer_2021, y = cc_during_all_summer_2021), color = "#669BBC") +
+  geom_point(aes(x=respondent_all_summer_2021, y = cc_during_all_summer_2021), color = "#006BA6") +
   theme_minimal() +
   #xlim(0,150) +
   #ylim(0,150) +
@@ -586,7 +585,7 @@ correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("leisure", "01_2023", "Y
 correlation_matrix[nrow(correlation_matrix) + 1, ] <- c("all", "01_2023", "Yes", "during", cor(data_reduced_yes$respondent_all_01_2023, data_reduced_yes$cc_during_all_01_2023, use = "pairwise.complete.obs", method = "pearson"))
 
 p1_2023 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_work_01_2023, y = cc_during_work_01_2023), color = "#669BBC") +
+  geom_point(aes(x=respondent_work_01_2023, y = cc_during_work_01_2023), color = "#006BA6") +
   theme_minimal() +
   #xlim(0,150) +
   #ylim(0,150) +
@@ -600,7 +599,7 @@ p1_2023 <- ggplot(data_reduced_yes) +
         axis.ticks.length = unit(5, "pt"))
 
 p2_2023 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_leisure_01_2023, y = cc_during_leisure_01_2023), color = "#669BBC") +
+  geom_point(aes(x=respondent_leisure_01_2023, y = cc_during_leisure_01_2023), color = "#006BA6") +
   theme_minimal() +
   ggtitle("Leisure Contacts (2023)") +
   #xlim(0,60) +
@@ -615,7 +614,7 @@ p2_2023 <- ggplot(data_reduced_yes) +
         axis.ticks.length = unit(5, "pt"))
 
 p3_2023 <- ggplot(data_reduced_yes) + 
-  geom_point(aes(x=respondent_all_01_2023, y = cc_during_all_01_2023), color = "#669BBC") +
+  geom_point(aes(x=respondent_all_01_2023, y = cc_during_all_01_2023), color = "#006BA6") +
   theme_minimal() +
   #xlim(0,150) +
   #ylim(0,150) +
@@ -628,14 +627,13 @@ p3_2023 <- ggplot(data_reduced_yes) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-p <- arrangeGrob(#p1_2019, p2_2019, p3_2019,
-                 p1_2020, p2_2020, p3_2020,
-                 p1_2021, p2_2021, p3_2021,
-                 p1_2023, p2_2023, p3_2023,
+p <- arrangeGrob(p1_2019, p1_2020, p1_2021, p1_2023,
+                 p2_2019, p2_2020, p2_2021, p2_2023,
+                 p3_2019, p3_2020, p3_2021, p3_2023,
                  nrow = 3)
 
-ggsave("CorrelationPlotsChangedCCRespondents.pdf", p, dpi = 500, w = 10, h = 10)
-ggsave("CorrelationPlotsChangedCCRespondents.png", p, dpi = 500, w = 10, h = 10)
+ggsave("CorrelationPlotsChangedCCRespondentsDuring.pdf", p, dpi = 500, w = 12, h = 9)
+ggsave("CorrelationPlotsChangedCCRespondentsDuring.png", p, dpi = 500, w = 12, h = 9)
 
 #Respondents who did NOT change their CC
 data_reduced_no <- data_reduced %>% filter(respondent_cc_change == "Nein")
@@ -862,18 +860,4 @@ for(i in 1:length(attitudes)){
 correlation_matrix$answer <- factor(correlation_matrix$answer, levels = c("viel weniger", "weniger", "etwas weniger", "genauso", "etwas mehr", "mehr", "viel mehr", "trifft nicht zu", "keine Angabe"), ordered = TRUE)
 correlation_matrix <- as.data.frame(correlation_matrix)
 correlation_matrix <- correlation_matrix[order(correlation_matrix$answer), ]
-
-# Order Zero Results - Reduction of Contacts ------------------------------
-
-zero_order <- data_reduced %>% select(user_id,
-                                      respondent_work_2019,                                     
-                                      respondent_work_03_2020                                        
-                                      respondent_work_summer_2021,                                    
-                                      respondent_work_01_2023,
-                                      respondent_leisure_2019,                                       
-                                      respondent_leisure_03_2020,                                    
-                                      respondent_leisure_summer_2021,                                 
-                                      respondent_leisure_01_2023,
-                                      )
-
 
