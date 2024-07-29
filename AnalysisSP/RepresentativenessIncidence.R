@@ -1,6 +1,7 @@
 library(tidyverse)
 library(MMWRweek)
 library(see)
+library(RColorBrewer)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -8,16 +9,16 @@ library(see)
 
 raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds")
 
-reduced_data <- raw_data %>% select(num_c19_infs, user_id, date_f1_inf, date_s2_inf, date_t3_inf) %>% 
+reduced_data <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf) %>% 
 filter(!is.na(num_c19_infs)) %>% 
-select(user_id, date_f1_inf, date_s2_inf, date_t3_inf)
+select(date_f1_inf, date_s2_inf, date_t3_inf)
 
 no_time_infections <- reduced_data %>% pivot_longer(cols=c("date_f1_inf", "date_s2_inf", "date_t3_inf"))
 no_time_infections <- no_time_infections %>% 
 filter(!is.na(value)) %>%
 filter(value > "2020-01-01")
-colnames(no_time_infections)[2] <- "CounterInfection"
-colnames(no_time_infections)[3] <- "DateInfection"
+colnames(no_time_infections)[1] <- "CounterInfection"
+colnames(no_time_infections)[2] <- "DateInfection"
 
 no_time_infections <- no_time_infections %>% 
 mutate(week = isoweek(DateInfection), year = year(DateInfection)) %>%
@@ -30,7 +31,7 @@ count_no_infections <- no_time_infections %>% group_by(date) %>% count()
 colnames(count_no_infections) <- c("Date", "CountPer1096")
 count_no_infections <- count_no_infections %>% 
                         ungroup() %>%
-                        mutate(Incidence100000 = CountPer1096 / length(unique(reduced_data$user_id))*100000)
+                        mutate(Incidence100000 = CountPer1096 / nrow(reduced_data)*100000)
 
 DatesInfections <- unique(count_no_infections$Date)
 dates <- c()
@@ -63,13 +64,18 @@ count_no_infections <- count_no_infections %>%
                         mutate(DataSet = "Survey")
 count_no_infections <- rbind(count_no_infections, rkidata)
 
+palette <- function() {
+  c("#8F2D56", "#006BA6")
+}
+
 ggplot() +
-    geom_point(data = count_no_infections, aes(x = Date, y = Incidence100000, color =DataSet), size = 1.5) +
+    geom_point(data = count_no_infections, aes(x = Date, y = Incidence100000, color =DataSet), size = 2) +
     #geom_line(data=count_no_infections,  aes(x = Date, y = Incidence100000, color =DataSet), alpha = 0.2, size = 1.2) +
     theme_minimal() +
     xlab("Date") +
+    scale_color_manual(values = palette()) +
     ylab("7-Day-Incidence \n per 100,000") +
-    theme(text = element_text(size = 25)) +
+    theme(text = element_text(size = 30)) +
     scale_y_log10(breaks=c(1,10,100,1000)) +
     theme(legend.position = "bottom", legend.title = element_blank())
 
@@ -77,12 +83,13 @@ ggsave("VizComparisonIncidenceSurveyRKILog.pdf", dpi = 500, w = 15, h = 5)
 ggsave("VizComparisonIncidenceSurveyRKILog.png", dpi = 500, w = 15, h = 5)
 
 ggplot() +
-    geom_point(data = count_no_infections, aes(x = Date, y = Incidence100000, color =DataSet), size = 1.5) +
+    geom_point(data = count_no_infections, aes(x = Date, y = Incidence100000, color = DataSet), size = 1.5) +
     #geom_line(data=count_no_infections,  aes(x = Date, y = Incidence100000, color =DataSet), alpha = 0.2, size = 1.2) +
     theme_minimal() +
     xlab("Date") +
+    scale_color_manual(values = palette()) +
     ylab("7-Day-Incidence \n per 100,000") +
-    theme(text = element_text(size = 25)) +
+    theme(text = element_text(size = 35)) +
     #scale_y_log10(breaks=c(1,10,100,1000)) +
     theme(legend.position = "bottom", legend.title = element_blank())
 
@@ -91,7 +98,7 @@ ggsave("VizComparisonIncidenceSurveyRKILin.png", dpi = 500, w = 15, h = 5)
 
 # Did careful attitudes/behaviors result in less/later infections? --------
 
-reduced_data <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf,
+reduced_data <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf, cc_change_during_pandemic,
                                     attitudes_precautions_mar2020_low_infection_risk_perception,                
                                     attitudes_precautions_mar2020_risky_infection_course_assessment,            
                                     attitudes_precautions_mar2020_high_risk_perception,                         
@@ -115,6 +122,58 @@ reduced_data <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date
                                     beh_change_start_pandemic_work_from_home,                                  
                                     beh_change_start_pandemic_children_limited_contacts,                       
                                     beh_change_start_pandemic_meet_close_despite_restrict)
+
+attitudesAndBehaviors <- c("attitudes_precautions_mar2020_low_infection_risk_perception",                
+                                    "attitudes_precautions_mar2020_risky_infection_course_assessment",            
+                                    "attitudes_precautions_mar2020_high_risk_perception",                         
+                                    "attitudes_precautions_mar2020_avoided_risky_situations",                     
+                                    "attitudes_precautions_mar2020_aware_distance_rule_effectiveness",         
+                                    "attitudes_precautions_mar2020_understood_mask_reduces_risk",                
+                                    "attitudes_precautions_mar2020_followed_measures",                         
+                                    "attitudes_precautions_mar2020_felt_restricted_by_measures",                  
+                                    "attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical",
+                                    "beh_change_start_pandemic_avoid_in_person",                                  
+                                    "beh_change_start_pandemic_avoid_careless_contacts",                       
+                                    "beh_change_start_pandemic_contact_cautious_people",                        
+                                    "beh_change_start_pandemic_avoid_peak_hours",                          
+                                    "beh_change_start_pandemic_maintain_distance",                                
+                                    "beh_change_start_pandemic_outdoor_only",                                     
+                                    "beh_change_start_pandemic_no_visit_high_risk",                               
+                                    "beh_change_start_pandemic_avoid_busy_places",                               
+                                    "beh_change_start_pandemic_avoid_public_trans",                               
+                                    "beh_change_start_pandemic_mask_public_trans",                                
+                                    "beh_change_start_pandemic_mask_supermarket",                                 
+                                    "beh_change_start_pandemic_work_from_home",                                  
+                                    "beh_change_start_pandemic_children_limited_contacts",                       
+                                    "beh_change_start_pandemic_meet_close_despite_restrict")
+
+nb.cols <- 11
+mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(nb.cols)
+
+for(attBeh in attitudesAndBehaviors){
+reduced_data %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(!!sym(attBeh) != "trifft nicht zu") %>%
+filter(!!sym(attBeh) != "keine Angabe") %>%
+  count(!!sym(attBeh) , cc_change_during_pandemic) %>%
+  mutate(n = n / sum(n), .by = !!sym(attBeh)) %>% ungroup() %>%
+  filter(!is.na(!!sym(attBeh))) %>% 
+  ggplot(aes(!!sym(attBeh), n, fill = as.factor(!!sym(attBeh)))) +
+  geom_col(position = position_dodge(preserve = 'single')) +
+  ggtitle(attBeh) +
+  theme_minimal() +
+  ylab("Relative Frequency") +
+  xlab("") +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = mycolors) +
+  theme(legend.title=element_blank()) +
+  theme(panel.spacing.x = unit(2, "lines")) +
+  theme(axis.text.x = element_blank()) +
+  #theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
+  facet_wrap(~ cc_change_during_pandemic)
+
+ggsave(paste0(attBeh, "_changeCC-fullResponses.pdf"), dpi = 500, w = 15, h = 9)
+ggsave(paste0(attBeh, "_changeCC-fullResponses.png"), dpi = 500, w = 15, h = 9)
+}
 
 reduced_data <- reduced_data %>% mutate(attitudes_precautions_mar2020_low_infection_risk_perception = case_when(attitudes_precautions_mar2020_low_infection_risk_perception %in% c("viel weniger", "weniger", "etwas weniger") ~ "Careful",
                                                                                                 attitudes_precautions_mar2020_low_infection_risk_perception == "genauso" ~ "Neutral",
@@ -186,31 +245,37 @@ reduced_data <- reduced_data %>% mutate(attitudes_precautions_mar2020_low_infect
                                                                                                 beh_change_start_pandemic_meet_close_despite_restrict == "genauso" ~ "Neutral",
                                                                                                 beh_change_start_pandemic_meet_close_despite_restrict %in% c("etwas mehr", "mehr", "viel mehr") ~ "Risky"))
 
-attitudesAndBehaviors <- c("attitudes_precautions_mar2020_low_infection_risk_perception",                
-                                    "attitudes_precautions_mar2020_risky_infection_course_assessment",            
-                                    "attitudes_precautions_mar2020_high_risk_perception",                         
-                                    "attitudes_precautions_mar2020_avoided_risky_situations",                     
-                                    "attitudes_precautions_mar2020_aware_distance_rule_effectiveness",         
-                                    "attitudes_precautions_mar2020_understood_mask_reduces_risk",                
-                                    "attitudes_precautions_mar2020_followed_measures",                         
-                                    "attitudes_precautions_mar2020_felt_restricted_by_measures",                  
-                                    "attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical",
-                                    "beh_change_start_pandemic_avoid_in_person",                                  
-                                    "beh_change_start_pandemic_avoid_careless_contacts",                       
-                                    "beh_change_start_pandemic_contact_cautious_people",                        
-                                    "beh_change_start_pandemic_avoid_peak_hours",                          
-                                    "beh_change_start_pandemic_maintain_distance",                                
-                                    "beh_change_start_pandemic_outdoor_only",                                     
-                                    "beh_change_start_pandemic_no_visit_high_risk",                               
-                                    "beh_change_start_pandemic_avoid_busy_places",                               
-                                    "beh_change_start_pandemic_avoid_public_trans",                               
-                                    "beh_change_start_pandemic_mask_public_trans",                                
-                                    "beh_change_start_pandemic_mask_supermarket",                                 
-                                    "beh_change_start_pandemic_work_from_home",                                  
-                                    "beh_change_start_pandemic_children_limited_contacts",                       
-                                    "beh_change_start_pandemic_meet_close_despite_restrict")
+reduced_data <- reduced_data %>% mutate(cc_change_during_pandemic = case_when(cc_change_during_pandemic == "Ja" ~ "Changed CC",
+                                                                                cc_change_during_pandemic == "Nein" ~ "Did Not Change CC"))
 
-comparedToAverage <- c("AverageOrLessThanAverage", "MoreThanAverage")
+palette <- function() {
+  c("#006BA6", "#FFBC42", "#8F2D56")
+}
+
+for(attBeh in attitudesAndBehaviors){
+reduced_data %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(!!sym(attBeh) != "trifft nicht zu") %>%
+filter(!!sym(attBeh) != "keine Angabe") %>%
+  count(!!sym(attBeh) , cc_change_during_pandemic) %>%
+  mutate(n = n / sum(n), .by = !!sym(attBeh)) %>%
+  filter(!is.na(!!sym(attBeh))) %>% 
+  ggplot(aes(!!sym(attBeh), n, fill = as.factor(!!sym(attBeh)))) +
+  geom_col(position = position_dodge(preserve = 'single')) +
+  theme_minimal() +
+  facet_wrap(~cc_change_during_pandemic)
+ theme(panel.spacing.x = unit(2, "lines")) +
+  ylab("Relative Frequency") +
+  xlab("") +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = palette()) +
+  theme(legend.title=element_blank()) +
+  theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1))
+
+ggsave(paste0(attBeh, "_changeCC.pdf"), dpi = 500, w = 9, h = 9)
+ggsave(paste0(attBeh, "_changeCC.png"), dpi = 500, w = 9, h = 9)
+}
+
+comparedToAverage <- c("Risky", "Careful", "Neutral")
 
 reduced_data <- reduced_data %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("2025-01-01"),
                                         .default = as.Date(as.character(date_f1_inf)))) %>%
@@ -249,6 +314,16 @@ palette <- function() {
   c("#006BA6", "#FFBC42", "#8F2D56")
 }
 
+reduced_data <- reduced_data %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "Never",
+                                                                    num_c19_infs == "Einmal" ~ "Once",
+                                                                    num_c19_infs == "Zweimal" ~ "Twice",
+                                                                    num_c19_infs == "Dreimal" ~ "Three Times",
+                                                                    num_c19_infs == "Mehr als dreimal" ~ "More Than Three Times",
+                                                                    num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
+
+reduced_data$num_c19_infs_eng <- factor(reduced_data$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
+
+
 for(attBeh in attitudesAndBehaviors){
 ggplot(reduced_data %>% filter(!is.na(!!sym(attBeh))), aes(date_f1_inf, color = !!sym(attBeh))) +
 stat_ecdf(geom="smooth", size = 2) +
@@ -263,27 +338,97 @@ theme(legend.title = element_blank(), legend.position = "bottom") +
 guides(color = guide_legend(nrow=2))
 ggsave(paste0(attBeh, "ECDF.pdf"), dpi = 500, w = 9, h = 9)
 ggsave(paste0(attBeh, "ECDF.png"), dpi = 500, w = 9, h = 9)
+
+reduced_data %>%
+  count(!!sym(attBeh), num_c19_infs_eng) %>%
+  mutate(n = n / sum(n), .by = !!sym(attBeh)) %>%
+  filter(!is.na(!!sym(attBeh))) %>% 
+  ggplot(aes(num_c19_infs_eng, n, fill = !!sym(attBeh))) +
+  geom_col(position = position_dodge(preserve = 'single')) +
+  theme_minimal() +
+  ggtitle(attBeh) +
+  ylab("Relative Frequency") +
+  xlab("") +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom") +
+  labs(fill="Attitude/Beh. Change") +
+  theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
+  scale_fill_manual(values = palette())
+
+ggsave(paste0(attBeh, "NumberOfInfections.pdf"), dpi = 500, w = 9, h = 12)
+ggsave(paste0(attBeh, "NumberOfInfection.png"), dpi = 500, w = 9, h = 12)
 }
 
 # Convert Responses to Attitude Questions to Integers such that I can compute a "carefulness score"
-reduced_data <- reduced_data %>% mutate(attitudes_precautions_mar2020_low_infection_risk_perception = case_when(attitudes_precautions_mar2020_low_infection_risk_perception == "AverageOrLessThanAverage" ~ 1,
-                                                                                                                attitudes_precautions_mar2020_low_infection_risk_perception == "MoreThanAverage" ~ 0),
-                                         attitudes_precautions_mar2020_risky_infection_course_assessment = case_when(attitudes_precautions_mar2020_risky_infection_course_assessment == "AverageOrLessThanAverage" ~ 0,
-                                                    attitudes_precautions_mar2020_risky_infection_course_assessment =="MoreThanAverage" ~ 1),
-                                         attitudes_precautions_mar2020_high_risk_perception = case_when(attitudes_precautions_mar2020_high_risk_perception == "AverageOrLessThanAverage" ~ 0,
-                                                    attitudes_precautions_mar2020_high_risk_perception == "MoreThanAverage" ~ 1),
-                                         attitudes_precautions_mar2020_avoided_risky_situations = case_when(attitudes_precautions_mar2020_avoided_risky_situations == "AverageOrLessThanAverage" ~ 0,
-                                                    attitudes_precautions_mar2020_avoided_risky_situations == "MoreThanAverage" ~ 1),
-                                         attitudes_precautions_mar2020_aware_distance_rule_effectiveness = case_when(attitudes_precautions_mar2020_aware_distance_rule_effectiveness == "AverageOrLessThanAverage" ~ 0,
-                                                    attitudes_precautions_mar2020_aware_distance_rule_effectiveness == "MoreThanAverage" ~ 1),
-                                         attitudes_precautions_mar2020_understood_mask_reduces_risk = case_when(attitudes_precautions_mar2020_understood_mask_reduces_risk == "AverageOrLessThanAverage" ~ 0,
-                                                    attitudes_precautions_mar2020_understood_mask_reduces_risk == "MoreThanAverage" ~ 1),
-                                         attitudes_precautions_mar2020_followed_measures = case_when(attitudes_precautions_mar2020_followed_measures == "AverageOrLessThanAverage" ~ 0,
-                                                    attitudes_precautions_mar2020_followed_measures == "MoreThanAverage" ~ 1),
-                                         attitudes_precautions_mar2020_felt_restricted_by_measures = case_when(attitudes_precautions_mar2020_felt_restricted_by_measures == "AverageOrLessThanAverage" ~ 1,
-                                                    attitudes_precautions_mar2020_felt_restricted_by_measures == "MoreThanAverage" ~ 0),
-                                         attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical = case_when(attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical == "AverageOrLessThanAverage" ~ 0,
-                                                    attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical =="MoreThanAverage" ~ 1))                                                                                                             
+reduced_data <- reduced_data %>% mutate(attitudes_precautions_mar2020_low_infection_risk_perception = case_when(attitudes_precautions_mar2020_low_infection_risk_perception == "Careful" ~ 1,
+                                                                                                                attitudes_precautions_mar2020_low_infection_risk_perception == "Neutral" ~ 0,
+                                                                                                                attitudes_precautions_mar2020_low_infection_risk_perception == "Risky" ~ -1),
+                                         attitudes_precautions_mar2020_risky_infection_course_assessment = case_when(attitudes_precautions_mar2020_risky_infection_course_assessment == "Risky" ~ -1,
+                                                    attitudes_precautions_mar2020_risky_infection_course_assessment =="Neutral" ~ 0,
+                                                    attitudes_precautions_mar2020_risky_infection_course_assessment =="Careful" ~ 1),
+                                         attitudes_precautions_mar2020_high_risk_perception = case_when(attitudes_precautions_mar2020_high_risk_perception == "Risky" ~ -1,
+                                                    attitudes_precautions_mar2020_high_risk_perception == "Neutral" ~ 0,
+                                                    attitudes_precautions_mar2020_high_risk_perception == "Careful" ~ 1),
+                                         attitudes_precautions_mar2020_avoided_risky_situations = case_when(attitudes_precautions_mar2020_avoided_risky_situations == "Risky" ~ -1,
+                                                    attitudes_precautions_mar2020_avoided_risky_situations == "Neutral" ~ 0,
+                                                    attitudes_precautions_mar2020_avoided_risky_situations == "Careful" ~ 1),
+                                         attitudes_precautions_mar2020_aware_distance_rule_effectiveness = case_when(attitudes_precautions_mar2020_aware_distance_rule_effectiveness == "Risky" ~ 0,
+                                                    attitudes_precautions_mar2020_aware_distance_rule_effectiveness == "Neutral" ~ 0,
+                                                    attitudes_precautions_mar2020_aware_distance_rule_effectiveness == "Careful" ~ 1),
+                                         attitudes_precautions_mar2020_understood_mask_reduces_risk = case_when(attitudes_precautions_mar2020_understood_mask_reduces_risk == "Risky" ~ 0,
+                                                    attitudes_precautions_mar2020_understood_mask_reduces_risk == "Neutral" ~ 0,
+                                                    attitudes_precautions_mar2020_understood_mask_reduces_risk == "Careful" ~ 1),
+                                         attitudes_precautions_mar2020_followed_measures = case_when(attitudes_precautions_mar2020_followed_measures == "Risky" ~ 0,
+                                                    attitudes_precautions_mar2020_followed_measures == "Neutral" ~ 0,
+                                                    attitudes_precautions_mar2020_followed_measures == "Careful" ~ 1),
+                                         attitudes_precautions_mar2020_felt_restricted_by_measures = case_when(attitudes_precautions_mar2020_felt_restricted_by_measures == "Careful" ~ 1,
+                                                    attitudes_precautions_mar2020_felt_restricted_by_measures == "Neutral" ~ 0,
+                                                    attitudes_precautions_mar2020_felt_restricted_by_measures == "Risky" ~ -1),
+                                         attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical = case_when(attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical == "Risky" ~ -1,
+                                                    attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical =="Neutral" ~ 0,
+                                                    attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical =="Careful" ~ 1),
+                                         beh_change_start_pandemic_avoid_in_person = case_when(beh_change_start_pandemic_avoid_in_person == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_avoid_in_person =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_avoid_in_person =="Careful" ~ 1),
+                                         beh_change_start_pandemic_avoid_careless_contacts = case_when(beh_change_start_pandemic_avoid_careless_contacts == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_avoid_careless_contacts =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_avoid_careless_contacts =="Careful" ~ 1),
+                                         beh_change_start_pandemic_contact_cautious_people = case_when(beh_change_start_pandemic_contact_cautious_people == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_contact_cautious_people =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_contact_cautious_people =="Careful" ~ 1),
+                                         beh_change_start_pandemic_avoid_peak_hours = case_when(beh_change_start_pandemic_avoid_peak_hours == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_avoid_peak_hours =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_avoid_peak_hours =="Careful" ~ 1),
+                                         beh_change_start_pandemic_maintain_distance = case_when(beh_change_start_pandemic_maintain_distance == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_maintain_distance =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_maintain_distance =="Careful" ~ 1),
+                                         beh_change_start_pandemic_outdoor_only = case_when(beh_change_start_pandemic_outdoor_only == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_outdoor_only =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_outdoor_only =="Careful" ~ 1),
+                                         beh_change_start_pandemic_no_visit_high_risk = case_when(beh_change_start_pandemic_no_visit_high_risk == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_no_visit_high_risk =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_no_visit_high_risk =="Careful" ~ 1),
+                                         beh_change_start_pandemic_avoid_busy_places = case_when(beh_change_start_pandemic_avoid_busy_places == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_avoid_busy_places =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_avoid_busy_places =="Careful" ~ 1),
+                                         beh_change_start_pandemic_avoid_public_trans = case_when(beh_change_start_pandemic_avoid_public_trans == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_avoid_public_trans =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_avoid_public_trans =="Careful" ~ 1),
+                                         beh_change_start_pandemic_mask_public_trans = case_when(beh_change_start_pandemic_mask_public_trans == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_mask_public_trans =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_mask_public_trans =="Careful" ~ 1),
+                                         beh_change_start_pandemic_mask_supermarket = case_when(beh_change_start_pandemic_mask_supermarket == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_mask_supermarket =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_mask_supermarket =="Careful" ~ 1),
+                                         beh_change_start_pandemic_work_from_home = case_when(beh_change_start_pandemic_work_from_home == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_work_from_home =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_work_from_home =="Careful" ~ 1),
+                                         beh_change_start_pandemic_children_limited_contacts = case_when(beh_change_start_pandemic_children_limited_contacts == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_children_limited_contacts =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_children_limited_contacts =="Careful" ~ 1),
+                                         beh_change_start_pandemic_meet_close_despite_restrict = case_when(beh_change_start_pandemic_meet_close_despite_restrict == "Risky" ~ -1,
+                                                    beh_change_start_pandemic_meet_close_despite_restrict =="Neutral" ~ 0,
+                                                    beh_change_start_pandemic_meet_close_despite_restrict =="Careful" ~ 1))                                                                                                             
 
 reduced_data$attitudes_precautions_mar2020_low_infection_risk_perception  <- as.integer(reduced_data$attitudes_precautions_mar2020_low_infection_risk_perception)
 reduced_data$attitudes_precautions_mar2020_risky_infection_course_assessment <- as.integer(reduced_data$attitudes_precautions_mar2020_risky_infection_course_assessment)
@@ -294,6 +439,20 @@ reduced_data$attitudes_precautions_mar2020_understood_mask_reduces_risk <- as.in
 reduced_data$attitudes_precautions_mar2020_followed_measures <- as.integer(reduced_data$attitudes_precautions_mar2020_followed_measures)
 reduced_data$attitudes_precautions_mar2020_felt_restricted_by_measures <- as.integer(reduced_data$attitudes_precautions_mar2020_felt_restricted_by_measures)
 reduced_data$attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical <- as.integer(reduced_data$attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical)
+reduced_data$beh_change_start_pandemic_avoid_in_person <- as.integer(reduced_data$beh_change_start_pandemic_avoid_in_person)
+reduced_data$beh_change_start_pandemic_avoid_careless_contacts <- as.integer(reduced_data$beh_change_start_pandemic_avoid_careless_contacts)
+reduced_data$beh_change_start_pandemic_contact_cautious_people <- as.integer(reduced_data$beh_change_start_pandemic_contact_cautious_people)
+reduced_data$beh_change_start_pandemic_avoid_peak_hours <- as.integer(reduced_data$beh_change_start_pandemic_avoid_peak_hours)
+reduced_data$beh_change_start_pandemic_maintain_distance <- as.integer(reduced_data$beh_change_start_pandemic_maintain_distance)
+reduced_data$beh_change_start_pandemic_outdoor_only <- as.integer(reduced_data$beh_change_start_pandemic_outdoor_only)
+reduced_data$beh_change_start_pandemic_no_visit_high_risk <- as.integer(reduced_data$beh_change_start_pandemic_no_visit_high_risk)
+reduced_data$beh_change_start_pandemic_avoid_busy_places <- as.integer(reduced_data$beh_change_start_pandemic_avoid_busy_places)
+reduced_data$beh_change_start_pandemic_avoid_public_trans <- as.integer(reduced_data$beh_change_start_pandemic_avoid_public_trans)
+reduced_data$beh_change_start_pandemic_mask_public_trans <- as.integer(reduced_data$beh_change_start_pandemic_mask_public_trans)
+reduced_data$beh_change_start_pandemic_mask_supermarket <- as.integer(reduced_data$beh_change_start_pandemic_mask_supermarket)
+reduced_data$beh_change_start_pandemic_work_from_home <- as.integer(reduced_data$beh_change_start_pandemic_work_from_home)
+reduced_data$beh_change_start_pandemic_children_limited_contacts <- as.integer(reduced_data$beh_change_start_pandemic_children_limited_contacts)
+reduced_data$beh_change_start_pandemic_meet_close_despite_restrict <- as.integer(reduced_data$beh_change_start_pandemic_meet_close_despite_restrict)
 
 reduced_data <- reduced_data %>% mutate(attitudeScore = attitudes_precautions_mar2020_low_infection_risk_perception +                
                                     attitudes_precautions_mar2020_risky_infection_course_assessment +            
@@ -303,19 +462,126 @@ reduced_data <- reduced_data %>% mutate(attitudeScore = attitudes_precautions_ma
                                     attitudes_precautions_mar2020_understood_mask_reduces_risk +                
                                     attitudes_precautions_mar2020_followed_measures +                        
                                     attitudes_precautions_mar2020_felt_restricted_by_measures +                
-                                    attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical)
+                                    attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical) %>%
+                                    mutate(behaviorChangeScore = beh_change_start_pandemic_avoid_in_person +
+                                    beh_change_start_pandemic_avoid_careless_contacts +
+                                    beh_change_start_pandemic_contact_cautious_people +
+                                    beh_change_start_pandemic_avoid_peak_hours +
+                                    beh_change_start_pandemic_maintain_distance +
+                                    beh_change_start_pandemic_outdoor_only +
+                                    beh_change_start_pandemic_no_visit_high_risk +
+                                    beh_change_start_pandemic_avoid_public_trans +
+                                    beh_change_start_pandemic_mask_public_trans +
+                                    beh_change_start_pandemic_mask_supermarket +
+                                    beh_change_start_pandemic_work_from_home +
+                                    beh_change_start_pandemic_children_limited_contacts +
+                                    beh_change_start_pandemic_meet_close_despite_restrict)
 
 reduced_data$attitudeScore <- factor(reduced_data$attitudeScore)
 
-ggplot(reduced_data %>% filter(!is.na(attitudeScore)), aes(date_f1_inf, color = attitudeScore)) +
-stat_ecdf(geom="step", size = 2) +
+reduced_data <- reduced_data %>% mutate(RiskyCarefulAtt = case_when(attitudeScore %in% c(-9,-8,-7,-6,-5,-4,-3,-2,-1) ~ "Risky",
+                                                                attitudeScore %in% c(1,2,3,4,5,6,7,8,9) ~ "Careful")) %>%
+                                mutate(RiskyCarefulBeh = case_when(behaviorChangeScore %in% c(-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1) ~ "Risky",
+                                                                    behaviorChangeScore %in% c(14,13,12,11,10,9,8,7,6,5,4,3,2,1) ~ "Careful"))
+
+reduced_data$RiskyCarefulAtt <- factor(reduced_data$RiskyCarefulAtt, levels = c("Risky", "Careful"))
+reduced_data$RiskyCarefulBeh <- factor(reduced_data$RiskyCarefulBeh, levels = c("Risky", "Careful"))
+
+palette <- function() {
+  c("#8F2D56", "#006BA6")
+}
+
+ggplot(reduced_data %>% filter(!is.na(RiskyCarefulAtt)), aes(date_f1_inf, color = RiskyCarefulAtt)) +
+stat_ecdf(geom="smooth", size = 2) +
 theme_minimal() +
 ylab("Empirical Cumulative \n Density Function") +
 xlab("Date Of 1st Infection") +
-#coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
-theme(text = element_text(size = 22)) +
+coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
+theme(text = element_text(size = 30)) +
+scale_color_manual(values = palette()) +
 theme(legend.title = element_blank(), legend.position = "bottom") +
 guides(color = guide_legend(nrow = 2))
+
+ggsave("TimingOfInfectionAttCarefulnessScore.pdf", dpi = 500, w = 9, h = 9)
+ggsave("TimingOfInfectionAttCarefulnessScore.png", dpi = 500, w = 9, h = 9)
+
+ggplot(reduced_data %>% filter(!is.na(RiskyCarefulBeh)), aes(date_f1_inf, color = RiskyCarefulBeh)) +
+stat_ecdf(geom="smooth", size = 2) +
+theme_minimal() +
+ylab("Empirical Cumulative \n Density Function") +
+xlab("Date Of 1st Infection") +
+coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
+theme(text = element_text(size = 30)) +
+scale_color_manual(values = palette()) +
+theme(legend.title = element_blank(), legend.position = "bottom") +
+guides(color = guide_legend(nrow = 2))
+
+ggsave("TimingOfInfectionBehCarefulnessScore.pdf", dpi = 500, w = 9, h = 9)
+ggsave("TimingOfInfectionBehCarefulnessScore.png", dpi = 500, w = 9, h = 9)
+
+
+nb.cols <- 14
+mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(nb.cols)
+
+reduced_data <- reduced_data %>% mutate(cc_change_during_pandemic = case_when(cc_change_during_pandemic == "Ja" ~ "Changed CC",
+                                                                                cc_change_during_pandemic == "Nein" ~ "Did Not Change CC"))
+
+reduced_data %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(attitudeScore != "trifft nicht zu") %>%
+filter(attitudeScore != "keine Angabe") %>%
+  count(attitudeScore , cc_change_during_pandemic) %>%
+  mutate(n = n / sum(n), .by = attitudeScore) %>%
+  filter(!is.na(attitudeScore)) %>% 
+  ggplot(aes(as.factor(attitudeScore), n, fill = as.factor(attitudeScore))) +
+  geom_col(position = position_dodge(preserve = 'single')) +
+  facet_wrap(~ cc_change_during_pandemic) +
+  theme_minimal() +
+  ylab("Relative Frequency") +
+  xlab("Carefulness Score") +
+  theme(text = element_text(size = 25)) +
+  theme(legend.position = "none") + 
+  theme(panel.spacing.x = unit(2, "lines")) +
+  scale_fill_manual(values = mycolors) +
+  theme(legend.title=element_blank())
+
+ggsave("WillingnessChangeCC_attitudeScore.png", dpi = 500, w = 13, h =9)
+ggsave("WillingnessChangeCC_attitudeScore.pdf", dpi = 500, w = 13, h =9)
+
+reduced_data %>%
+  count(RiskyCarefulAtt, num_c19_infs_eng) %>%
+  mutate(n = n / sum(n), .by = RiskyCarefulAtt) %>%
+  filter(!is.na(RiskyCarefulAtt)) %>% 
+  ggplot(aes(num_c19_infs_eng, n, fill = RiskyCarefulAtt)) +
+  geom_col(position = position_dodge(preserve = 'single')) +
+  theme_minimal() +
+  ylab("Relative Frequency") +
+  xlab("") +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom") +
+  labs(fill="Behavioral Group") +
+  theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
+  scale_fill_manual(values = palette())
+
+ggsave("NumberOfInfectionAttCarefulnessScore.pdf", dpi = 500, w = 9, h = 12)
+ggsave("NumberOfInfectionAttCarefulnessScore.png", dpi = 500, w = 9, h = 12)
+
+reduced_data %>%
+  count(RiskyCarefulBeh, num_c19_infs_eng) %>%
+  mutate(n = n / sum(n), .by = RiskyCarefulBeh) %>%
+  filter(!is.na(RiskyCarefulBeh)) %>% 
+  ggplot(aes(num_c19_infs_eng, n, fill = RiskyCarefulBeh)) +
+  geom_col(position = position_dodge(preserve = 'single')) +
+  theme_minimal() +
+  ylab("Relative Frequency") +
+  xlab("") +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom") +
+  labs(fill="Behavioral Group") +
+  theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
+  scale_fill_manual(values = palette())
+
+ggsave("NumberOfInfectionBehCarefulnessScore.pdf", dpi = 500, w = 9, h = 12)
+ggsave("NumberOfInfectionBehCarefulnessScore.png", dpi = 500, w = 9, h = 12)
+
 
 #Summary stats for NUMBER of Infections
 reduced_data <- reduced_data %>% mutate(noInfInt = case_when(num_c19_infs == "Nie" ~ 0,
@@ -376,6 +642,15 @@ reduced_data <- reduced_data %>% mutate(date_f1_inf = case_when(is.na(date_f1_in
                                 filter(date_f1_inf != as.Date("2000-12-13")) %>%
                                 filter(date_f1_inf != as.Date("2019-12-21")) 
 
+reduced_data <- reduced_data %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "Never",
+                                                                    num_c19_infs == "Einmal" ~ "Once",
+                                                                    num_c19_infs == "Zweimal" ~ "Twice",
+                                                                    num_c19_infs == "Dreimal" ~ "Three Times",
+                                                                    num_c19_infs == "Mehr als dreimal" ~ "More Than Three Times",
+                                                                    num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
+
+reduced_data$num_c19_infs_eng <- factor(reduced_data$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
+
 palette <- function() {
   c("#8F2D56", "#006BA6")
 }
@@ -386,7 +661,7 @@ theme_minimal() +
 ylab("Empirical Cumulative \n Density Function") +
 xlab("Date Of First Infection") +
 coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01")), ylim=c(0, 0.75)) +
-theme(text = element_text(size = 22)) +
+theme(text = element_text(size = 30)) +
 theme(legend.position = "bottom") +
 labs(color="Age Group") +
 guides(color = guide_legend(nrow = 2)) +
@@ -395,11 +670,24 @@ scale_color_manual(values = palette())
 ggsave("TimingOfInfectionByAge.pdf", dpi = 500, w = 9, h = 9)
 ggsave("TimingOfInfectionByAge.png", dpi = 500, w = 9, h = 9)
 
-reduced_data <- reduced_data %>% mutate(noInfInt = case_when(num_c19_infs == "Nie" ~ 0,
-                                                            num_c19_infs == "Einmal" ~ 1,
-                                                            num_c19_infs == "Zweimal" ~ 2,
-                                                            num_c19_infs == "Dreimal" ~ 3,
-                                                            num_c19_infs == "Mehr als dreimal" ~ 4))
+reduced_data %>%
+  count(age_group, num_c19_infs_eng) %>%
+  mutate(n = n / sum(n), .by = 'age_group') %>%
+  filter(!is.na(age_group)) %>% 
+  ggplot(aes(num_c19_infs_eng, n, fill = age_group)) +
+  geom_col(position = position_dodge(preserve = 'single')) +
+  theme_minimal() +
+  ylab("Relative Frequency") +
+  xlab("") +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom") +
+  labs(fill="Age Group") +
+  theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
+  scale_fill_manual(values = palette())
+
+ggsave("NumberOfInfectionByAge.pdf", dpi = 500, w = 9, h = 12)
+ggsave("NumberOfInfectionByAge.png", dpi = 500, w = 9, h = 12)
+
 
 # Carefulness Due To Comorbidities ----------------------------------------
 
@@ -414,11 +702,20 @@ reduced_data <- reduced_data %>% mutate(date_f1_inf = case_when(is.na(date_f1_in
                                 filter(date_f1_inf != as.Date("2000-12-13")) %>%
                                 filter(date_f1_inf != as.Date("2019-12-21")) 
 
+reduced_data <- reduced_data %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "Never",
+                                                                    num_c19_infs == "Einmal" ~ "Once",
+                                                                    num_c19_infs == "Zweimal" ~ "Twice",
+                                                                    num_c19_infs == "Dreimal" ~ "Three Times",
+                                                                    num_c19_infs == "Mehr als dreimal" ~ "More Than Three Times",
+                                                                    num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
+
+reduced_data$num_c19_infs_eng <- factor(reduced_data$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
+
 palette <- function() {
   c("#8F2D56", "#006BA6")
 }
 
-reduced_data <- reduced_data %>% mutate(cond_hbp = case_when(cond_hbp == "Ja" ~ "Yes",
+reduced_data <- reduced_data %>% mutate(cond_  = case_when(cond_hbp == "Ja" ~ "Yes",
                                 cond_hbp == "Nicht Gewählt" ~ "No")) %>% 
                                 mutate(cond_diabetes = case_when(cond_diabetes == "Ja" ~ "Yes",
                                 cond_diabetes == "Nicht Gewählt" ~ "No")) %>% 
@@ -435,6 +732,15 @@ reduced_data <- reduced_data %>% mutate(cond_hbp = case_when(cond_hbp == "Ja" ~ 
                                 mutate(cond_none = case_when(cond_none == "Ja" ~ "No Comorbidities",
                                 cond_none == "Nicht Gewählt" ~ "Comorbidities"))
 
+reduced_data$cond_hbp <- factor(reduced_data$cond_hbp, levels = c("No", "Yes"))
+reduced_data$cond_diabetes <- factor(reduced_data$cond_diabetes, levels = c("No", "Yes"))
+reduced_data$cond_cardio <- factor(reduced_data$cond_cardio, levels = c("No", "Yes"))
+reduced_data$cond_resp <- factor(reduced_data$cond_resp, levels = c("No", "Yes"))
+reduced_data$cond_immuno <- factor(reduced_data$cond_immuno, levels = c("No", "Yes"))
+reduced_data$cond_cancer <- factor(reduced_data$cond_cancer, levels = c("No", "Yes"))
+reduced_data$cond_post_c_19 <- factor(reduced_data$cond_post_c19, levels = c("No", "Yes"))
+reduced_data$cond_none <- factor(reduced_data$cond_none, levels = c("No Comorbidities", "Comorbidities"))
+
 comorbidities <- c("cond_hbp", "cond_diabetes", "cond_cardio", "cond_resp",
                     "cond_immuno", "cond_cancer", "cond_post_c19", "cond_none")
 
@@ -445,12 +751,32 @@ theme_minimal() +
 ylab("Empirical Cumulative \n Density Function") +
 xlab("Date Of First Infection") +
 coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01")), ylim=c(0, 0.75)) +
-theme(text = element_text(size = 22)) +
-theme(legend.position = "bottom") +
+theme(text = element_text(size = 30)) +
+theme(legend.position = "bottom", legend.title = element_blank()) +
 labs(color=com) +
 guides(color = guide_legend(nrow = 2)) +
 scale_color_manual(values = palette())
 
 ggsave(paste0(com, "_timingOfFirstInf_ECDF.pdf"), dpi = 500, w = 9, h = 9)
 ggsave(paste0(com, "_timingOfFirstInf_ECDF.png"), dpi = 500, w = 9, h = 9)
+
+reduced_data %>%
+  count(!!sym(com), num_c19_infs_eng) %>%
+  mutate(n = n / sum(n), .by = !!sym(com)) %>%
+  filter(!is.na(!!sym(com))) %>% 
+  ggplot(aes(num_c19_infs_eng, n, fill = !!sym(com))) +
+  geom_col(position = position_dodge(preserve = 'single')) +
+  theme_minimal() +
+  ylab("Relative Frequency") +
+  xlab("") +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom", legend.title=element_blank()) +
+  #labs(fill=com) +
+  theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
+  scale_fill_manual(values = palette())
+
+ggsave(paste0(com, "NumberOfInfection.pdf"), dpi = 500, w = 9, h = 12)
+ggsave(paste0(com,"NumberOfInfection.png"), dpi = 500, w = 9, h = 12)
 }
+
+
