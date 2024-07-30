@@ -8,11 +8,11 @@ library(ggiraphExtra)
 # Aim of this script:
 # Clean and prepare data for contact analysis
 
-raw_data <- read_csv("/Users/sydney/Downloads/twitter_data.csv") #Place to enter the data's path
+raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds") #Place to enter the data's path
 
 # Reducing data frame to the variables of interest ------------------------
 
-data_reduced <- raw_data %>% select(user_id, ref, cc_change_during_pandemic, total_hsld_size_persons_under_14, number_of_children_under_18_time,
+data_reduced <- raw_data %>% select(cc_change_during_pandemic, total_hsld_size_persons_under_14, number_of_children_under_18,
                                     hsld_size_2019_, hsld_size_03_2020_, hsld_size_summer_2021_, hsld_size_01_2023_, 
                                     cc_hsld_size_pre_pandemic_2019_num_hsld_members, cc_hsld_size_pre_pandemic_03_2020_num_hsld_members, cc_hsld_size_pre_pandemic_summer_2021_num_hsld_members, cc_hsld_size_pre_pandemic_01_2023_num_hsld_members,
                                     cc_hsld_size_during_pandemic_2019_num_hsld_members, cc_hsld_size_during_pandemic_03_2020_num_hsld_members, cc_hsld_size_during_pandemic_summer_2021_num_hsld_members, cc_hsld_size_during_pandemic_01_2023_num_hsld_members,
@@ -142,4 +142,4 @@ colnames(data_reduced)[which(names(data_reduced) == "cc_weekly_cont_during_pande
 data_reduced <- data_reduced %>% mutate(cc_during_all_2019 = cc_during_hsld_size_2019 + cc_during_school_2019 + cc_during_work_2019 + cc_during_leisure_2019) %>% 
   mutate(cc_during_all_03_2020 = cc_during_hsld_size_03_2020 + cc_during_school_03_2020 + cc_during_work_03_2020 + cc_during_leisure_03_2020) %>%
   mutate(cc_during_all_summer_2021 = cc_during_hsld_size_summer_2021 + cc_during_school_summer_2021 +cc_during_work_summer_2021 + cc_during_leisure_summer_2021) %>%
-  mutate(cc_during_all_01_2023 = cc_during_hsld_size_01_2023 + cc_during_school_01_2023 +cc_during_work_01_2023 + cc_during_leisure_01_2023)
+  mutate(cc_during_all_01_2023 = cc_during_hsld_size_01_2023 + cc_during_school_01_2023 + cc_during_work_01_2023 + cc_during_leisure_01_2023)

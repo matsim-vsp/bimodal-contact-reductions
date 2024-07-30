@@ -59,7 +59,7 @@ all_contacts <- all_contacts %>% mutate(all2019 = hsld_size_2019_ +  wkly_cont_2
                                         allsummer21 = hsld_size_summer_2021_ + wkly_cont_summer_2021_work_uni + wkly_cont_summer_2021_school_kinder + wkly_cont_summer_2021_leisure,
                                         all23 = hsld_size_01_2023_ + wkly_cont_01_2023_work_uni + wkly_cont_01_2023_school_kinder + wkly_cont_01_2023_leisure)
 
-all_contacts <- all_contacts %>% select(user_id, all2019, all032020, allsummer21, all23) %>% pivot_longer(cols = c("all2019", "all032020", "allsummer21", "all23"))
+all_contacts <- all_contacts %>% select(all2019, all032020, allsummer21, all23) %>% pivot_longer(cols = c("all2019", "all032020", "allsummer21", "all23"))
 
 
 all_contacts <- all_contacts %>% filter(!is.na(value)) %>% mutate(time = case_when(name == "all2019" ~ "2019",
@@ -69,7 +69,7 @@ all_contacts <- all_contacts %>% filter(!is.na(value)) %>% mutate(time = case_wh
           
 
 ## BOXPLOTS RESPONDENT
-WorkDataRespondent <- data_reduced %>% select(user_id, respondent_work_2019, respondent_work_03_2020, respondent_work_summer_2021, respondent_work_01_2023) %>%
+WorkDataRespondent <- data_reduced %>% select(respondent_work_2019, respondent_work_03_2020, respondent_work_summer_2021, respondent_work_01_2023) %>%
   pivot_longer(cols = c("respondent_work_2019", "respondent_work_03_2020", "respondent_work_summer_2021", "respondent_work_01_2023"))
 WorkDataRespondent$name <- factor(WorkDataRespondent$name, levels = c("respondent_work_2019", "respondent_work_03_2020", "respondent_work_summer_2021", "respondent_work_01_2023"))
 WorkDataRespondent$value <- as.integer(WorkDataRespondent$value)
@@ -80,7 +80,7 @@ WorkDataRespondent <- WorkDataRespondent %>% filter(!is.na(value)) %>% mutate(ti
                                                                                               name == "respondent_work_01_2023" ~ "01/2023")) %>%
                                                                       mutate(context = "work")
 
-LeisureDataRespondent <- data_reduced %>% select(user_id, respondent_leisure_2019, respondent_leisure_03_2020, respondent_leisure_summer_2021, respondent_leisure_01_2023) %>% 
+LeisureDataRespondent <- data_reduced %>% select(respondent_leisure_2019, respondent_leisure_03_2020, respondent_leisure_summer_2021, respondent_leisure_01_2023) %>% 
 pivot_longer(cols = c("respondent_leisure_2019", "respondent_leisure_03_2020", "respondent_leisure_summer_2021", "respondent_leisure_01_2023"))
 LeisureDataRespondent$name <- factor(LeisureDataRespondent$name, levels = c("respondent_leisure_2019", "respondent_leisure_03_2020", "respondent_leisure_summer_2021", "respondent_leisure_01_2023"))
 LeisureDataRespondent$value <- as.integer(LeisureDataRespondent$value)
@@ -91,7 +91,7 @@ LeisureDataRespondent <- LeisureDataRespondent %>% filter(!is.na(value)) %>% mut
                                                                                                name == "respondent_leisure_01_2023" ~ "01/2023")) %>% 
                                                                                                mutate(context = "leisure")
 
-allDataRespondent <- data_reduced %>% select(user_id, respondent_all_2019, respondent_all_03_2020, respondent_all_summer_2021, respondent_all_01_2023) %>% 
+allDataRespondent <- data_reduced %>% select(respondent_all_2019, respondent_all_03_2020, respondent_all_summer_2021, respondent_all_01_2023) %>% 
 pivot_longer(cols = c("respondent_all_2019", "respondent_all_03_2020", "respondent_all_summer_2021", "respondent_all_01_2023"))
 allDataRespondent$name <- factor(allDataRespondent$name, levels = c("respondent_all_2019", "respondent_all_03_2020", "respondent_all_summer_2021", "respondent_all_01_2023"))
 allDataRespondent$value <- as.integer(allDataRespondent$value)
@@ -113,8 +113,8 @@ palette <- function() {
 }
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+   geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -122,13 +122,13 @@ leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisu
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22))
   
-ggsave("LeisureBoxplot.pdf", leisure, dpi = 500, w = 9, h = 4.5)
-ggsave("LeisureBoxplot.png", leisure, dpi = 500, w = 9, h = 4.5)
+ggsave("LeisureBoxplot.pdf", leisure, dpi = 500, w = 9, h = 9)
+ggsave("LeisureBoxplot.png", leisure, dpi = 500, w = 9, h = 9)
 
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+   geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -136,12 +136,12 @@ work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), 
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22))
 
-ggsave("WorkBoxplot.pdf", work, dpi = 500, w = 9, h = 4.5)
-ggsave("WorkBoxplot.png", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplot.pdf", work, dpi = 500, w = 9, h = 9)
+ggsave("WorkBoxplot.png", work, dpi = 500, w = 9, h = 9)
 
 all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -149,8 +149,8 @@ all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>%
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22))
 
-ggsave("AllBoxplot.pdf", all, dpi = 500, w = 9, h = 4.5)
-ggsave("AllBoxplot.png", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplot.pdf", all, dpi = 500, w = 9, h = 9)
+ggsave("AllBoxplot.png", all, dpi = 500, w = 9, h = 9)
 
 ## Contact reductions of respondent
 data_reduced <- data_reduced %>% mutate(respondent_work_rel_2019_2020 = 100/respondent_work_2019*respondent_work_03_2020) %>%
@@ -206,8 +206,8 @@ WorkDataRespondent <- WorkDataRespondent %>% filter(!is.na(value)) %>% mutate(ti
                                                                       mutate(context = "work")
 
 work <-ggplot(WorkDataRespondent %>% filter(value < 1000), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+   geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+   geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -215,8 +215,8 @@ work <-ggplot(WorkDataRespondent %>% filter(value < 1000), aes(time, value)) +
   ylab("Rel. # Of Work Contacts") +
   theme(text = element_text(size = 22))
 
-ggsave("WorkBoxplotRel.pdf", work, dpi = 500, w = 9, h = 4.5)
-ggsave("WorkBoxplotRel.png", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplotRel.pdf", work, dpi = 500, w = 9, h = 9)
+ggsave("WorkBoxplotRel.png", work, dpi = 500, w = 9, h = 9)
 
 LeisureDataRespondent <- data_reduced %>% select(user_id, respondent_leisure_rel_2019_2020, respondent_leisure_rel_2019_2021, respondent_leisure_rel_2019_2023) %>%
   pivot_longer(cols = c("respondent_leisure_rel_2019_2020", "respondent_leisure_rel_2019_2021", "respondent_leisure_rel_2019_2023"))
@@ -229,8 +229,8 @@ LeisureDataRespondent <- LeisureDataRespondent %>% filter(!is.na(value)) %>% mut
                                                                       mutate(context = "leisure")
 
 leisure <- ggplot(LeisureDataRespondent %>% filter(value < 1000), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+   geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+   geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -238,8 +238,8 @@ leisure <- ggplot(LeisureDataRespondent %>% filter(value < 1000), aes(time, valu
   ylab("Relative # Of Leisure Contacts") +
   theme(text = element_text(size = 22))
 
-ggsave("LeisureBoxplotRel.pdf", leisure, dpi = 500, w = 9, h = 5)
-ggsave("LeisureBoxplotRel.png", leisure, dpi = 500, w = 9, h = 5)
+ggsave("LeisureBoxplotRel.pdf", leisure, dpi = 500, w = 9, h = 9)
+ggsave("LeisureBoxplotRel.png", leisure, dpi = 500, w = 9, h = 9)
 
 AllDataRespondent <- data_reduced %>% select(user_id, respondent_all_rel_2019_2020, respondent_all_rel_2019_2021, respondent_all_rel_2019_2023) %>%
   pivot_longer(cols = c("respondent_all_rel_2019_2020", "respondent_all_rel_2019_2021", "respondent_all_rel_2019_2023"))
@@ -252,8 +252,8 @@ AllDataRespondent <- AllDataRespondent %>% filter(!is.na(value)) %>% mutate(time
                                                                       mutate(context = "all")
 
 all <- ggplot(AllDataRespondent %>% filter(value < 1000), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -261,8 +261,8 @@ all <- ggplot(AllDataRespondent %>% filter(value < 1000), aes(time, value)) +
   ylab("Relative # Of All Contacts") +
   theme(text = element_text(size = 22))
 
-ggsave("AllBoxplotRel.pdf", all, dpi = 500, w = 9, h = 4.5)
-ggsave("AllBoxplotRel.png", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplotRel.pdf", all, dpi = 500, w = 9, h = 9)
+ggsave("AllBoxplotRel.png", all, dpi = 500, w = 9, h = 9)
 
 sum_stat_reductions <- data.frame(matrix(0, ncol = 5, nrow = 0))
 colnames(sum_stat_reductions) <- c("RespondentHHCC", "Category", "PointInTime", "NoWhoReduced", "NoWhoAnswered")
@@ -370,8 +370,8 @@ palette <- function() {
 }
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -379,13 +379,13 @@ leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisu
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22))
   
-ggsave("LeisureBoxplotCCPre.pdf", leisure, dpi = 500, w = 9, h = 4.5)
-ggsave("LeisureBoxplotCCPre.png", leisure, dpi = 500, w = 9, h = 4.5)
+ggsave("LeisureBoxplotCCPre.pdf", leisure, dpi = 500, w = 9, h = 9)
+ggsave("LeisureBoxplotCCPre.png", leisure, dpi = 500, w = 9, h = 9)
 
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -393,12 +393,12 @@ work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), 
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22))
 
-ggsave("WorkBoxplotCCPre.pdf", work, dpi = 500, w = 9, h = 4.5)
-ggsave("WorkBoxplotCCPre.png", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplotCCPre.pdf", work, dpi = 500, w = 9, h = 9)
+ggsave("WorkBoxplotCCPre.png", work, dpi = 500, w = 9, h = 9)
 
 all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -406,8 +406,8 @@ all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>%
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22))
 
-ggsave("AllBoxplotCCPre.pdf", all, dpi = 500, w = 9, h = 4.5)
-ggsave("AllBoxplotCCPre.png", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplotCCPre.pdf", all, dpi = 500, w = 9, h = 9)
+ggsave("AllBoxplotCCPre.png", all, dpi = 500, w = 9, h = 9)
 
 ## Contact reductions of CC (pre)
 data_reduced <- data_reduced %>% mutate(cc_pre_work_rel_2019_2020 = 100/cc_pre_work_2019*cc_pre_work_03_2020) %>%
@@ -493,8 +493,8 @@ palette <- function() {
 }
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -502,13 +502,13 @@ leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisu
   ylab("Rel. # Of Work\nContacts (CC, pre)") +
   theme(text = element_text(size = 22))
   
-ggsave("LeisureBoxplotCCPreRel.pdf", leisure, dpi = 500, w = 9, h = 4.5)
-ggsave("LeisureBoxplotCCPreRel.png", leisure, dpi = 500, w = 9, h = 4.5)
+ggsave("LeisureBoxplotCCPreRel.pdf", leisure, dpi = 500, w = 9, h = 9)
+ggsave("LeisureBoxplotCCPreRel.png", leisure, dpi = 500, w = 9, h = 9)
 
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -516,12 +516,12 @@ work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), 
   ylab("Rel. # Of Work\nContacts (CC, pre)") +
   theme(text = element_text(size = 22))
 
-ggsave("WorkBoxplotCCPreRel.pdf", work, dpi = 500, w = 9, h = 4.5)
-ggsave("WorkBoxplotCCPreRel.png", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplotCCPreRel.pdf", work, dpi = 500, w = 9, h = 9)
+ggsave("WorkBoxplotCCPreRel.png", work, dpi = 500, w = 9, h = 9)
 
 all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -529,8 +529,8 @@ all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>%
   ylab("Rel. # Of All \nContacts (CC, pre)") +
   theme(text = element_text(size = 22)) +
 
-ggsave("AllBoxplotCCPreRel.pdf", all, dpi = 500, w = 9, h = 4.5)
-ggsave("AllBoxplotCCPreRel.png", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplotCCPreRel.pdf", all, dpi = 500, w = 9, h = 9)
+ggsave("AllBoxplotCCPreRel.png", all, dpi = 500, w = 9, h = 9)
 
 
 ## Household members's CONTACTS
@@ -618,8 +618,8 @@ palette <- function() {
 }
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -627,13 +627,13 @@ leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisu
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22))
   
-ggsave("LeisureBoxplotHHMember.pdf", leisure, dpi = 500, w = 9, h = 4.5)
-ggsave("LeisureBoxplotHHMember.png", leisure, dpi = 500, w = 9, h = 4.5)
+ggsave("LeisureBoxplotHHMember.pdf", leisure, dpi = 500, w = 9, h = 9)
+ggsave("LeisureBoxplotHHMember.png", leisure, dpi = 500, w = 9, h = 9)
 
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -641,20 +641,20 @@ work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), 
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22))
 
-ggsave("WorkBoxplotHHMember.pdf", work, dpi = 500, w = 9, h = 4.5)
-ggsave("WorkBoxplotHHMember.png", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplotHHMember.pdf", work, dpi = 500, w = 9, h = 9)
+ggsave("WorkBoxplotHHMember.png", work, dpi = 500, w = 9, h = 9)
 
 all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #facet_wrap(~time) +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
   xlab("Point In Time") +
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22))
 
-ggsave("AllBoxplotHHMember.pdf", all, dpi = 500, w = 9, h = 4.5)
-ggsave("AllBoxplotHHMember.png", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplotHHMember.pdf", all, dpi = 500, w = 9, h = 9)
+ggsave("AllBoxplotHHMember.png", all, dpi = 500, w = 9, h = 9)
 
 ## Contact reductions of household member
 data_reduced <- data_reduced %>% mutate(hhmember_work_rel_2019_2020 = 100/hhmember_work_2019*hhmember_work_03_2020) %>%
@@ -740,8 +740,8 @@ palette <- function() {
 }
 
 leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisure"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -749,13 +749,13 @@ leisure <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "leisu
   ylab("Rel. # Of Work\nContacts (CC, pre)") +
   theme(text = element_text(size = 22))
   
-ggsave("LeisureBoxplotHHMemberRel.pdf", leisure, dpi = 500, w = 9, h = 4.5)
-ggsave("LeisureBoxplotHHmemberRel.png", leisure, dpi = 500, w = 9, h = 4.5)
+ggsave("LeisureBoxplotHHMemberRel.pdf", leisure, dpi = 500, w = 9, h = 9)
+ggsave("LeisureBoxplotHHmemberRel.png", leisure, dpi = 500, w = 9, h = 9)
 
 
 work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -763,12 +763,12 @@ work <- ggplot(data_full %>% filter(value < 200) %>% filter(context == "work"), 
   ylab("Rel. # Of Work\nContacts (CC, pre)") +
   theme(text = element_text(size = 22))
 
-ggsave("WorkBoxplotHHmemberRel.pdf", work, dpi = 500, w = 9, h = 4.5)
-ggsave("WorkBoxplotHHmemberRel.png", work, dpi = 500, w = 9, h = 4.5)
+ggsave("WorkBoxplotHHmemberRel.pdf", work, dpi = 500, w = 9, h = 9)
+ggsave("WorkBoxplotHHmemberRel.png", work, dpi = 500, w = 9, h = 9)
 
 all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>% filter(!is.na(time)), aes(time, value)) +
-  geom_boxplot(color = "#29335C") +
-  #geom_violin(color = "#29335C") +
+  geom_violin(color = "#29335C", width = 1.3, trim = FALSE, position=position_dodge(0.9)) + 
+  geom_boxplot(color = "#29335C", width = 0.03, position = position_dodge(0.9)) +
   #facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette()) +
@@ -776,19 +776,21 @@ all <- ggplot(data_full %>% filter(value < 250) %>% filter(context == "all") %>%
   ylab("Rel. # Of All \nContacts (CC, pre)") +
   theme(text = element_text(size = 22))
 
-ggsave("AllBoxplotHHmemberRel.pdf", all, dpi = 500, w = 9, h = 4.5)
-ggsave("AllBoxplotHHmemberRel.png", all, dpi = 500, w = 9, h = 4.5)
+ggsave("AllBoxplotHHmemberRel.pdf", all, dpi = 500, w = 9, h = 9)
+ggsave("AllBoxplotHHmemberRel.png", all, dpi = 500, w = 9, h = 9)
 
 
 # --- Turning data into tidy format
 
 source("DataCleaningPrepForContactAnalysis.R")
 
+data_reduced_children <- data_reduced %>% filter(hhmember_school_2019 > 0)
+
 data_reduced <- data_reduced %>% select(-c(respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
                                   select(-contains("attitudes")) %>%
                                   select(-contains("beh_change"))
 
-data_reduced <- data_reduced %>% pivot_longer(cols = 2:76)
+data_reduced <- data_reduced %>% pivot_longer(cols = 2:77)
 
 data_reduced <- data_reduced  %>% mutate(time = case_when(str_detect(name, "2019") ~ "2019",
                                                           str_detect(name, "2020") ~ "03/2020",
@@ -804,7 +806,7 @@ data_reduced <- data_reduced  %>% mutate(time = case_when(str_detect(name, "2019
                                   str_detect(name, "all") ~ "All"))
 
 data_reduced$time <- factor(data_reduced$time, levels = c("2019", "03/2020", "Summer 2021", "01/2023"))
-data_reduced$TypeOfContact <- factor(data_reduced$TypeOfContact, levels = c("Work", "Leisure", "All"))
+data_reduced$TypeOfContact <- factor(data_reduced$TypeOfContact, levels = c("Work", "Leisure", "School", "All"))
 data_reduced$WhoseContacts <- factor(data_reduced$WhoseContacts, levels = c("Respondent", "Household Member", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
 
 
@@ -812,9 +814,10 @@ palette <- function() {
   c("#006BA6", "#FFBC42", "#8F2D56", "#C93E78")
 }
 
-ggplot(data_reduced %>% filter(value < 100) %>% filter(TypeOfContact != "School") %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
-  geom_boxplot(aes(color = WhoseContacts), size = 1.3) +
-  #geom_violin(aes(color = WhoseContacts), size = 1.3) +
+ggplot(data_reduced %>% filter(value < 100) %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
+  #geom_violin(aes(color = WhoseContacts), width = 1, trim = FALSE, position=position_dodge(0.9)) + 
+  #geom_boxplot(aes(color = WhoseContacts), width = 0.1, position = position_dodge(0.9)) +
+  geom_boxplot(aes(color = WhoseContacts)) +
   scale_color_manual(values = palette()) +
   facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
   theme_minimal() +
@@ -822,25 +825,53 @@ ggplot(data_reduced %>% filter(value < 100) %>% filter(TypeOfContact != "School"
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22)) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "bottom", legend.title = element_blank())
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(panel.spacing = unit(0.8, "cm", data = NULL))
   #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-ggsave("CollectionBoxplots.pdf", dpi = 500, w = 13, h = 12)
-ggsave("CollectionBoxplots.png", dpi = 500, w = 13, h = 12)
+ggsave("CollectionBoxplots.pdf", dpi = 500, w = 13, h = 16)
+ggsave("CollectionBoxplots.png", dpi = 500, w = 13, h = 16)
 
+#Subanalysis for school children
+data_reduced_children <- data_reduced_children %>% select(-c(respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
+                                  select(-contains("attitudes")) %>%
+                                  select(-contains("beh_change"))
 
-ggplot(data_reduced %>% filter(value < 100) %>% filter(TypeOfContact != "School") %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
-  geom_boxplot(aes(color = WhoseContacts), size = 1.3) +
-  #geom_violin(aes(color=WhoseContacts)) +
+data_reduced_children <- data_reduced_children %>% pivot_longer(cols = 2:76)
+
+data_reduced_children <- data_reduced_children  %>% mutate(time = case_when(str_detect(name, "2019") ~ "2019",
+                                                          str_detect(name, "2020") ~ "03/2020",
+                                                          str_detect(name, "2021") ~ "Summer 2021",
+                                                          str_detect(name, "2023") ~ "01/2023")) %>%
+                                  mutate(WhoseContacts = case_when(str_detect(name, "respondent") ~ "Respondent",
+                                  str_detect(name, "cc_pre") ~ "Closest Contact (Pre-Covid)",
+                                  str_detect(name, "cc_during") ~ "Closest Contact (During-Covid)",
+                                  str_detect(name, "hhmember") ~ "Household Member")) %>%
+                                  mutate(TypeOfContact = case_when(str_detect(name, "work") ~ "Work",
+                                  str_detect(name, "school") ~ "School",
+                                  str_detect(name, "leisure") ~ "Leisure",
+                                  str_detect(name, "all") ~ "All"))
+
+data_reduced_children$time <- factor(data_reduced_children$time, levels = c("2019", "03/2020", "Summer 2021", "01/2023"))
+data_reduced_children$TypeOfContact <- factor(data_reduced_children$TypeOfContact, levels = c("Work", "Leisure", "School", "All"))
+data_reduced_children$WhoseContacts <- factor(data_reduced_children$WhoseContacts, levels = c("Respondent", "Household Member", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
+
+ggplot(data_reduced_children %>% filter(WhoseContacts == "Household Member") %>% filter(value < 100) %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
+  #geom_violin(aes(color = WhoseContacts), width = 1, trim = FALSE, position=position_dodge(0.9)) + 
+  #geom_boxplot(aes(color = WhoseContacts), width = 0.1, position = position_dodge(0.9)) +
+  geom_boxplot(color = "#FFBC42") +
   scale_color_manual(values = palette()) +
   facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
   theme_minimal() +
-  scale_color_manual(values = palette()) +
   ylab("Reported # Of Contacts") +
   theme(text = element_text(size = 22)) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "bottom", legend.title = element_blank())
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(panel.spacing = unit(0.8, "cm", data = NULL))
   #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+ggsave("CollectionBoxplotsChildren.pdf", dpi = 500, w = 8.5, h = 12)
+ggsave("CollectionBoxplotsChildren.png", dpi = 500, w = 8.5, h = 12)
 
 # Relative no. of contacts
 
