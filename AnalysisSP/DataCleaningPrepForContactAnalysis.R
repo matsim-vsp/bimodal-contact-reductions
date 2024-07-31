@@ -12,7 +12,7 @@ raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds") #Place to e
 
 # Reducing data frame to the variables of interest ------------------------
 
-data_reduced <- raw_data %>% select(cc_change_during_pandemic, total_hsld_size_persons_under_14, number_of_children_under_18,
+data_reduced <- raw_data %>% select(year_of_birth, cc_change_during_pandemic, total_hsld_size_persons_under_14, number_of_children_under_18,
                                     hsld_size_2019_, hsld_size_03_2020_, hsld_size_summer_2021_, hsld_size_01_2023_, 
                                     cc_hsld_size_pre_pandemic_2019_num_hsld_members, cc_hsld_size_pre_pandemic_03_2020_num_hsld_members, cc_hsld_size_pre_pandemic_summer_2021_num_hsld_members, cc_hsld_size_pre_pandemic_01_2023_num_hsld_members,
                                     cc_hsld_size_during_pandemic_2019_num_hsld_members, cc_hsld_size_during_pandemic_03_2020_num_hsld_members, cc_hsld_size_during_pandemic_summer_2021_num_hsld_members, cc_hsld_size_during_pandemic_01_2023_num_hsld_members,
@@ -143,3 +143,14 @@ data_reduced <- data_reduced %>% mutate(cc_during_all_2019 = cc_during_hsld_size
   mutate(cc_during_all_03_2020 = cc_during_hsld_size_03_2020 + cc_during_school_03_2020 + cc_during_work_03_2020 + cc_during_leisure_03_2020) %>%
   mutate(cc_during_all_summer_2021 = cc_during_hsld_size_summer_2021 + cc_during_school_summer_2021 +cc_during_work_summer_2021 + cc_during_leisure_summer_2021) %>%
   mutate(cc_during_all_01_2023 = cc_during_hsld_size_01_2023 + cc_during_school_01_2023 + cc_during_work_01_2023 + cc_during_leisure_01_2023)
+
+##Adding age brackets
+data_reduced <- data_reduced %>% mutate(age_bracket = case_when(year_of_birth <= 1943 ~ "80-90",
+                                                                year_of_birth <= 1953 ~ "70-80",
+                                                                year_of_birth <= 1963 ~ "60-70",
+                                                                year_of_birth <= 1973 ~ "50-60",
+                                                                year_of_birth <= 1983 ~ "40-50",
+                                                                year_of_birth <= 1993 ~ "30-40",
+                                                                year_of_birth <= 2005 ~ "18-30"))
+
+data_reduced$age_bracket <- factor(data_reduced$age_bracket, levels = c("18-30", "30-40", "40-50", "50-60", "70-80", "80-90"))                                                             
