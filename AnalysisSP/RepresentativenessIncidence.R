@@ -147,32 +147,35 @@ attitudesAndBehaviors <- c("attitudes_precautions_mar2020_low_infection_risk_per
                                     "beh_change_start_pandemic_children_limited_contacts",                       
                                     "beh_change_start_pandemic_meet_close_despite_restrict")
 
-nb.cols <- 11
-mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(nb.cols)
+palette <- function() {
+  c("#8F2D56", "#006BA6")
+}
+
+reduced_data$cc_change_during_pandemic <- factor(reduced_data$cc_change_during_pandemic, levels = c("Nein", "Ja"))
 
 for(attBeh in attitudesAndBehaviors){
 reduced_data %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(!!sym(attBeh) != "trifft nicht zu") %>%
 filter(!!sym(attBeh) != "keine Angabe") %>%
-  count(!!sym(attBeh) , cc_change_during_pandemic) %>%
+  count(!!sym(attBeh), cc_change_during_pandemic) %>%
   mutate(n = n / sum(n), .by = !!sym(attBeh)) %>% ungroup() %>%
   filter(!is.na(!!sym(attBeh))) %>% 
-  ggplot(aes(!!sym(attBeh), n, fill = as.factor(!!sym(attBeh)))) +
-  geom_col(position = position_dodge(preserve = 'single')) +
+  ggplot(aes(!!sym(attBeh), n, fill = cc_change_during_pandemic)) +
+  #geom_col(position = position_dodge(preserve = 'single')) +
+  geom_col(position = "fill") +
   ggtitle(attBeh) +
   theme_minimal() +
   ylab("Relative Frequency") +
   xlab("") +
   theme(text = element_text(size = 30)) +
   theme(legend.position = "bottom") +
-  scale_fill_manual(values = mycolors) +
-  theme(legend.title=element_blank()) +
+  scale_fill_manual(values = palette()) +
+  #theme(legend.title=element_blank()) +
   theme(panel.spacing.x = unit(2, "lines")) +
-  theme(axis.text.x = element_blank()) +
-  #theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
+  theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) 
   facet_wrap(~ cc_change_during_pandemic)
 
-ggsave(paste0(attBeh, "_changeCC-fullResponses.pdf"), dpi = 500, w = 15, h = 9)
-ggsave(paste0(attBeh, "_changeCC-fullResponses.png"), dpi = 500, w = 15, h = 9)
+ggsave(paste0(attBeh, "_changeCC-fullResponses.pdf"), dpi = 500, w = 12, h = 9)
+ggsave(paste0(attBeh, "_changeCC-fullResponses.png"), dpi = 500, w = 12, h = 9)
 }
 
 reduced_data <- reduced_data %>% mutate(attitudes_precautions_mar2020_low_infection_risk_perception = case_when(attitudes_precautions_mar2020_low_infection_risk_perception %in% c("viel weniger", "weniger", "etwas weniger") ~ "Careful",
@@ -245,11 +248,11 @@ reduced_data <- reduced_data %>% mutate(attitudes_precautions_mar2020_low_infect
                                                                                                 beh_change_start_pandemic_meet_close_despite_restrict == "genauso" ~ "Neutral",
                                                                                                 beh_change_start_pandemic_meet_close_despite_restrict %in% c("etwas mehr", "mehr", "viel mehr") ~ "Risky"))
 
-reduced_data <- reduced_data %>% mutate(cc_change_during_pandemic = case_when(cc_change_during_pandemic == "Ja" ~ "Changed CC",
-                                                                                cc_change_during_pandemic == "Nein" ~ "Did Not Change CC"))
+#reduced_data <- reduced_data %>% mutate(cc_change_during_pandemic = case_when(cc_change_during_pandemic == "Ja" ~ "Changed CC",
+                                                                             #   cc_change_during_pandemic == "Nein" ~ "Did Not Change CC"))
 
 palette <- function() {
-  c("#006BA6", "#FFBC42", "#8F2D56")
+  c("#8F2D56", "#006BA6")
 }
 
 for(attBeh in attitudesAndBehaviors){
@@ -258,17 +261,19 @@ filter(!!sym(attBeh) != "keine Angabe") %>%
   count(!!sym(attBeh) , cc_change_during_pandemic) %>%
   mutate(n = n / sum(n), .by = !!sym(attBeh)) %>%
   filter(!is.na(!!sym(attBeh))) %>% 
-  ggplot(aes(!!sym(attBeh), n, fill = as.factor(!!sym(attBeh)))) +
-  geom_col(position = position_dodge(preserve = 'single')) +
+  ggplot(aes(!!sym(attBeh), n, fill = cc_change_during_pandemic)) +
+  #geom_col(position = position_dodge(preserve = 'single')) +
+  geom_col(position = "fill") +
   theme_minimal() +
-  facet_wrap(~cc_change_during_pandemic)
- theme(panel.spacing.x = unit(2, "lines")) +
+  ggtitle(attBeh) +
+  #facet_wrap(~cc_change_during_pandemic)
+  theme(panel.spacing.x = unit(2, "lines")) +
   ylab("Relative Frequency") +
   xlab("") +
   theme(text = element_text(size = 30)) +
   theme(legend.position = "bottom") +
   scale_fill_manual(values = palette()) +
-  theme(legend.title=element_blank()) +
+  #theme(legend.title=element_blank()) +
   theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1))
 
 ggsave(paste0(attBeh, "_changeCC.pdf"), dpi = 500, w = 9, h = 9)
@@ -505,47 +510,6 @@ guides(color = guide_legend(nrow = 2))
 ggsave("TimingOfInfectionAttCarefulnessScore.pdf", dpi = 500, w = 9, h = 9)
 ggsave("TimingOfInfectionAttCarefulnessScore.png", dpi = 500, w = 9, h = 9)
 
-ggplot(reduced_data %>% filter(!is.na(RiskyCarefulBeh)), aes(date_f1_inf, color = RiskyCarefulBeh)) +
-stat_ecdf(geom="smooth", size = 2) +
-theme_minimal() +
-ylab("Empirical Cumulative \n Density Function") +
-xlab("Date Of 1st Infection") +
-coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
-theme(text = element_text(size = 30)) +
-scale_color_manual(values = palette()) +
-theme(legend.title = element_blank(), legend.position = "bottom") +
-guides(color = guide_legend(nrow = 2))
-
-ggsave("TimingOfInfectionBehCarefulnessScore.pdf", dpi = 500, w = 9, h = 9)
-ggsave("TimingOfInfectionBehCarefulnessScore.png", dpi = 500, w = 9, h = 9)
-
-
-nb.cols <- 14
-mycolors <- colorRampPalette(brewer.pal(11, "Spectral"))(nb.cols)
-
-reduced_data <- reduced_data %>% mutate(cc_change_during_pandemic = case_when(cc_change_during_pandemic == "Ja" ~ "Changed CC",
-                                                                                cc_change_during_pandemic == "Nein" ~ "Did Not Change CC"))
-
-reduced_data %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(attitudeScore != "trifft nicht zu") %>%
-filter(attitudeScore != "keine Angabe") %>%
-  count(attitudeScore , cc_change_during_pandemic) %>%
-  mutate(n = n / sum(n), .by = attitudeScore) %>%
-  filter(!is.na(attitudeScore)) %>% 
-  ggplot(aes(as.factor(attitudeScore), n, fill = as.factor(attitudeScore))) +
-  geom_col(position = position_dodge(preserve = 'single')) +
-  facet_wrap(~ cc_change_during_pandemic) +
-  theme_minimal() +
-  ylab("Relative Frequency") +
-  xlab("Carefulness Score") +
-  theme(text = element_text(size = 25)) +
-  theme(legend.position = "none") + 
-  theme(panel.spacing.x = unit(2, "lines")) +
-  scale_fill_manual(values = mycolors) +
-  theme(legend.title=element_blank())
-
-ggsave("WillingnessChangeCC_attitudeScore.png", dpi = 500, w = 13, h =9)
-ggsave("WillingnessChangeCC_attitudeScore.pdf", dpi = 500, w = 13, h =9)
-
 reduced_data %>%
   count(RiskyCarefulAtt, num_c19_infs_eng) %>%
   mutate(n = n / sum(n), .by = RiskyCarefulAtt) %>%
@@ -564,6 +528,20 @@ reduced_data %>%
 ggsave("NumberOfInfectionAttCarefulnessScore.pdf", dpi = 500, w = 9, h = 12)
 ggsave("NumberOfInfectionAttCarefulnessScore.png", dpi = 500, w = 9, h = 12)
 
+ggplot(reduced_data %>% filter(!is.na(RiskyCarefulBeh)), aes(date_f1_inf, color = RiskyCarefulBeh)) +
+stat_ecdf(geom="smooth", size = 2) +
+theme_minimal() +
+ylab("Empirical Cumulative \n Density Function") +
+xlab("Date Of 1st Infection") +
+coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
+theme(text = element_text(size = 30)) +
+scale_color_manual(values = palette()) +
+theme(legend.title = element_blank(), legend.position = "bottom") +
+guides(color = guide_legend(nrow = 2))
+
+ggsave("TimingOfInfectionBehCarefulnessScore.pdf", dpi = 500, w = 9, h = 9)
+ggsave("TimingOfInfectionBehCarefulnessScore.png", dpi = 500, w = 9, h = 9)
+
 reduced_data %>%
   count(RiskyCarefulBeh, num_c19_infs_eng) %>%
   mutate(n = n / sum(n), .by = RiskyCarefulBeh) %>%
@@ -581,6 +559,50 @@ reduced_data %>%
 
 ggsave("NumberOfInfectionBehCarefulnessScore.pdf", dpi = 500, w = 9, h = 12)
 ggsave("NumberOfInfectionBehCarefulnessScore.png", dpi = 500, w = 9, h = 12)
+                                                                                 cc_change_during_pandemic == "Nein" ~ "Did Not Change CC"))
+
+palette <- function() {
+  c("#8F2D56", "#006BA6")
+}
+
+reduced_data %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(attitudeScore != "trifft nicht zu") %>%
+filter(attitudeScore != "keine Angabe") %>%
+  count(attitudeScore , cc_change_during_pandemic) %>%
+  mutate(n = n / sum(n), .by = attitudeScore) %>%
+  filter(!is.na(attitudeScore)) %>% 
+  ggplot(aes(as.factor(attitudeScore), n, fill = cc_change_during_pandemic)) +
+  geom_col(position = "fill") +
+  theme_minimal() +
+  ylab("Relative Frequency") +
+  xlab("Carefulness Score") +
+  theme(text = element_text(size = 25)) +
+  theme(legend.position = "bottom") + 
+  theme(panel.spacing.x = unit(2, "lines")) +
+  scale_fill_manual(values = palette()) +
+  theme(legend.title=element_blank())
+
+ggsave("WillingnessChangeCC_attitudeScore.png", dpi = 500, w = 13, h =9)
+ggsave("WillingnessChangeCC_attitudeScore.pdf", dpi = 500, w = 13, h =9)
+
+
+reduced_data %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(behaviorChangeScore != "trifft nicht zu") %>%
+filter(behaviorChangeScore != "keine Angabe") %>%
+  count(behaviorChangeScore , cc_change_during_pandemic) %>%
+  mutate(n = n / sum(n), .by = behaviorChangeScore) %>%
+  filter(!is.na(behaviorChangeScore)) %>% 
+  ggplot(aes(as.factor(behaviorChangeScore), n, fill = cc_change_during_pandemic)) +
+  geom_col(position = "fill") +
+  theme_minimal() +
+  ylab("Relative Frequency") +
+  xlab("Carefulness Score") +
+  theme(text = element_text(size = 25)) +
+  theme(legend.position = "bottom") + 
+  theme(panel.spacing.x = unit(2, "lines")) +
+  scale_fill_manual(values = palette()) +
+  theme(legend.title=element_blank())
+
+ggsave("WillingnessChangeCC_behScore.png", dpi = 500, w = 13, h =9)
+ggsave("WillingnessChangeCC_behScore.pdf", dpi = 500, w = 13, h =9)
 
 
 #Summary stats for NUMBER of Infections
