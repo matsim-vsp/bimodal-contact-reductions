@@ -235,6 +235,4 @@ translated_data <- translated_data %>%
 #save cleaned data
 
 saveRDS(translated_data, "data/translated_data.rds")
-
-#todo: translate loc_other?, NA or empty?, Likert scales to numbers?
 ```
