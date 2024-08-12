@@ -76,7 +76,8 @@ data_reduced %>% count(age_bracket)
 
 data_reduced <- data_reduced %>% select(-c(respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
                                   select(-contains("attitudes")) %>%
-                                  select(-contains("beh_change"))
+                                  select(-contains("beh_change")) %>%
+                                  select(-contains("cond"))
 
 data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "Never",
                                                                     num_c19_infs == "Einmal" ~ "Once",
