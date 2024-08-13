@@ -6,7 +6,7 @@ library(patchwork)
 
 source("DataCleaningPrepForContactAnalysis.R")
 
-data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("2025-01-01"),
+data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
                                         .default = as.Date(as.character(date_f1_inf)))) %>%
                                 filter(date_f1_inf != as.Date("1922-03-01")) %>%
                                 filter(date_f1_inf != as.Date("1965-06-12")) %>%
