@@ -6,7 +6,7 @@ library(patchwork)
 
 source("DataCleaningPrepForContactAnalysis.R")
 
-data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
+data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("2025-01-01"),
                                         .default = as.Date(as.character(date_f1_inf)))) %>%
                                 filter(date_f1_inf != as.Date("1922-03-01")) %>%
                                 filter(date_f1_inf != as.Date("1965-06-12")) %>%
@@ -27,8 +27,12 @@ data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = 
 
 data_reduced %>% count(age_bracket)
 
+#palette <- function() {
+#  c("#fd5901", "#f78104", "#faab36", "#249ea0", "#008083", "#005f60")
+#}
+
 palette <- function() {
-  c("#fd5901", "#f78104", "#faab36", "#249ea0", "#008083", "#005f60")
+  c("#542788", "#998ec3", "#d8daeb", "#fee0b6", "#f1a340", "#b35806")
 }
 
 p1 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% filter(value < 100) %>% filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)), aes(age_bracket, value)) +
@@ -49,33 +53,48 @@ p1 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% fil
 #ggsave("CollectionBoxplots_AgeBrackets.pdf", p1, dpi = 500, w = 13, h = 19)
 #ggsave("CollectionBoxplots_AgeBrackets.png", p1, dpi = 500, w = 13, h = 19)
 
+# palette <- function() {
+#   c("#fd5901", "#f78104", "#faab36", "#249ea0", "#008083", "#005f60")
+# }
+
 palette <- function() {
-  c("#fd5901", "#f78104", "#faab36", "#249ea0", "#008083", "#005f60")
+  c("#542788", "#998ec3", "#d8daeb", "#fee0b6", "#f1a340", "#b35806")
 }
 
-ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% filter(!is.na(age_bracket)) %>% filter(age_bracket != "80-90") %>% filter(value < 200) %>% filter(!is.na(TypeOfContact)), aes(age_bracket, value)) +
-  geom_boxplot(aes(color = age_bracket), size = 1.3) +
+palette2 <- function() {
+  c("#1a0a2b", "#542788", "#998ec3", "#f1a340", "#b35806", "#713500")
+}
+
+ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Work", "Leisure")) %>%
+    filter(value > -50) %>% filter(value < 150) %>%  
+    filter(!is.na(TypeOfContact)), aes(age_bracket, value)) +
+  geom_violin(aes(fill = age_bracket, color = age_bracket), scale = "area", trim = TRUE) + 
+  stat_summary(aes(color=age_bracket), fun.data=mean_sdl, fun.args = list(mult=1), 
+                 geom="pointrange", linewidth = 1) +
   #geom_violin(aes(color=WhoseContacts), size = 1.3) +
-  scale_color_manual(values = palette()) +
+  scale_fill_manual(values = palette()) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-50, 0,50, 100)) +
   facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
   theme_minimal() +
-  scale_color_manual(values = palette()) +
-  ylab("Relative Reported # Of Contacts") +
-  theme(text = element_text(size = 22)) +
+  scale_color_manual(values = palette2()) +
+  ylab("Reduction Of Contacts [Percentage]") +
+  theme(text = element_text(size = 30)) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank())
 
-#ggsave("CollectionBoxplotsRelativeAgeBrackets.pdf", dpi = 500, w = 13, h = 16)
-#ggsave("CollectionBoxplotsRelativeAgeBrackets.png", dpi = 500, w = 13, h = 16)
+ggsave("CollectionViolinplots_RemainingAgeGroups.pdf", dpi = 500, w = 27, h = 9)
+ggsave("CollectionViolinplots_RemainingAgeGroups.png", dpi = 500, w = 27, h = 9)
 
-p3 <- data_reduced %>%
-  count(age_bracket, num_c19_infs_eng) %>%
-  mutate(n = n / sum(n), .by = 'age_bracket') %>%
+p3 <- data_reduced %>% group_by(age_bracket) %>%
+  count(num_c19_infs_eng) %>%
+  mutate(n = 100 * n / sum(n)) %>%
   filter(!is.na(age_bracket)) %>% 
   ggplot(aes(num_c19_infs_eng, n, fill = age_bracket)) +
   geom_col(position = position_dodge(preserve = 'single')) +
   theme_minimal() +
-  ylab("Relative Frequency") +
+  ylab("Share [Percentage]") +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
   xlab("") +
   theme(text = element_text(size = 30)) +
   theme(legend.position = "none") +
@@ -83,8 +102,8 @@ p3 <- data_reduced %>%
   theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
   scale_fill_manual(values = palette())
 
-#ggsave("NumberOfInfection_AgeBrackets.pdf", p3, dpi = 500, w = 9, h = 12)
-#ggsave("NumberOfInfection_AgeBrackets.png", p3, dpi = 500, w = 9, h = 12)
+ggsave("NoInfections_AgeBrackets.pdf", p3, dpi = 500, w = 9, h = 9)
+ggsave("NoInfections_AgeBrackets.png", p3, dpi = 500, w = 9, h = 9)
 
 p2 <- ggplot(data_reduced %>% filter(!is.na(age_bracket)), aes(date_f1_inf, color = age_bracket)) +
 stat_ecdf(geom="smooth", size = 2) +
@@ -98,8 +117,8 @@ theme(legend.position = "none") +
 guides(color = guide_legend(nrow = 2)) +
 scale_color_manual(values = palette())
 
-#ggsave("TimingOfInfection_AgeBrackets.pdf", p2, dpi = 500, w = 9, h = 12)
-#ggsave("TimingOfInfection_AgeBrackets.png", p2, dpi = 500, w = 9, h = 12)
+ggsave("ECDF_AgeBrackets.pdf", p2, dpi = 500, w = 9, h = 9)
+ggsave("ECDF_AgeBrackets.png", p2, dpi = 500, w = 9, h = 9)
 
 patch <- (p3/p2) +  plot_annotation(tag_levels = "A") 
 p4 <- p1  + plot_spacer() + patch + plot_layout(widths = c(13, 0.5, 5)) +  plot_annotation(tag_levels = "A") 

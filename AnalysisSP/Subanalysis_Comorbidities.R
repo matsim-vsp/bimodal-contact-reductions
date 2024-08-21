@@ -73,28 +73,38 @@ data_reduced_tidy <- data_reduced_tidy %>% mutate(cond_hbp  = case_when(cond_hbp
                                 cond_none == "Nicht Gewählt" ~ "Comorbidities"))
 
 palette <- function() {
-  c("#fd5901", "#008083")
+  c("#998ec3", "#f1a340")
+}
+
+palette2 <- function() {
+  c("#542788", "#b35806")
 }
 
 for(com in comorbidities){
-    p1 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% filter(value < 100) %>% filter(!is.na(!!sym(com))) %>% filter(!is.na(TypeOfContact)), aes(!!sym(com), value)) +
+    p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+    filter(!is.na(!!sym(com))) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Work", "Leisure")) %>%
+    filter(value > -50) %>% filter(value < 150) %>%  
+    filter(!is.na(TypeOfContact)), aes(!!sym(com), value)) +
     #geom_violin(aes(color = WhoseContacts), width = 1, trim = FALSE, position=position_dodge(0.9)) + 
     #geom_boxplot(aes(color = WhoseContacts), width = 0.1, position = position_dodge(0.9)) +
-    geom_boxplot(aes(color = !!sym(com)), size = 1.3) +
-    scale_color_manual(values = palette()) +
+    geom_violin(aes(fill = !!sym(com), color = !!sym(com)), scale = "area", trim = TRUE) + 
+    stat_summary(aes(color=!!sym(com)), fun.data=mean_sdl, fun.args = list(mult=1), 
+                 geom="pointrange", linewidth = 1) +
     facet_grid(rows = vars(TypeOfContact), cols = vars(time)) +
     theme_minimal() +
-    ylab("Reported No. Of Contacts") +
+    scale_fill_manual(values = palette()) +
+    scale_color_manual(values = palette2()) +
+    ylab("Reduction Of Contacts [Percentage]") +
     theme(text = element_text(size = 30)) +
     theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
     theme(legend.position = "bottom", legend.title = element_blank()) +
     #labs(color ="Comorbidity") +
     theme(panel.spacing = unit(0.8, "cm", data = NULL))
 
-    #ggsave(paste0("CollectionBoxplots_", com, ".pdf"), p1,  dpi = 500, w = 13, h = 19)
-    #ggsave(paste0("CollectionBoxplots_", com, ".png"), p1, dpi = 500, w = 13, h = 19)
+    ggsave(paste0("CollectionViolinplots_", com, ".pdf"), p1,  dpi = 500, w = 12, h = 9)
+    ggsave(paste0("CollectionViolinplots_", com, ".png"), p1, dpi = 500, w = 12, h = 9)
 
-   p2 <- ggplot(data_reduced %>% filter(!is.na(!!sym(com))), aes(date_f1_inf, color = !!sym(com))) +
+    p2 <- ggplot(data_reduced %>% filter(!is.na(!!sym(com))), aes(date_f1_inf, color = !!sym(com))) +
     stat_ecdf(geom="smooth", size = 2) +
     theme_minimal() +
     ylab("Empirical Cumulative \n Density Function") +
@@ -106,10 +116,10 @@ for(com in comorbidities){
     guides(color = guide_legend(nrow = 2)) +
     scale_color_manual(values = palette())
 
-    #ggsave(paste0("TimingOfInfection_", com, ".pdf"), p2, dpi = 500, w = 9, h = 9)
-    #ggsave(paste0("TimingOfInfection_", com, ".png"), p2, dpi = 500, w = 9, h = 9)
+    ggsave(paste0("TimingOfInfection_", com, ".pdf"), p2, dpi = 500, w = 9, h = 9)
+    ggsave(paste0("TimingOfInfection_", com, ".png"), p2, dpi = 500, w = 9, h = 9)
 
-   p3 <- data_reduced %>%
+    p3 <- data_reduced %>%
     count(!!sym(com), num_c19_infs_eng) %>%
     mutate(n = n / sum(n), .by = !!sym(com)) %>%
     filter(!is.na(!!sym(com))) %>% 
@@ -124,14 +134,14 @@ for(com in comorbidities){
     theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
     scale_fill_manual(values = palette())
 
-    #ggsave(paste0("NumberOfInfection_", com, ".pdf"), p3, dpi = 500, w = 9, h = 12)
-    #ggsave(paste0("NumberOfInfection_", com,".png"), p3, dpi = 500, w = 9, h = 12)
+    ggsave(paste0("NumberOfInfection_", com, ".pdf"), p3, dpi = 500, w = 9, h = 9)
+    ggsave(paste0("NumberOfInfection_", com,".png"), p3, dpi = 500, w = 9, h = 9)
 
 
-  patch <- (p3/p2) +  plot_annotation(tag_levels = "A")
-  p4 <- p1  + plot_spacer() + patch + plot_layout(widths = c(13, 0.5, 5)) +  plot_annotation(tag_levels = "A") 
-  ggsave(paste0("BoxplotNoInfectionsECDF_", com, ".pdf"), p4, dpi = 500, w = 18.5, h = 16)
-  ggsave(paste0("BoxplotNoInfectionsECDF_", com, ".png"), p4, dpi = 500, w = 18.5, h = 16)
+  #patch <- (p3/p2) +  plot_annotation(tag_levels = "A")
+  #p4 <- p1  + plot_spacer() + patch + plot_layout(widths = c(13, 0.5, 5)) +  plot_annotation(tag_levels = "A") 
+  #ggsave(paste0("BoxplotNoInfectionsECDF_", com, ".pdf"), p4, dpi = 500, w = 18.5, h = 16)
+  #ggsave(paste0("BoxplotNoInfectionsECDF_", com, ".png"), p4, dpi = 500, w = 18.5, h = 16)
 }
 
 

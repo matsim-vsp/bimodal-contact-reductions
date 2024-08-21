@@ -64,12 +64,12 @@ p1_zeroth_order_percred <- ggplot(data_reduced_tidy_rel %>%  filter((TypeOfConta
     filter(WhoseContacts == "Respondent") %>% filter(!is.na(value)) %>%
     filter(value > -50) %>% filter(value < 150) %>%  
     filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
-  geom_violin(aes(fill = WhoseContacts), scale = "area", trim = TRUE,  color="#542788") + 
+  geom_violin(fill = "#998ec3", scale = "area", trim = TRUE,  color="#542788") + 
   stat_summary(fun.data=mean_sdl, fun.args = list(mult=1), 
                  geom="pointrange", color="#542788", linewidth = 1) +
   #geom_violin(aes(color=WhoseContacts), size = 1.3) +
   scale_fill_manual(values = palette()) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-50, 0,50, 100)) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
   facet_grid(rows = vars(TypeOfContact), cols = vars(time)) +
   theme_minimal() +
   ylab("Reduction Of Contacts [Percentage]") +
@@ -78,8 +78,8 @@ p1_zeroth_order_percred <- ggplot(data_reduced_tidy_rel %>%  filter((TypeOfConta
   theme(legend.position = "none", legend.title = element_blank()) +
   guides(color=guide_legend(nrow=2,byrow=TRUE))
 
-ggsave("CollectionViolinplots_RemainingRespondent.pdf", p1_zeroth_order_percred, dpi = 500, w = 9, h = 8)
-ggsave("CollectionViolinplots_RemainingRespondent.png", p1_zeroth_order_percred, dpi = 500, w = 9, h = 8)
+ggsave("CollectionViolinplots_RemainingRespondent.pdf", p1_zeroth_order_percred, dpi = 500, w = 9, h = 9)
+ggsave("CollectionViolinplots_RemainingRespondent.png", p1_zeroth_order_percred, dpi = 500, w = 9, h = 9)
 
 
 # palette <- function() {
