@@ -156,9 +156,14 @@ data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = 
 
 data_reduced %>%
   count(num_c19_infs_eng) %>%
-  mutate(n = 100 * n / sum(n)) %>%  
-  ggplot(aes(num_c19_infs_eng, n)) +
-  geom_col(position = position_dodge(preserve = 'single'), fill = "#998ec3", color = "#998ec3") +
+  mutate(percent = 100 * n / sum(n)) %>%  
+  mutate(lci =  n - 1.96*(n*(n-1)/704)^0.5) %>%#
+  mutate(lci = 100/704*lci) %>%
+  mutate(uci = n + 1.96*(n*(n-1)/704)^0.5) %>%
+  mutate(uci = 100/704*uci) %>%
+  ggplot(aes(num_c19_infs_eng, percent)) +
+  geom_bar(stat = "identity", width = 0.8, fill = "#998ec3") +
+  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci), colour = "#542788", position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   ylab("Share [Percentage]") +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
@@ -166,7 +171,7 @@ data_reduced %>%
   theme(text = element_text(size = 30)) +
   theme(legend.position = "none") +
   labs(fill="Age Group") +
-  theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
+  theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
   scale_fill_manual(values = palette())
 
 ggsave("NoInfections_Respondents.pdf", dpi = 500, w = 9, h = 9)
