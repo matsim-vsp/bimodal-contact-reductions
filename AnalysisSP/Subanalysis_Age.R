@@ -65,6 +65,8 @@ palette2 <- function() {
   c("#1a0a2b", "#542788", "#998ec3", "#f1a340", "#b35806", "#713500")
 }
 
+my_comparisons <- list(c("18-30", "30-40"), c("18-30", "40-50"), c("18-30", "50-60"), c("18-30", "60-70"), c("18-30", "70+"))
+
 ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
 filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Work", "Leisure")) %>%
     filter(value > -50) %>% filter(value < 150) %>%  
@@ -72,6 +74,7 @@ filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfC
   geom_violin(aes(fill = age_bracket, color = age_bracket), scale = "area", trim = TRUE) + 
   stat_summary(aes(color=age_bracket), fun.data=mean_sdl, fun.args = list(mult=1), 
                  geom="pointrange", linewidth = 1) +
+  stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.2, label.y.npc = 0)+
   #geom_violin(aes(color=WhoseContacts), size = 1.3) +
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-50, 0,50, 100)) +
@@ -80,18 +83,61 @@ filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfC
   scale_color_manual(values = palette2()) +
   ylab("Reduction Of Contacts [Percentage]") +
   theme(text = element_text(size = 30)) +
+  theme(panel.spacing.y = unit(3, "lines")) +
+  theme(panel.spacing.x = unit(3, "lines")) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank())
 
-ggsave("CollectionViolinplots_RemainingAgeGroups.pdf", dpi = 500, w = 27, h = 9)
-ggsave("CollectionViolinplots_RemainingAgeGroups.png", dpi = 500, w = 27, h = 9)
+ggsave("CollectionViolinplots_RemainingAgeGroups.pdf", dpi = 500, w = 27, h = 15)
+ggsave("CollectionViolinplots_RemainingAgeGroups.png", dpi = 500, w = 27, h = 15)
 
-p3 <- data_reduced %>% group_by(age_bracket) %>%
+
+data <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(data) <- c("age_bracket", "num_c19_infs_eng", "n", "percent")
+data[nrow(data)+1,] <- c("18-30", "I Don't Want To Answer", 0, 0)
+data[nrow(data)+1,] <- c("30-40", "More Than 3 Times", 0, 0)
+data[nrow(data)+1,] <- c("30-40", "I Don't Want To Answer", 0,0)
+data[nrow(data)+1,] <- c("60-70", "Three Times", 0,0)
+data[nrow(data)+1,] <- c("60-70", "More Than Three Times", 0,0)
+data[nrow(data)+1,] <- c("60-70", "I Don't Want To Answer", 0,0)
+data[nrow(data)+1,] <- c("70+", "Three Times", 0,0)
+data[nrow(data)+1,] <- c("70+", "More Than Three Times", 0,0)
+data[nrow(data)+1,] <- c("70+", "I Don't Want To Answer", 0,0)
+data$n <- as.integer(data$n)
+data$percent <- as.integer(data$percent)
+
+p3 <- data_reduced %>% group_by(age_bracket)  %>%
   count(num_c19_infs_eng) %>%
-  mutate(n = 100 * n / sum(n)) %>%
+  mutate(percent = 100 * n / sum(n)) %>% rbind(data) %>%
+  mutate(lci = case_when(age_bracket == "18-30" ~ n - 1.96*(n*(n-1)/30)^0.5,
+                          age_bracket == "30-40" ~ n - 1.96*(n*(n-1)/125)^0.5,
+                          age_bracket == "40-50" ~ n - 1.96*(n*(n-1)/291)^0.5,
+                          age_bracket == "50-60" ~ n - 1.96*(n*(n-1)/278)^0.5,
+                          age_bracket == "60-70" ~ n - 1.96*(n*(n-1)/110)^0.5,
+                          age_bracket == "70+" ~ n - 1.96*(n*(n-1)/20)^0.5)) %>%#
+  mutate(lci = case_when(age_bracket == "18-30" ~ 100/30*lci,
+                         age_bracket == "30-40" ~ 100/125*lci,
+                         age_bracket == "40-50" ~ 100/291*lci,
+                         age_bracket == "50-60" ~ 100/278*lci,
+                         age_bracket == "60-70" ~ 100/110*lci,
+                         age_bracket == "70+" ~ 100/20*lci)) %>%
+  mutate(uci = case_when(age_bracket == "18-30" ~ n + 1.96*(n*(n-1)/30)^0.5,
+                          age_bracket == "30-40" ~ n + 1.96*(n*(n-1)/125)^0.5,
+                          age_bracket == "40-50" ~ n + 1.96*(n*(n-1)/291)^0.5,
+                          age_bracket == "50-60" ~ n + 1.96*(n*(n-1)/278)^0.5,
+                          age_bracket == "60-70" ~ n + 1.96*(n*(n-1)/110)^0.5,
+                          age_bracket == "70+" ~ n + 1.96*(n*(n-1)/20)^0.5)) %>%
+  mutate(uci = case_when(age_bracket == "18-30" ~ 100/30*uci,
+                          age_bracket == "30-40" ~ 100/125*uci,
+                          age_bracket == "40-50" ~ 100/291*uci,
+                          age_bracket == "50-60" ~ 100/278*uci,
+                          age_bracket == "60-70" ~ 100/110*uci,
+                          age_bracket == "70+" ~ 100/20*uci)) %>%
   filter(!is.na(age_bracket)) %>% 
-  ggplot(aes(num_c19_infs_eng, n, fill = age_bracket)) +
-  geom_col(position = position_dodge(preserve = 'single')) +
+  ggplot(aes(num_c19_infs_eng, percent, fill = age_bracket)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.8) +
+  scale_x_discrete(limits = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer")) +
+  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   ylab("Share [Percentage]") +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
@@ -99,8 +145,9 @@ p3 <- data_reduced %>% group_by(age_bracket) %>%
   theme(text = element_text(size = 30)) +
   theme(legend.position = "none") +
   labs(fill="Age Group") +
-  theme(axis.text.x = element_text(angle=90, vjust=1, hjust=1)) +
-  scale_fill_manual(values = palette())
+  theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
+  scale_fill_manual(values = palette()) +
+  scale_color_manual(values = palette2())
 
 ggsave("NoInfections_AgeBrackets.pdf", p3, dpi = 500, w = 9, h = 9)
 ggsave("NoInfections_AgeBrackets.png", p3, dpi = 500, w = 9, h = 9)

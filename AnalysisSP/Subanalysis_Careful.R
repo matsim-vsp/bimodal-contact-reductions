@@ -4,6 +4,7 @@ library(MMWRweek)
 library(see)
 library(RColorBrewer)
 library(patchwork)
+library(ggpubr)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -34,6 +35,8 @@ palette2 <- function() {
   c("#b35806", "#542788")
 }
 
+my_comparisons <- list(c("Careful", "Risky"))
+
 p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(RiskyCarefulAtt )) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Work", "Leisure")) %>%
     filter(value > -50) %>% filter(value < 150) %>%  
@@ -41,43 +44,84 @@ p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>%
   geom_violin(aes(fill = RiskyCarefulAtt , color = RiskyCarefulAtt ), scale = "area", trim = TRUE) + 
   stat_summary(aes(color=RiskyCarefulAtt ), fun.data=mean_sdl, fun.args = list(mult=1), 
                  geom="pointrange", linewidth = 1) +
+  stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.5, label.y.npc = 0)+
   #geom_violin(aes(color=WhoseContacts), size = 1.3) +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-50, 0,50, 100)) +
   facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
   theme_minimal() +
-    ylab("Reduction Of Contacts [Percentage]") +
+  ylab("Reduction Of Contacts [Percentage]") +
   theme(text = element_text(size = 30)) +
+  theme(panel.spacing.y = unit(3, "lines")) +
+  theme(panel.spacing.x = unit(3, "lines")) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "none") +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
   #labs(color ="Attitude Score ") +
   theme(panel.spacing = unit(0.8, "cm", data = NULL))
   #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-ggsave("CollectionViolinplots_AttCarefulnessScore.pdf", p1, dpi = 500, w = 12, h = 9)
-ggsave("CollectionViolinplots_AttCarefulnessScore.png", p1, dpi = 500, w = 12, h = 9)
+ggsave("CollectionViolinplots_AttCarefulnessScore.pdf", p1, dpi = 500, w = 15, h = 10)
+ggsave("CollectionViolinplots_AttCarefulnessScore.png", p1, dpi = 500, w = 15, h = 10)
 
-### Tesing for statistically significant difference in contact reduction 
+palette2 <- function() {
+  c("#b35806", "#542788")
+}
 
-data_reduced <- data_reduced %>% filter(respondent_work_rel_2019_2020 > -1000) %>%
-                filter(respondent_work_rel_2019_2021 > -1000) %>%
-                filter(respondent_work_rel_2019_2023 > -1000) %>%
-                filter(respondent_leisure_rel_2019_2020 > -1000) %>%
-                filter(respondent_leisure_rel_2019_2020 > -1000) %>%
-                filter(respondent_leisure_rel_2019_2020 > -1000) 
+ggplot(data_reduced %>% mutate(respondent_work_2019 = case_when(respondent_work_2019 == 0 ~ 0.1,
+                                         .default = respondent_work_2019)) %>%
+                        mutate(respondent_leisure_2019 = case_when(respondent_leisure_2019 == 0 ~ 0.1,
+                                         .default = respondent_leisure_2019)) %>%
+        filter(!is.na(RiskyCarefulAtt)) %>%
+        filter(respondent_work_2019 > -1000) %>%
+        filter(respondent_work_2019 < 200) %>%
+        filter(respondent_leisure_2019 > -1000) %>%
+        filter(respondent_leisure_2019 < 200)) +
+geom_jitter(aes(x=respondent_work_2019, y = respondent_leisure_2019, color = RiskyCarefulAtt), alpha = 0.7,  size = 2) +
+theme_minimal() + 
+scale_color_manual(values = palette2()) +
+theme(legend.position = "bottom") +
+scale_y_log10() +
+scale_x_log10() +
+xlab("Respondents' No. Of Work Contacts (2019)") +
+ylab("Respondents' No. Of Leisure Contacts (2019)") +
+theme(text = element_text(size = 30))
 
-Careful <- data_reduced %>% filter(RiskyCarefulAtt == "Careful")
-Risky <- data_reduced %>% filter(RiskyCarefulAtt == "Risky")
+ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>% 
+        filter(!is.na(RiskyCarefulAtt)) %>%
+        filter(respondent_work_rel_2019_2020 > -50) %>%
+        filter(respondent_work_rel_2019_2020 < 150) %>%
+        filter(respondent_leisure_rel_2019_2020 > -50) %>%
+        filter(respondent_leisure_rel_2019_2020 < 150)) +
+geom_jitter(aes(x=respondent_work_rel_2019_2020, y = respondent_leisure_rel_2019_2020, color = RiskyCarefulAtt), alpha = 0.7,  size = 2) +
+theme_minimal() + 
+scale_x_continuous(breaks = c(-25,0,25, 50,75, 100)) +
+scale_y_continuous(breaks = c(-25,0,25, 50,75, 100), limits = c(-25,100)) +
+scale_color_manual(values = palette2()) +
+theme(legend.position = "bottom") +
+#scale_y_log10() +
+#scale_x_log10() +
+xlab("2020 Reduction Of Work Contacts [Percentage]") +
+ylab("2020 Reduction Of Leisure Contacts [Percentage]") +
+theme(text = element_text(size = 30))
 
-#Work --> Testing for statistically significant difference in mean and median
-t.test(Careful$respondent_work_rel_2019_2020, Risky$respondent_work_rel_2019_2020, alternative = "greater")
-t.test(Careful$respondent_work_rel_2019_2021, Risky$respondent_work_rel_2019_2021, alternative = "greater")
-t.test(Careful$respondent_work_rel_2019_2023, Risky$respondent_work_rel_2019_2023, alternative = "greater")
-
-t.test(Careful$respondent_leisure_rel_2019_2020, Risky$respondent_leisure_rel_2019_2020, alternative = "greater")
-t.test(Careful$respondent_leisure_rel_2019_2021, Risky$respondent_leisure_rel_2019_2021, alternative = "greater")
-t.test(Careful$respondent_leisure_rel_2019_2023, Risky$respondent_leisure_rel_2019_2023, alternative = "greater")
+ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>% 
+        filter(!is.na(RiskyCarefulAtt)) %>%
+        filter(respondent_work_2019 - respondent_work_summer_2021 > -20) %>%
+        filter(respondent_work_2019 - respondent_work_summer_2021 < 100) %>%
+        filter(respondent_leisure_2019 - respondent_leisure_summer_2021 > -20) %>%
+        filter(respondent_leisure_2019 - respondent_leisure_summer_2021 < 100)) +
+geom_jitter(aes(x=respondent_work_2019 - respondent_work_summer_2021, y = respondent_leisure_2019 - respondent_leisure_summer_2021, color = RiskyCarefulAtt), alpha = 0.7,  size = 2) +
+theme_minimal() + 
+#scale_x_continuous(breaks = c(-25,0,25, 50,75, 100)) +
+#scale_y_continuous(breaks = c(-25,0,25, 50,75, 100), limits = c(-25,100)) +
+scale_color_manual(values = palette2()) +
+theme(legend.position = "bottom") +
+#scale_y_log10() +
+#scale_x_log10() +
+xlab("Reduced Work Contacts by X") +
+ylab("Reduction Leisure Contacts by Y") +
+theme(text = element_text(size = 30))
 
 
 p2 <- ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)), aes(date_f1_inf, color = RiskyCarefulAtt)) +
