@@ -34,9 +34,6 @@ ggsave("CollectionViolinplots_Respondent.png", p1_zeroth_order_absolut, dpi = 50
 #   c("#006BA6", "#FFBC42", "#8F2D56", "#C93E78")
 # }
 
-palette <- function() {
-  c("#998ec3", "#d8daeb", "#f1a340", "#b35806")
-}
 
 p1_first_order_absolut <- ggplot(data_reduced_tidy %>% filter((TypeOfContact %in% c("Work", "Leisure", "School") & value <= 100)) %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
   geom_violin(aes(fill = WhoseContacts), width = 1, trim = FALSE) + 
@@ -81,35 +78,43 @@ p1_zeroth_order_percred <- ggplot(data_reduced_tidy_rel %>%  filter((TypeOfConta
 ggsave("CollectionViolinplots_RemainingRespondent.pdf", p1_zeroth_order_percred, dpi = 500, w = 9, h = 9)
 ggsave("CollectionViolinplots_RemainingRespondent.png", p1_zeroth_order_percred, dpi = 500, w = 9, h = 9)
 
-
-# palette <- function() {
-#   c("#006BA6", "#FFBC42", "#8F2D56", "#C93E78")
-# }
-
 palette <- function() {
-  c("#542788", "#998ec3", "#f1a340", "#b35806")
+  c("#998ec3", "#d8daeb", "#f1a340", "#b35806")
 }
 
-p1_first_order_remaining <- ggplot(data_reduced_tidy_rel %>%  filter((TypeOfContact %in% c("Work", "Leisure", "School"))) %>% 
-    #filter(attitudeScore > 6) %>% 
-    filter(value >= -250) %>% filter(value < 150) %>%  
+palette2 <- function() {
+  c("#542788", "#998ec3", "#b35806", "#713500")
+}
+
+  my_comparisons <- list(c("Respondent", "Household Member"),
+  c("Respondent", "Closest Contact (Pre-Covid)"), 
+  c("Respondent", "Closest Contact (During-Covid)"))
+
+p1_zeroth_order_percred_all <- ggplot(data_reduced_tidy_rel %>%  filter((TypeOfContact %in% c("Work", "Leisure"))) %>% 
+    filter(!is.na(value)) %>%
+    filter(value > -50) %>% filter(value < 150) %>%  
     filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
-    geom_violin(aes(fill = WhoseContacts), width = 1, trim = TRUE) + 
-    stat_summary(fun.data=mean_sdl, fun.args = list(mult=1), 
-                 geom="pointrange", color="black", linewidth = 1.2) +
+  geom_violin(aes(fill = WhoseContacts, color= WhoseContacts), scale = "area", trim = TRUE,  ) + 
+  stat_summary(aes(color = WhoseContacts), fun.data=mean_sdl, fun.args = list(mult=1), 
+                 geom="pointrange", linewidth = 1) +
+  stat_compare_means(comparisons = my_comparisons, test = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.2, label.y.npc = 0)+
   #geom_violin(aes(color=WhoseContacts), size = 1.3) +
   scale_fill_manual(values = palette()) +
+  scale_color_manual(values = palette2()) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
   facet_grid(rows = vars(TypeOfContact), cols = vars(time)) +
   theme_minimal() +
-  ylab("Remaining % Of Contacts (Relative to 2019)") +
+  ylab("Reduction Of Contacts [Percentage]") +
   theme(text = element_text(size = 30)) +
-  scale_y_continuous(limits=c(-10,100)) +
+  theme(panel.spacing.y = unit(3, "lines")) +
+  theme(panel.spacing.x = unit(3, "lines")) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   guides(fill=guide_legend(nrow=2,byrow=TRUE))
 
-ggsave("CollectionBoxplots_Remaining.pdf", p1_first_order_remaining, dpi = 500, w = 13, h = 13)
-ggsave("CollectionBoxplots_Remaining.png", p1_first_order_remaining, dpi = 500, w = 13, h = 13)
+ggsave("CollectionViolinplots_RemainingAll.pdf", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 15)
+ggsave("CollectionViolinplots_RemainingAll.png", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 15)
+
 
 ## ECDF 
 data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
