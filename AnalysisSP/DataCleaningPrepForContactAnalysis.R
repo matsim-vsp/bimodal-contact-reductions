@@ -52,7 +52,8 @@ data_reduced <- raw_data %>% select(date_f1_inf, date_s2_inf, date_t3_inf, num_c
                                     wkly_cont_2019_leisure, wkly_cont_03_2020_leisure, wkly_cont_summer_2021_leisure, wkly_cont_01_2023_leisure,
                                     hsld_cont__2019_leisure, hsld_cont__03_2020_leisure, hsld_cont__summer_2021_leisure, hsld_cont__01_2023_leisure,
                                     cc_weekly_contacts_2019_leisure_cont, cc_weekly_contacts_03_2020_leisure_cont, cc_weekly_contacts_summer_2021_leisure_cont, cc_weekly_contacts_01_2023_leisure_cont,
-                                    cc_weekly_cont_during_pandemic_2019_leisure_cont, cc_weekly_cont_during_pandemic_03_2020_leisure_cont, cc_weekly_cont_during_pandemic_summer_2021_leisure_cont, cc_weekly_cont_during_pandemic_01_2023_leisure_cont)
+                                    cc_weekly_cont_during_pandemic_2019_leisure_cont, cc_weekly_cont_during_pandemic_03_2020_leisure_cont, cc_weekly_cont_during_pandemic_summer_2021_leisure_cont, cc_weekly_cont_during_pandemic_01_2023_leisure_cont, 
+                                    c19_vaccination_status, c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
 
 ## Renaming some of the columns to facilitate analysis
 # Renaming done for RESPONDENT
@@ -412,9 +413,10 @@ data_reduced <- data_reduced %>% mutate(cc_during_work_rel_2019_2020 = (cc_durin
 ## Turning data into tidy format (absolute no of contacts)
 
 data_reduced_tidy <- data_reduced %>% select(-c(respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
-                                      select(-contains("rel"))
+                                      select(-contains("rel")) %>% 
+                                      select(-contains("c19_vaccination"))
 
-data_reduced_tidy <- data_reduced_tidy %>% pivot_longer(cols = 37:112)
+data_reduced_tidy <- data_reduced_tidy %>% pivot_longer(cols = 49:112)
 
 data_reduced_tidy <- data_reduced_tidy  %>% mutate(time = case_when(str_detect(name, "2019") ~ "2019",
                                                           str_detect(name, "2020") ~ "03/2020",
