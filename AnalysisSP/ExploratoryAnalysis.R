@@ -3,11 +3,11 @@ library(RColorBrewer)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
-raw_data <- read_csv("/Users/sydney/Downloads/twitter_data.csv")
+source("DataCleaningPrepForContactAnalysis.R")
 
 # Number of infections ----------------------------------------------------
 
-no_time_infections <- raw_data %>% select(user_id, num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf) %>%
+no_time_infections <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf) %>%
   mutate(noInfections = case_when(num_c19_infs == NA ~ NA,
                                   num_c19_infs == "Nie" ~ "0",
                                   num_c19_infs == "Einmal" ~ "1",
@@ -27,219 +27,229 @@ ggplot(no_time_infections %>% filter(is.na(noInfections) == FALSE)) +
 
 ggsave("RelNoInfections.png", dpi = 500, w = 9, h = 4.5)
 
-# Time of infections ------------------------------------------------------
-
-no_time_infections <- no_time_infections %>% pivot_longer(cols=c("date_f1_inf", "date_s2_inf", "date_t3_inf"))
-colnames(no_time_infections)[4] <- "CounterInfection"
-colnames(no_time_infections)[5] <- "DateInfection"
-
-no_time_infections <- no_time_infections %>% mutate(DateInfectionInterval = case_when(DateInfection < "2020-03-01" ~ "Feb2020",
-                                                                                      DateInfection < "2020-04-01" ~ "Mar2020",
-                                                                                      DateInfection < "2020-05-01" ~ "Apr2020",
-                                                                                      DateInfection < "2020-06-01" ~ "May2020",
-                                                                                      DateInfection < "2020-07-01" ~ "Jun2020",
-                                                                                      DateInfection < "2020-08-01" ~ "Jul2020",
-                                                                                      DateInfection < "2020-09-01" ~ "Aug2020",
-                                                                                      DateInfection < "2020-10-01" ~ "Sep2020",
-                                                                                      DateInfection < "2020-11-01" ~ "Oct2020",
-                                                                                      DateInfection < "2020-12-01" ~ "Nov2020",
-                                                                                      DateInfection < "2021-01-01" ~ "Dec2020",
-                                                                                      DateInfection < "2021-02-01" ~ "Jan2021",
-                                                                                      DateInfection < "2021-03-01" ~ "Feb2021",
-                                                                                      DateInfection < "2021-04-01" ~ "Mar2021",
-                                                                                      DateInfection < "2021-05-01" ~ "Apr2021",
-                                                                                      DateInfection < "2021-06-01" ~ "May2021",
-                                                                                      DateInfection < "2021-07-01" ~ "Jun2021",
-                                                                                      DateInfection < "2021-08-01" ~ "Jul2021",
-                                                                                      DateInfection < "2021-09-01" ~ "Aug2021",
-                                                                                      DateInfection < "2021-10-01" ~ "Sep2021",
-                                                                                      DateInfection < "2021-11-01" ~ "Oct2021",
-                                                                                      DateInfection < "2021-12-01" ~ "Nov2021",
-                                                                                      DateInfection < "2022-01-01" ~ "Dec2021",
-                                                                                      DateInfection < "2022-02-01" ~ "Jan2021",
-                                                                                      DateInfection < "2022-03-01" ~ "Feb2022",
-                                                                                      DateInfection < "2022-04-01" ~ "Mar2022",
-                                                                                      DateInfection < "2022-05-01" ~ "Apr2022",
-                                                                                      DateInfection < "2022-06-01" ~ "May2022",
-                                                                                      DateInfection < "2022-07-01" ~ "Jun2022",
-                                                                                      DateInfection < "2022-08-01" ~ "Jul2022",
-                                                                                      DateInfection < "2022-09-01" ~ "Aug2022",
-                                                                                      DateInfection < "2022-10-01" ~ "Sep2022",
-                                                                                      DateInfection < "2022-11-01" ~ "Oct2022",
-                                                                                      DateInfection < "2022-12-01" ~ "Nov2022",
-                                                                                      DateInfection < "2023-01-01" ~ "Dec2022",
-                                                                                      DateInfection < "2023-02-01" ~ "Jan2023",
-                                                                                      DateInfection < "2023-03-01" ~ "Feb2023",
-                                                                                      DateInfection < "2023-04-01" ~ "Mar2023",
-                                                                                      DateInfection < "2023-05-01" ~ "Apr2023",
-                                                                                      DateInfection < "2023-06-01" ~ "May2023",
-                                                                                      DateInfection < "2023-07-01" ~ "Jun2023",
-                                                                                      DateInfection < "2023-08-01" ~ "Jul2023",
-                                                                                      DateInfection < "2023-09-01" ~ "Aug2023",
-                                                                                      DateInfection < "2023-10-01" ~ "Sep2023"))
-
-no_time_infections$DateInfectionInterval <- factor(no_time_infections$DateInfectionInterval, levels = c("Feb2020", "Mar2020", "Apr2020", "May2020", "Jun2020", "Jul2020", "Aug2020", "Sep2020", "Oct2020", "Nov2020", "Dec2020",
-                                                                                                        "Jan2021", "Feb2021", "Mar2021", "Apr2021", "May2021", "Jun2021", "Jul2021", "Aug2021", "Sep2021", "Oct2021", "Nov2021", "Dec2021",
-                                                                                                        "Jan2022", "Feb2022", "Mar2022", "Apr2022", "May2022", "Jun2022", "Jul2022", "Aug2022", "Sep2022", "Oct2022", "Nov2022", "Dec2022",
-                                                                                                        "Jan2023", "Feb2023", "Mar2023", "Apr2023", "May2023", "Jun2023", "Jul2023", "Aug2023", "Sep2023"))
-ggplot(no_time_infections %>% filter(CounterInfection == "date_f1_inf") %>% filter(is.na(DateInfectionInterval) == FALSE)) + 
-  geom_bar(aes(DateInfectionInterval), fill = "#1b9e77") +
-  theme_minimal() +
-  xlab("Month of First Infection") +
-  ylab("Count") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
-
-ggsave("TimeFirstInfection.png", dpi = 500, w = 9, h = 4.5)
-
 # Vaccination -------------------------------------------------------------
 
-VaccinationYesNo <- raw_data %>% select(user_id, c19_vaccination_status, year_of_birth)
-VaccinationYesNo <- VaccinationYesNo[!is.na(VaccinationYesNo$user_id),]
+VaccinationYesNo <- data_reduced %>% select(c19_vaccination_status, year_of_birth)
+#VaccinationYesNo <- VaccinationYesNo[!is.na(VaccinationYesNo$user_id),]
 
 VaccinationYesNo$c19_vaccination_status <- factor(VaccinationYesNo$c19_vaccination_status, levels = c("Ja", "Nein", "Weiß ich nicht", "Ich möchte nicht antworten", NA))
 
-ggplot(VaccinationYesNo) + 
-  geom_bar(aes(x = c19_vaccination_status, y = ..prop.., group = 1), fill = "#1b9e77") +
-  theme_minimal() +
-  ylab("Frequency") +
-  xlab("") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  +
-  theme(text = element_text(size = 15))
-ggsave("FrequencyVaccination.png", dpi = 500, w = 9, h = 6)
-ggsave("FrequencyVaccination.pdf", dpi = 500, w = 9, h = 6)
+VaccinationYesNo <- VaccinationYesNo %>% mutate(c19_vaccination_status_eng = case_when(c19_vaccination_status == "Ja" ~ "Yes",
+                                                                                        c19_vaccination_status == "Nein" ~ "No",
+                                                                                        c19_vaccination_status == "Weiß ich nicht" ~ "I Don't Know",
+                                                                                        c19_vaccination_status == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))
 
-VaccinationYesNo60Plus <- VaccinationYesNo %>% filter(year_of_birth <= 1962)
-ggplot(VaccinationYesNo60Plus %>% filter(is.na(c19_vaccination_status) == FALSE)) + 
-  geom_bar(aes(x = c19_vaccination_status, y = ..prop.., group = 1), fill = "#1b9e77") +
-  theme_minimal() +
-  ylab("Frequency") +
-  xlab("") +
-  ggtitle("Vaccinated Y/N - 60+") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  +
-  theme(text = element_text(size = 15))
-ggsave("FrequencyVaccination60plus.png", dpi = 500, w = 9, h = 6)
-ggsave("FrequencyVaccination60plus.pdf", dpi = 500, w = 9, h = 6)
+VaccinationYesNo$c19_vaccination_status_eng <- factor(VaccinationYesNo$c19_vaccination_status_eng, levels = c("Yes", "No", "I Don't Know", "I Don't Want To Answer"))
 
-VaccinationYesNo1859 <- VaccinationYesNo %>% filter(year_of_birth > 1962)
-VaccinationYesNo1859$c19_vaccination_status <- factor(VaccinationYesNo1859$c19_vaccination_status, levels = c("Ja", "Nein", "Weiß ich nicht", "Ich möchte nicht antworten", NA))
-ggplot(VaccinationYesNo1859 %>% filter(is.na(c19_vaccination_status) == FALSE)) + 
-  geom_bar(aes(x = c19_vaccination_status, y = ..prop.., group = 1), fill = "#1b9e77") +
+VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% count(c19_vaccination_status_eng) %>%
+  mutate(percent = 100 * n / sum(n)) %>%
+  mutate(lci =  n - 1.96*(n*(n-1)/567)^0.5) %>%
+  mutate(lci = 100/567*lci) %>%
+  mutate(uci =  n + 1.96*(n*(n-1)/567)^0.5) %>%
+  mutate(uci =  100/567*uci) %>%
+  ggplot(aes(c19_vaccination_status_eng, percent)) + 
+  geom_bar(stat = "identity", position = "dodge", width = 0.8, fill = "#998ec3") +
+  geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci), color = "#542788", position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
-  ylab("Frequency") +
-  xlab("") +
-  ggtitle("Vaccinated Y/N - 18-59") +
+  ylab("Share [Percentage]") +
+  xlab("Have you received any COVID-19 vaccine?") +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  +
-  theme(text = element_text(size = 15))
-ggsave("FrequencyVaccination1859.png", dpi = 500, w = 9, h = 6)
-ggsave("FrequencyVaccination1859.pdf", dpi = 500, w = 9, h = 6)
+  theme(text = element_text(size = 30)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
+  theme(text = element_text(size = 15)) +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt"))
+ggsave("ShareVaccinated.png", dpi = 500, w = 9, h = 6)
+ggsave("ShareVaccinated.pdf", dpi = 500, w = 9, h = 6)
 
-ggplot(VaccinationYesNo %>% filter(is.na(c19_vaccination_status) == FALSE)) + 
-  geom_bar(aes(x = c19_vaccination_status, y = ..prop.., group = 1), fill = "#1b9e77") +
+VaccinationYesNo <- VaccinationYesNo %>% mutate(age_bracket = case_when(year_of_birth <= 1962 ~ "60+",
+                                                                        year_of_birth > 1962 ~ "18-59"))
+
+
+palette <- function() {
+  c("#998ec3", "#f1a340")
+}
+
+palette2 <- function() {
+  c("#542788", "#b35806")
+}
+
+
+VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% filter(!is.na(age_bracket)) %>% group_by(age_bracket) %>% count(c19_vaccination_status_eng) %>%
+  mutate(percent = 100 * n / sum(n)) %>%
+  mutate(lci = case_when(age_bracket == "60+" ~ n - 1.96*(n*(n-1)/75)^0.5, 
+                          age_bracket == "18-59" ~ n - 1.96*(n*(n-1)/484)^0.5)) %>%
+  mutate(lci = case_when(age_bracket == "60+" ~ 100/75*lci,
+                        age_bracket == "18-59" ~ 100/484*lci)) %>%
+  mutate(uci =  case_when(age_bracket == "60+" ~ n + 1.96*(n*(n-1)/75)^0.5,
+                          age_bracket == "18-59" ~ n + 1.96*(n*(n-1)/484)^0.5)) %>%
+  mutate(uci =  case_when(age_bracket == "60+" ~ 100/75*uci,
+                          age_bracket == "18-59" ~ 100/484*uci)) %>%
+  ggplot(aes(c19_vaccination_status_eng, percent, fill = age_bracket)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.8)+
+  geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci, color=age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
-  ylab("Frequency") +
-  xlab("") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  +
-  theme(text = element_text(size = 15))
-
-ggsave("FrequencyVaccinationNoNA.png", dpi = 500, w = 9, h = 6)
+  ylab("Share [Percentage]") +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+  xlab("Have you received any COVID-19 vaccine?") +
+  scale_fill_manual(values = palette()) +
+  scale_color_manual(values = palette2()) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(text = element_text(size = 30)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
+  theme(text = element_text(size = 15)) +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt"))
+ggsave("ShareVaccinated_AgeBracket.png", dpi = 500, w = 9, h = 6)
+ggsave("ShareVaccinated_AgeBracket.pdf", dpi = 500, w = 9, h = 6)
 
 # Vaccination Supplier ----------------------------------------------------
 
-vaccinationData <- raw_data %>% select(user_id, c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
+vaccinationData <- data_reduced %>% select(c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
 vaccinationData <- na.omit(vaccinationData)
 vaccinationData <- vaccinationData %>% pivot_longer(cols = c("c19_vaccination_details_vaccine_dose_1", "c19_vaccination_details_vaccine_dose_2", "c19_vaccination_details_vaccine_dose_3", "c19_vaccination_details_vaccine_dose_4"))
 vaccinationData$value <- factor(vaccinationData$value, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/ Johnson & Johnson", "Gamaleya Sputnik V", "Andere", "Ich möchte nicht antworten", "Nicht zutreffend"))
-ggplot(vaccinationData %>% filter(value != "Nicht zutreffend")) + 
-  geom_bar(aes(x = value, y = ..prop.., group = 1, fill = name)) +
-  theme_minimal() +
-  facet_wrap(~name, nrow=2) +
-  ylab("Frequency") +
-  xlab("") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  +
-  theme(text = element_text(size = 15))
+vaccinationData <- vaccinationData %>% mutate(value_eng = case_when(value == "BioNTech" ~ "BioNTech",
+                                                                    value == "Moderna" ~ "Moderna",
+                                                                    value == "AstraZeneca" ~ "AstraZeneca", 
+                                                                    value == "Janssen/ Johnson & Johnson" ~ "Janssen/Johnson & Johnson",
+                                                                    value == "Gamaleya Sputnik V" ~ "Gamaleya Sputnik V",
+                                                                    value == "Andere" ~ "Other",
+                                                                    value == "Ich möchte nicht antworten" ~ "I Don't Want To Answer",
+                                                                    value == "Nicht zutreffend" ~ "Does Not Apply"))
+vaccinationData$value_eng <- factor(vaccinationData$value_eng, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/Johnson & Johnson", "Gamaleya Sputnik V", "Other", "I Don't Want To Answer", "Does Not Apply"))
+vaccinationData <- vaccinationData %>% mutate(Impfserie = case_when(name == "c19_vaccination_details_vaccine_dose_1" ~ "1", 
+                                                                    name == "c19_vaccination_details_vaccine_dose_2" ~ "2",
+                                                                    name == "c19_vaccination_details_vaccine_dose_3" ~ "3",
+                                                                    name == "c19_vaccination_details_vaccine_dose_4" ~ "4"))
+vaccinationData$Impfserie <- factor(vaccinationData$Impfserie, levels = c("1", "2", "3", "4"))
+vaccinationData <- vaccinationData %>% mutate(Source = "Survey")
+vaccinationData<- vaccinationData %>% select(Impfserie, value_eng, Source)
 
-ggsave("FrequencyVaccinationSupplier.png", dpi = 500, w = 9, h = 6)
-
+# Compare to RKI vaccination data
 rkiVaccinations <- read_csv("https://raw.githubusercontent.com/robert-koch-institut/COVID-19-Impfungen_in_Deutschland/main/Deutschland_Bundeslaender_COVID-19-Impfungen.csv")
-rkiVaccinations <- rkiVaccinations %>% mutate(week = isoweek(Impfdatum)) %>%
-  mutate(year = year(Impfdatum))
-rkiVaccinations <- rkiVaccinations %>% group_by(Impfstoff, Impfserie) %>% summarise(Anzahl = sum(Anzahl))
-rkiVaccinations <- ungroup(rkiVaccinations)
-rkiVaccinations$Impfserie <- as.character(rkiVaccinations$Impfserie)
-rkiVaccinations <- rkiVaccinations %>% mutate(Impfstoff = case_when(Impfstoff == "Comirnaty" ~ "BioNTech",
+rkiVaccinations <- rkiVaccinations %>% mutate(value_eng = case_when(Impfstoff == "Comirnaty" ~ "BioNTech",
                                                                     Impfstoff == "Comirnaty Omicron XBB.1.5" ~ "BioNTech",
                                                                     Impfstoff == "Comirnaty Original/Omicron BA.1" ~ "BioNTech",
                                                                     Impfstoff == "Comirnaty Original/Omicron BA.4-5" ~ "BioNTech",
                                                                     Impfstoff == "Comirnaty bivalent (Original/Omikron)" ~ "BioNTech",
                                                                     Impfstoff == "Comirnaty-Kleinkinder" ~ "BioNTech",
                                                                     Impfstoff == "Jcovden" ~ "Janssen/Johnson & Johnson",
-                                                                    Impfstoff == "Nuvaxovid" ~ "Andere",
+                                                                    Impfstoff == "Nuvaxovid" ~ "Other",
                                                                     Impfstoff == "Vaxzevria" ~ "AstraZeneca",
                                                                     Impfstoff == "Spikevax" ~ "Moderna",
                                                                     Impfstoff == "Spikevax bivalent (Original/Omikron)" ~ "Moderna",
                                                                     Impfstoff == "Spikevax bivalent Original/Omicron BA.1" ~ "Moderna",
                                                                     Impfstoff == "Spikevax bivalent Original/Omicron BA.4-5" ~ "Moderna",
-                                                                    Impfstoff == "Valneva" ~ "Andere",
-                                                                    Impfstoff == "VidPrevtyn Beta" ~ "Andere"))
+                                                                    Impfstoff == "Valneva" ~ "Other",
+                                                                    Impfstoff == "VidPrevtyn Beta" ~ "Other"))
+rkiVaccinations <- rkiVaccinations %>% mutate(Source = "RKI") %>% filter(Impfserie %in% c(1,2,3,4))
+rkiVaccinations <- rkiVaccinations %>% uncount(Anzahl)
 
-Sum <- rkiVaccinations %>% group_by(Impfserie) %>% summarise(sum = sum(Anzahl))
-rkiVaccinations <- rkiVaccinations %>% mutate(relAnzahl = case_when(Impfserie == 1 ~ Anzahl/64947115,
-                                                                    Impfserie == 2 ~ Anzahl/61284765,
-                                                                    Impfserie == 3 ~ Anzahl/52210149,
-                                                                    Impfserie == 4 ~ Anzahl/13479521,
-                                                                    Impfserie == 5 ~ Anzahl/3994200,
-                                                                    Impfserie == 6 ~ Anzahl/808739))
-rkiVaccinations$Impfstoff <- factor(rkiVaccinations$Impfstoff, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/Johnson & Johnson", "Andere"))
-ggplot(rkiVaccinations) + 
-  geom_col(aes(x= Impfstoff, y = relAnzahl, fill = Impfserie, group = 1)) +
+rkiVaccinations <- rkiVaccinations %>% select(Impfserie, value_eng, Source)
+
+vaccinationData <- rbind(vaccinationData, rkiVaccinations)
+
+vaccinationData <- vaccinationData %>% mutate(vaccineNo = case_when(Impfserie == "1" ~ "1st COVID-19 Vaccination",
+                                                                    Impfserie == "2" ~ "2nd COVID-19 Vaccination",
+                                                                    Impfserie == "3" ~ "3rd COVID-19 Vaccination",
+                                                                    Impfserie == "4" ~ "4th COVID-19 Vaccination"
+                                                                    ))
+
+
+vaccinationData %>% filter(value_eng != "Does Not Apply") %>% filter(value_eng != "I Don't Want To Answer") %>% group_by(vaccineNo, Source) %>% count(value_eng) %>%
+                    mutate(percent = 100 * n / sum(n)) %>%
+ggplot(aes(value_eng, percent)) +
+  geom_bar(aes(fill = Source), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
-  facet_wrap(~Impfserie, nrow=2) +
-  ylab("Frequency") +
-  xlab("") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  theme(text = element_text(size = 15))
+  facet_wrap(~vaccineNo, nrow=2) +
+  ylab("Share [Percentage]") +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+  xlab("Vaccination Supplier") +
+  scale_fill_manual(values = palette()) +
+  scale_color_manual(values = palette2()) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(text = element_text(size = 30)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt"))
 
-ggsave("RKIFrequencyVaccinationSupplier.png", dpi = 500, w = 9, h = 6)
+ggsave("ShareVaccinationSupplier.pdf", dpi = 500, w = 12, h = 12)
+ggsave("ShareVaccinationSupplier.png", dpi = 500, w = 12, h = 12)
 
 # Household Size and No. of Children --------------------------------------
 
-HouseholdData <- raw_data %>% select(user_id, hsld_size_2019_, hsld_size_03_2020_, hsld_size_summer_2021_, hsld_size_01_2023_, total_hsld_size_persons_under_14, total_hsld_size_persons_above_14, number_of_children_under_18)
-HouseholdData <- na.omit(HouseholdData)
-HouseholdData <- HouseholdData %>% pivot_longer(cols = c("hsld_size_2019_", "hsld_size_03_2020_", "hsld_size_summer_2021_", "hsld_size_01_2023_", "total_hsld_size_persons_under_14", "total_hsld_size_persons_above_14", "number_of_children_under_18"))
+HouseholdData <- data_reduced %>% select(respondent_hsld_size_2019, respondent_hsld_size_03_2020, respondent_hsld_size_summer_2021, respondent_hsld_size_01_2023, respondent_hsld_size_persons_under_14, number_of_children_under_18)
+HouseholdData <- HouseholdData %>% pivot_longer(cols = c("respondent_hsld_size_2019", "respondent_hsld_size_03_2020", "respondent_hsld_size_summer_2021", "respondent_hsld_size_01_2023", "respondent_hsld_size_persons_under_14", "number_of_children_under_18"))
 
 #HouseholdData$name <- factor(HouseholdData$name, levels = c("hsld_size_2019_", "hsld_size_03_2020_", "hsld_size_summer_2021_", "hsld_size_01_2023_", "total_hsld_size_persons_under_14", "total_hsld_size_persons_above_14", "number_of_children_under_18"))
-HouseholdData$value <- as.integer(HouseholdData$value)
-HouseholdData <- HouseholdData %>% mutate(name = case_when(name == "hsld_size_2019_" ~ "Household size 2019",
-                                                          name == "hsld_size_03_2020_" ~ "Household size 3/20",
-                                                          name == "hsld_size_summer_2021_" ~ "Household size summmer/21",
-                                                          name == "hsld_size_01_2023_" ~ "Household size 1/23",
-                                                          name == "total_hsld_size_persons_under_14" ~ "Children < 14 in household",
-                                                          name == "total_hsld_size_persons_above_14" ~ "Persons > 14 in household",
+HouseholdData <- HouseholdData %>% mutate(value = case_when(value == 1 ~ "1", value == 2 ~ "2", value == 3 ~ "3", value == 4 ~ "4", value >= 5 ~ "5+"))
+HouseholdData <- HouseholdData %>% mutate(name = case_when(name == "respondent_hsld_size_2019" ~ "Household size 2019",
+                                                          name == "respondent_hsld_size_03_2020" ~ "Household size 3/20",
+                                                          name == "respondent_hsld_size_summer_2021" ~ "Household size Summer/21",
+                                                          name == "respondent_hsld_size_01_2023" ~ "Household size 1/23",
+                                                          name == "respondent_hsld_size_persons_under_14" ~ "Children < 14 in household",
                                                           name == "number_of_children_under_18" ~ "# Children < 18"))
-HouseholdData$name <- factor(HouseholdData$name, levels = c("Household size 2019","Household size 3/20","Household size summmer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
-ggplot(HouseholdData %>% filter(value < 10)) + geom_bar(aes(x= value, y = ..prop.., group = 1, fill = name)) +
+HouseholdData$name <- factor(HouseholdData$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
+
+#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Haushalte-Familien/Tabellen/1-1-privathaushalte-haushaltsmitglieder.html
+HouseholdDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
+colnames(HouseholdDataStatBundesamt) <- c("name", "value", "n", "percent", "Source")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "1", 1, 41.1, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "1", 1, 41.1, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "1", 1, 41.1, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "1", "X", 41.1, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "2", 1, 33.5, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "2", 1, 33.5, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "2", 1, 33.5, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "2", 1, 33.5, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "3", 1, 11.9, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "3", 1, 11.9, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "3", 1, 11.9, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "3", 1, 11.9, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "4", 1, 9.5, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "4", 1, 9.5, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "4", 1, 9.5, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "4", 1, 9.5, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "5+", 1, 3.9, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "5+", 1, 3.9, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "5+", 1, 3.9, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "5+", 1, 3.9, "Statistisches Bundesamt (2023)")
+HouseholdDataStatBundesamt$n <- as.integer(HouseholdDataStatBundesamt$n)
+HouseholdDataStatBundesamt$percent <- as.double(HouseholdDataStatBundesamt$percent)
+HouseholdDataStatBundesamt$name <- factor(HouseholdDataStatBundesamt$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
+
+
+palette <- function() {
+  c("#998ec3", "#f1a340")
+}
+
+
+
+HouseholdData %>% filter(name != "Children < 14 in household") %>%
+                  filter(name != "# Children < 18") %>%  filter(!is.na(name)) %>% filter(!is.na(value)) %>% 
+                  group_by(name) %>% count(value) %>% mutate(percent = 100 * n / sum(n)) %>% mutate(Source = "Survey") %>% 
+                  rbind(HouseholdData, HouseholdDataStatBundesamt) %>% filter(!is.na(Source)) %>%
+ggplot(aes(value, percent)) +
+  geom_bar(aes(fill=Source), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
   facet_wrap(~name, nrow=2) +
-  ylab("Frequency") +
-  xlab("") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  scale_x_continuous(breaks=c(0,2,4,6,8)) +
-  theme(text = element_text(size = 15))
+  ylab("Share [Percentage]") +
+  xlab("Household size [# Members]") +
+  scale_fill_manual(values = palette()) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt"))
 
-ggsave("HouseholdSize.png", dpi = 500, w = 12, h = 4.5)
+ggsave("HouseholdSize.png", dpi = 500, w = 12, h = 9)
+ggsave("HouseholdSize.pdf", dpi = 500, w = 12, h = 9)
 
 
 # Gender ------------------------------------------------------------------
@@ -374,48 +384,6 @@ ggplot(behaviorChange %>% filter(!is.na(value))) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ggsave("BehaviorChange.png", dpi = 500, w = 12, h = 9)
 ggsave("BehaviorChange.pdf", dpi = 500, w = 12, h = 9)
-
-
-# Attitudes ---------------------------------------------------------------
-
-attitudes <- raw_data %>% select(user_id, attitudes_precautions_mar2020_low_infection_risk_perception,
-                                 attitudes_precautions_mar2020_risky_infection_course_assessment, attitudes_precautions_mar2020_high_risk_perception, 
-                                 attitudes_precautions_mar2020_avoided_risky_situations, attitudes_precautions_mar2020_aware_distance_rule_effectiveness, 
-                                 attitudes_precautions_mar2020_understood_mask_reduces_risk, attitudes_precautions_mar2020_followed_measures, 
-                                 attitudes_precautions_mar2020_felt_restricted_by_measures, attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical)
-
-attitudes <- attitudes %>% pivot_longer(cols = c("attitudes_precautions_mar2020_low_infection_risk_perception",
-                                                 "attitudes_precautions_mar2020_risky_infection_course_assessment", "attitudes_precautions_mar2020_high_risk_perception", 
-                                                 "attitudes_precautions_mar2020_avoided_risky_situations", "attitudes_precautions_mar2020_aware_distance_rule_effectiveness", 
-                                                 "attitudes_precautions_mar2020_understood_mask_reduces_risk", "attitudes_precautions_mar2020_followed_measures", 
-                                                 "attitudes_precautions_mar2020_felt_restricted_by_measures", "attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical"))
-
-
-attitudes <- attitudes %>% mutate(name = case_when(name == "attitudes_precautions_mar2020_low_infection_risk_perception" ~ "risk of infection",
-                                  name == "attitudes_precautions_mar2020_risky_infection_course_assessment" ~ "assessed getting the infection to be risky", 
-                                  name == "attitudes_precautions_mar2020_high_risk_perception" ~ "high risk perception", 
-                                  name == "attitudes_precautions_mar2020_avoided_risky_situations" ~ "avoidance of risky situations", 
-                                  name == "attitudes_precautions_mar2020_aware_distance_rule_effectiveness" ~ "awareness of effectivenss of distance-rel. NPIs", 
-                                  name == "attitudes_precautions_mar2020_understood_mask_reduces_risk" ~ "awareness of effectiveness of masks", 
-                                  name == "attitudes_precautions_mar2020_followed_measures" ~ "adherance to measures", 
-                                  name == "attitudes_precautions_mar2020_felt_restricted_by_measures" ~ "felt restricted due to NPIs", 
-                                  name == "attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical" ~ "wore FFP2/FFP3 instead of medical mask"))
-
-attitudes$value <- factor(attitudes$value, levels = c("viel weniger", "weniger", "etwas weniger", "genauso", "etwas mehr", "mehr", "viel mehr", "trifft nicht zu", "keine Angabe"))
-
-ggplot(attitudes %>% filter(!is.na(value))) + 
-  geom_bar(aes(x= value, y = ..prop.., group = 1), fill = "#1b9e77") +
-  theme_minimal() +
-  ylab("Frequency") +
-  xlab("") +
-  facet_wrap(~name)+
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(text = element_text(size = 15)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-ggsave("Attitudes.png", dpi = 500, w = 12, h = 9)
-ggsave("Attitudes.pdf", dpi = 500, w = 12, h = 9)
-
 
 # Infection context -------------------------------------------------------
 
