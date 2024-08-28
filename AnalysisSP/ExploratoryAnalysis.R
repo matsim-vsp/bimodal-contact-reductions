@@ -57,7 +57,6 @@ VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% count(c19_va
   theme(legend.position = "none") +
   theme(text = element_text(size = 30)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
-  theme(text = element_text(size = 15)) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
@@ -161,13 +160,18 @@ vaccinationData <- vaccinationData %>% mutate(vaccineNo = case_when(Impfserie ==
 
 
 vaccinationData %>% filter(value_eng != "Does Not Apply") %>% filter(value_eng != "I Don't Want To Answer") %>% group_by(vaccineNo, Source) %>% count(value_eng) %>%
-                    mutate(percent = 100 * n / sum(n)) %>%
+                    mutate(percent = 100 * n / sum(n)) %>% mutate(percent = round(percent, digits = 2)) %>%
 ggplot(aes(value_eng, percent)) +
   geom_bar(aes(fill = Source), stat = "identity", position = "dodge", width = 0.8) +
+  geom_text(aes(label = percent, 
+                  y = percent, 
+                  group = Source),
+              position = position_dodge(width = 0.8),
+              vjust = -1, size = 6) +
   theme_minimal() +
   facet_wrap(~vaccineNo, nrow=2) +
   ylab("Share [Percentage]") +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+  scale_y_continuous(limits=c(0,110), labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   xlab("Vaccination Supplier") +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
@@ -178,8 +182,143 @@ ggplot(aes(value_eng, percent)) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("ShareVaccinationSupplier.pdf", dpi = 500, w = 12, h = 12)
-ggsave("ShareVaccinationSupplier.png", dpi = 500, w = 12, h = 12)
+ggsave("ShareVaccinationSupplier.pdf", dpi = 500, w = 21, h = 15)
+ggsave("ShareVaccinationSupplier.png", dpi = 500, w = 21, h = 15)
+
+# How many respondents are vaccinated? How often have they been vaccinated?
+
+vaccinationData <- data_reduced %>% select(c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
+
+vaccinationData <- vaccinationData %>% mutate(dose_1_received = case_when(c19_vaccination_details_vaccine_dose_1 == "BioNTech" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_1 == "Moderna" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_1 == "Janssen/ Johnson & Johnson" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_1 == "AstraZeneca" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_1 == "Andere" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_1 == "Nicht zutreffend" ~ "No",
+                                                                          c19_vaccination_details_vaccine_dose_1 == "Ich möchte nicht antworten" ~ "I Don't Want To Answer",
+                                                                          .default =  "NA")) %>%
+                                        mutate(dose_2_received = case_when(c19_vaccination_details_vaccine_dose_2 == "BioNTech" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_2 == "Moderna" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_2 == "Janssen/ Johnson & Johnson" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_2 == "AstraZeneca" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_2 == "Andere" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_2 == "Nicht zutreffend" ~ "No",
+                                                                          c19_vaccination_details_vaccine_dose_2 == "Ich möchte nicht antworten" ~ "I Don't Want To Answer",
+                                                                          .default =  "NA")) %>%
+                                        mutate(dose_3_received = case_when(c19_vaccination_details_vaccine_dose_3 == "BioNTech" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_3 == "Moderna" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_3 == "Janssen/ Johnson & Johnson" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_3 == "AstraZeneca" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_3 == "Andere" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_3 == "Nicht zutreffend" ~ "No",
+                                                                          c19_vaccination_details_vaccine_dose_3 == "Ich möchte nicht antworten" ~ "I Don't Want To Answer",
+                                                                          .default =  "NA")) %>%
+                                        mutate(dose_4_received = case_when(c19_vaccination_details_vaccine_dose_4 == "BioNTech" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_4 == "Moderna" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_4 == "Janssen/ Johnson & Johnson" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_4 == "AstraZeneca" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_4 == "Andere" ~ "Yes",
+                                                                          c19_vaccination_details_vaccine_dose_4 == "Nicht zutreffend" ~ "No",
+                                                                          c19_vaccination_details_vaccine_dose_4 == "Ich möchte nicht antworten" ~ "I Don't Want To Answer",
+                                                                          .default =  "NA"))
+
+vaccinationData$dose_1_received <- factor(vaccinationData$dose_1_received, levels = c("Yes", "No", NA, "I Don't Want To Answer"))
+vaccinationData$dose_2_received <- factor(vaccinationData$dose_2_received, levels = c("Yes", "No", NA, "I Don't Want To Answer"))
+vaccinationData$dose_3_received <- factor(vaccinationData$dose_3_received, levels = c("Yes", "No", NA, "I Don't Want To Answer"))
+vaccinationData$dose_4_received<- factor(vaccinationData$dose_4_received, levels = c("Yes", "No", NA, "I Don't Want To Answer"))
+
+# RKI data: https://impfdashboard.de/
+data1st <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(data1st) <- c("dose_1_received", "n", "percent", "source")
+data1st [nrow(data1st)+1,] <- c("Yes", 64900000, 100*64900000/78000000, "RKI")
+data1st [nrow(data1st)+1,] <- c("No", 13100000, 100*13100000/78000000, "RKI")
+data1st [nrow(data1st)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
+data1st [nrow(data1st)+1,] <- c("No", 0, 0, "Survey")
+data1st$n <- as.integer(data1st$n)
+data1st$percent <- as.double(data1st$percent)
+
+data2nd <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(data2nd) <- c("dose_2_received", "n", "percent", "source")
+data2nd [nrow(data2nd)+1,] <- c("Yes", 63600000, 100*63600000/78000000, "RKI")
+data2nd [nrow(data2nd)+1,] <- c("No", 14400000,100*14400000/78000000, "RKI")
+data2nd [nrow(data2nd)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
+data2nd$n <- as.integer(data2nd$n)
+data2nd$percent <- as.double(data2nd$percent)
+
+data3rd <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(data3rd) <- c("dose_3_received", "n", "percent", "source")
+data3rd [nrow(data3rd)+1,] <- c("Yes", 52100000, 100*52100000/78000000, "RKI")
+data3rd [nrow(data3rd)+1,] <- c("No", 25900000, 100*25900000/78000000, "RKI")
+data3rd [nrow(data3rd)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
+data3rd$n <- as.integer(data3rd$n)
+data3rd$percent <- as.double(data3rd$percent)
+
+data4th <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(data4th) <- c("dose_4_received", "n", "percent", "source")
+data4th [nrow(data4th)+1,] <- c("Yes", 1200000, 100*1200000/78000000, "RKI")
+data4th [nrow(data4th)+1,] <- c("No", 76800000, 100*76800000/78000000, "RKI")
+data4th [nrow(data4th)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
+data4th$n <- as.integer(data4th$n)
+data4th$percent <- as.double(data4th$percent)
+
+doses <- c("1st", "2nd", "3rd", "4th")
+
+palette <- function() {
+  c("#998ec3", "#f1a340")
+}
+
+for(dose in doses){
+  if(dose == "1st"){
+    column <- "dose_1_received"
+    data <- data1st
+  }else if(dose == "2nd"){
+    column <- "dose_2_received"
+    data <- data2nd
+  }else if(dose == "3rd"){
+    column <- "dose_3_received"
+    data <- data3rd
+  }else if(dose == "4th"){
+    column <- "dose_4_received"
+    data <- data4th
+  }
+
+  vaccinationData %>% filter(!is.na(!!sym(column)))  %>% count(!!sym(column)) %>%
+    mutate(percent = 100 * n / sum(n)) %>% mutate(source = "Survey") %>%
+    rbind(data) %>%
+    mutate(percent = round(percent, digits = 2)) %>%
+    # mutate(lci = case_when(age_bracket == "60+" ~ n - 1.96*(n*(n-1)/75)^0.5, 
+    #                         age_bracket == "18-59" ~ n - 1.96*(n*(n-1)/484)^0.5)) %>%
+    # mutate(lci = case_when(age_bracket == "60+" ~ 100/75*lci,
+    #                       age_bracket == "18-59" ~ 100/484*lci)) %>%
+    # mutate(uci =  case_when(age_bracket == "60+" ~ n + 1.96*(n*(n-1)/75)^0.5,
+    #                         age_bracket == "18-59" ~ n + 1.96*(n*(n-1)/484)^0.5)) %>%
+    # mutate(uci =  case_when(age_bracket == "60+" ~ 100/75*uci,
+    #                         age_bracket == "18-59" ~ 100/484*uci)) %>%
+    ggplot(aes(!!sym(column), percent)) +
+    geom_bar(aes(fill=source), stat = "identity", position = "dodge", width = 0.8)+
+    geom_text(aes(label = percent, 
+                  y = percent, 
+                  group = source),
+              position = position_dodge(width = 0.8),
+              vjust = -1, size = 6) +
+    #geom_errorbar(aes(x=dose_2_received, ymin=lci, ymax=uci, color=age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+    theme_minimal() +
+    ylab("Share [Percentage]") +
+    scale_y_continuous(limits=c(0,110), labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+    xlab(paste0("Have you received a ", dose, " dose \nof a COVID-19-vaccine?")) +
+    scale_fill_manual(values = palette()) +
+    scale_color_manual(values = palette2()) +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+    theme(text = element_text(size = 30)) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
+    theme(axis.ticks.x = element_line(),
+          axis.ticks.y = element_line(),
+          axis.ticks.length = unit(5, "pt"))
+
+    ggsave(paste0("PercentageVaccinated", dose, "dose.pdf"), dpi = 500, w = 9, h = 9)
+    ggsave(paste0("PercentageVaccinated", dose, "dose.png"), dpi = 500, w = 9, h = 9)
+}
+
 
 # Household Size and No. of Children --------------------------------------
 
