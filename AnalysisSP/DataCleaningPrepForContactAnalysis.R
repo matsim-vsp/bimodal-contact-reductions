@@ -12,7 +12,7 @@ raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds") #Place to e
 
 # Reducing data frame to the variables of interest ------------------------
 
-data_reduced <- raw_data %>% select(date_f1_inf, date_s2_inf, date_t3_inf, num_c19_infs, year_of_birth, cc_change_during_pandemic, total_hsld_size_persons_under_14, number_of_children_under_18,
+data_reduced <- raw_data %>% select(gender, date_f1_inf, date_s2_inf, date_t3_inf, num_c19_infs, year_of_birth, cc_change_during_pandemic, total_hsld_size_persons_under_14, number_of_children_under_18,
                                     cond_hbp, cond_diabetes, cond_cardio, cond_resp,
                                     cond_immuno, cond_cancer, cond_post_c19, cond_none,
                                     attitudes_precautions_mar2020_low_infection_risk_perception,                

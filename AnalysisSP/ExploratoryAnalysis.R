@@ -367,16 +367,14 @@ palette <- function() {
   c("#998ec3", "#f1a340")
 }
 
-
-
 HouseholdData %>% filter(name != "Children < 14 in household") %>%
                   filter(name != "# Children < 18") %>%  filter(!is.na(name)) %>% filter(!is.na(value)) %>% 
                   group_by(name) %>% count(value) %>% mutate(percent = 100 * n / sum(n)) %>% mutate(Source = "Survey") %>% 
-                  rbind(HouseholdData, HouseholdDataStatBundesamt) %>% filter(!is.na(Source)) %>%
+                  rbind(HouseholdData, HouseholdDataStatBundesamt) %>%  filter(name == "Household size 1/23") %>% filter(!is.na(Source)) %>%
 ggplot(aes(value, percent)) +
   geom_bar(aes(fill=Source), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
-  facet_wrap(~name, nrow=2) +
+  #facet_wrap(~name, nrow=2) +
   ylab("Share [Percentage]") +
   xlab("Household size [# Members]") +
   scale_fill_manual(values = palette()) +
@@ -387,16 +385,51 @@ ggplot(aes(value, percent)) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("HouseholdSize.png", dpi = 500, w = 12, h = 9)
-ggsave("HouseholdSize.pdf", dpi = 500, w = 12, h = 9)
+ggsave("HouseholdSize.png", dpi = 500, w = 9, h = 6)
+ggsave("HouseholdSize.pdf", dpi = 500, w = 9, h = 6)
 
 
 # Gender ------------------------------------------------------------------
 
-GenderData <- raw_data %>% select(user_id, gender)
+GenderData <- data_reduced %>% select(gender)
 
-GenderData <- na.omit(GenderData)
-GenderData$gender <- factor(GenderData$gender, levels = c("Weiblich", "Männlich", "Divers", "Ich möchte nicht antworten"))
+GenderData <- GenderData %>% mutate(gender = case_when(gender == "Weiblich" ~ "female", 
+                                                        gender == "Männlich" ~ "male",
+                                                        gender == "Divers" ~ "diverse",
+                                                        gender == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))
+
+GenderData$gender <- factor(GenderData$gender, levels = c("female", "male", "diverse", "I Don't Want To Answer"))
+
+GenderDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(GenderDataStatBundesamt) <- c("gender", "n", "percent", "Source")
+GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("female",42885791, 100*42885791/84669326, "Statistisches Bundesamt (2023)")
+GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("male",	41783535, 100*41783535/84669326, "Statistisches Bundesamt (2023)")
+GenderDataStatBundesamt$gender <- factor(GenderDataStatBundesamt$gender, levels = c("female", "male"))
+GenderDataStatBundesamt$n <- as.integer(GenderDataStatBundesamt$n)
+GenderDataStatBundesamt$percent <- as.double(GenderDataStatBundesamt$percent)
+
+GenderData %>% filter(gender != "diverse") %>%
+                  filter(gender != "I Don't Want To Answer") %>% 
+                  count(gender) %>% mutate(percent = 100 * n / sum(n)) %>% mutate(Source = "Survey") %>% 
+                  rbind(GenderDataStatBundesamt) %>%
+ggplot(aes(gender, percent)) +
+  geom_bar(aes(fill=Source), stat = "identity", position = "dodge", width = 0.8) +
+  theme_minimal() +
+  #facet_wrap(~name, nrow=2) +
+  ylab("Share [Percentage]") +
+  xlab("Gender") +
+  scale_fill_manual(values = palette()) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt"))
+
+ggsave("Gender_Comparison.pdf", dpi = 500, w = 9, h = 6)
+ggsave("Gender_Comparison.png", dpi = 500, w = 9, h = 6)
+
+
 ggplot(GenderData) + 
   geom_bar(aes(x= gender, y = ..prop.., group = 1), fill = "#1b9e77") +
   theme_minimal() +
@@ -408,8 +441,51 @@ ggplot(GenderData) +
 
 ggsave("Gender.png", dpi = 500, w = 9, h = 4.5)
 
-AgeData <- raw_data %>% select(user_id, year_of_birth)
-AgeData <- AgeData %>% mutate(age = 2023-year_of_birth)
+# Age ---------------------------------------------------------------------
+
+AgeData <- data_reduced %>% select(year_of_birth) %>% mutate(age = 2023-year_of_birth) %>%
+          mutate(age_bracket = case_when(age < 20 ~ "Below 20 (*)",
+                                        age < 40 ~ "20-39",
+                                        age < 60 ~ "40-59",
+                                        age < 80 ~ "60-79",
+                                        age < 100 ~ "80-99")) 
+AgeData$age_bracket <- factor(AgeData$age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99"))
+
+# Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html
+AgeDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(AgeDataStatBundesamt) <- c("age_bracket", "n", "percent", "source")
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("Below 20 (*)", 84669326*0.188, 18.8, "Statistisches Bundesamt (2023)")
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("20-39", 84669326*0.245, 24.5, "Statistisches Bundesamt (2023)")
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("40-59", 84669326*0.268, 26.8, "Statistisches Bundesamt (2023)")
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("60-79", 84669326*0.226, 22.6, "Statistisches Bundesamt (2023)")
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("80-99", 84669326*0.072, 7.2, "Statistisches Bundesamt (2023)")
+AgeDataStatBundesamt$n <- as.integer(AgeDataStatBundesamt$n)
+AgeDataStatBundesamt$percent <- as.double(AgeDataStatBundesamt$percent)
+AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99"))
+
+
+AgeData %>% filter(!is.na(age_bracket)) %>% count(age_bracket) %>% 
+            mutate(percent = 100 * n / sum(n)) %>% 
+            mutate(source = "Survey") %>%
+            rbind(AgeDataStatBundesamt) %>%
+ggplot(aes(age_bracket, percent)) +
+  geom_bar(aes(fill=source), stat = "identity", position = "dodge", width = 0.8) +
+  theme_minimal() +
+  #facet_wrap(~name, nrow=2) +
+  ylab("Share [Percentage]") +
+  xlab("Age Bracket (2023)") +
+  scale_fill_manual(values = palette()) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt"))
+
+ggsave("Age_Comparison.pdf", dpi = 500, w = 9, h = 6)
+ggsave("Age_Comparison.png", dpi = 500, w = 9, h = 6)
+
+
 AgeData <- na.omit(AgeData)
 ggplot(AgeData) + 
   geom_bar(aes(x= age, y = ..prop.., group = 1), fill = "#1b9e77") +
