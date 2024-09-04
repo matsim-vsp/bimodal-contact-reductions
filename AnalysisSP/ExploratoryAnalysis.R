@@ -530,7 +530,41 @@ ggsave("Smoking.png", dpi = 500, w = 9, h = 4.5)
 
 # Education / Occupation --------------------------------------------------
 
-educationLevel <- raw_data %>% select(user_id, highest_educational_qualification, current_occupation)
+educationLevel <- data_reduced %>% select(highest_educational_qualification)
+
+educationLevel <- educationLevel %>% mutate(highest_educational_qualification = case_when(highest_educational_qualification == "Haupt-/ Volksschulabschluss" ~ "Lower Secondary/Elementary School",
+                                                                                          highest_educational_qualification == "Realschulabschluss" ~ "Secondary School",
+                                                                                          highest_educational_qualification == "Abitur / Fachhochschulabitur" ~ "High School",
+                                                                                          highest_educational_qualification == "Anderer" ~ "Other"))
+
+educationLevel$highest_educational_qualification <- factor(educationLevel$highest_educational_qualification, levels = c("High School", "Secondary School", "Lower Secondary/Elementary School", "Other"))
+
+#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Bildungsstand/Tabellen/bildungsabschluss.html
+
+educationLevel %>% filter(!is.na(highest_educational_qualification)) %>% 
+            filter(highest_educational_qualification != "Other") %>%
+            count(highest_educational_qualification) %>% 
+            mutate(percent = 100 * n / sum(n)) %>% 
+            mutate(source = "Survey") %>%
+ggplot(aes(highest_educational_qualification, percent)) +
+  geom_bar(aes(fill=source), stat = "identity", position = "dodge", width = 0.8) +
+  theme_minimal() +
+  #facet_wrap(~name, nrow=2) +
+  ylab("Share [Percentage]") +
+  xlab("Highest Level of Education") +
+  scale_fill_manual(values = palette()) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt")) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.75, hjust=0.7))
+
+ggsave("EducationLevel_Comparison.pdf", dpi = 500, w =9, h = 9)
+ggsave("EducationLevel_Comparison.png", dpi = 500, w =9, h = 9)
+
+educationLevel <- data_reduced %>% select(highest_educational_qualification, current_occupation)
 educationLevel$highest_educational_qualification <- factor(educationLevel$highest_educational_qualification, levels = c("Haupt-/ Volksschulabschluss", "Realschulabschluss", "Abitur / Fachhochschulabitur", "Anderer"))
 ggplot(educationLevel %>% filter(!is.na(highest_educational_qualification))) + 
   geom_bar(aes(x= highest_educational_qualification, y = ..prop.., group = 1), fill = "#1b9e77") +
