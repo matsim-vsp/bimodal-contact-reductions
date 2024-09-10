@@ -5,6 +5,8 @@ library(RColorBrewer)
 
 source("DataCleaningPrepForContactAnalysis.R")
 
+MusPAD <- read_delim("ADD PATH")
+
 # Number of infections ----------------------------------------------------
 
 palette <- function() {
