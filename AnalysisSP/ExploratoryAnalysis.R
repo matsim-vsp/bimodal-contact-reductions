@@ -22,13 +22,15 @@ data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_inf
 
 data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
 
+InfectionsMuspad <- MusPAD %>% select(w22_positive_test) %>% count(w22_positive_test)
+
 InfectionsDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(InfectionsDataMuspad) <- c("num_c19_infs_eng", "n", "percent", "Source")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Never", 5966, 10, "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Once",	3861, 10, "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Twice", 5966, 10, "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Three Times",	3861, 10, "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("More Than Three Times", 5966, 10, "MuSPAD")
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Never", 2817, 100*2817/(2817+5093+728+93+257), "MuSPAD")
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Once",	5093, 100*5093/(2817+5093+728+93+257), "MuSPAD")
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Twice", 728, 100*728/(2817+5093+728+93+257), "MuSPAD")
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Three Times",	93, 100*93/(2817+5093+728+93+257), "MuSPAD")
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("More Than Three Times", 257, 100*257/(2817+5093+728+93+257), "MuSPAD")
 InfectionsDataMuspad$num_c19_infs_eng <- factor(InfectionsDataMuspad$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
 InfectionsDataMuspad$n <- as.integer(InfectionsDataMuspad$n)
 InfectionsDataMuspad$percent <- as.double(InfectionsDataMuspad$percent)
@@ -394,29 +396,38 @@ HouseholdDataStatBundesamt$n <- as.integer(HouseholdDataStatBundesamt$n)
 HouseholdDataStatBundesamt$percent <- as.double(HouseholdDataStatBundesamt$percent)
 HouseholdDataStatBundesamt$name <- factor(HouseholdDataStatBundesamt$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
 
-# To do: Aggregated MuSPAD data states "Lives With One To Three People" --> This number is solely divided by 3
+MusPAD$w22_contact_household_count <- as.integer(MusPAD$w22_contact_household_count)
+MusPAD <- MusPAD %>% mutate(HouseholdCount = case_when(!is.na(s23_household_count) ~ s23_household_count,
+                                                        .default = w22_contact_household_count)) 
+HouseholdMuSPAD <- MusPAD %>% select(HouseholdCount) %>% filter(HouseholdCount <= 22) %>% filter(HouseholdCount > 0) %>%
+                              mutate(HouseholdCountAggregated = case_when(HouseholdCount == 1 ~ "1",
+                                                                      HouseholdCount == 2 ~ "2",
+                                                                      HouseholdCount == 3 ~ "3",
+                                                                      HouseholdCount == 4 ~ "4",
+                                                                      HouseholdCount > 4 ~ "5+"))
+HouseholdMuSPAD %>% count(HouseholdCountAggregated)
 HouseholdDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(HouseholdDataMuspad) <- c("name", "value", "n", "percent", "Source")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "1", 1, 27.5, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "1", 1, 27.5, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "1", 1, 27.5, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "1", "X", 27.5, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "2", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "2", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "2", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "2", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "3", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "3", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "3", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "3", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "4", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "4", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "4", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "4", 1, 54.5/3, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "5+", 1, 18, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "5+", 1, 18, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "5+", 1, 18, "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "5+", 1, 18, "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "1", 1763, 100*1763/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "1", 1763, 100*1763/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "1", 1763, 100*1763/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "1", 1763, 100*1763/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "2", 4288, 100*4288/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "2", 4288, 100*4288/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "2", 4288, 100*4288/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "2", 4288, 100*4288/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "3", 1446, 100*1446/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "3", 1446, 100*1446/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "3", 1446, 100*1446/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "3", 1446, 100*1446/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "4", 1144, 100*1144/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "4", 1144, 100*1144/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "4", 1144, 100*1144/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "4", 1144, 100*1144/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "5+", 1144, 100*416/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "5+", 416, 100*416/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "5+", 416, 100*416/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "5+", 416, 100*416/(1763+4288+1446+1144+416), "MuSPAD")
 HouseholdDataMuspad$n <- as.integer(HouseholdDataMuspad$n)
 HouseholdDataMuspad$percent <- as.double(HouseholdDataMuspad$percent)
 HouseholdDataMuspad$name <- factor(HouseholdDataMuspad$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
@@ -461,12 +472,25 @@ Children <- data_reduced %>% select(respondent_hsld_size_persons_under_14) %>%
                             respondent_hsld_size_persons_under_14  == 3 ~ "3+",
                             respondent_hsld_size_persons_under_14  == 4 ~ "3+"))
 
+MusPAD <- MusPAD %>% mutate(ChildrenUnder14 = case_when(!is.na(w22_kids_under14_count) ~ w22_kids_under14_count,
+                                                        .default = s22_household_under14)) 
+
+
+ChildrenMuspad <- MusPAD %>% select(ChildrenUnder14) %>%
+                            mutate(ChildrenUnder14 = case_when(ChildrenUnder14  == 0 ~ "0",
+                            ChildrenUnder14  == 1 ~ "1",
+                            ChildrenUnder14  == 2 ~ "2",
+                            ChildrenUnder14  == 3 ~ "3+",
+                            ChildrenUnder14  > 3 ~ "3+"))
+
+ChildrenMuspad %>% count(ChildrenUnder14)                    
+
 ChildrenDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(ChildrenDataMuspad) <- c("respondent_hsld_size_persons_under_14", "n", "percent", "Source")
-ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("0", 6931, 80.5, "MuSPAD")
-ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("1",	1531/2, 17.8/2, "MuSPAD")
-ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("2",	1531/2, 17.8/2, "MuSPAD")
-ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("3+",	146, 1.7, "MuSPAD")
+ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("0", 6932, 100*6932/(6932+1238+935+197), "MuSPAD")
+ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("1",	1200, 100*1238/(6932+1238+935+197), "MuSPAD")
+ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("2",	934, 100*935/(6932+1238+935+197), "MuSPAD")
+ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("3+",	194, 100*197/(6932+1238+935+197), "MuSPAD")
 ChildrenDataMuspad$respondent_hsld_size_persons_under_14 <- factor(ChildrenDataMuspad$respondent_hsld_size_persons_under_14, levels = c("0", "1", "2", "3+"))
 ChildrenDataMuspad$n <- as.integer(ChildrenDataMuspad$n)
 ChildrenDataMuspad$percent <- as.double(ChildrenDataMuspad$percent)
@@ -515,20 +539,23 @@ GenderDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(GenderDataStatBundesamt) <- c("gender", "n", "percent", "Source")
 GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("female",42885791, 100*42885791/84669326, "Statistisches Bundesamt (2023)")
 GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("male",	41783535, 100*41783535/84669326, "Statistisches Bundesamt (2023)")
-GenderDataStatBundesamt$gender <- factor(GenderDataStatBundesamt$gender, levels = c("female", "male"))
+GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("diverse",	0, 0, "Statistisches Bundesamt (2023)")
+GenderDataStatBundesamt$gender <- factor(GenderDataStatBundesamt$gender, levels = c("female", "male", "diverse"))
 GenderDataStatBundesamt$n <- as.integer(GenderDataStatBundesamt$n)
 GenderDataStatBundesamt$percent <- as.double(GenderDataStatBundesamt$percent)
 
+GenderMus <- MusPAD %>% select(s22_sex) %>% count(s22_sex)
+
 GenderDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(GenderDataMuspad) <- c("gender", "n", "percent", "Source")
-GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("female", 5966, 60.6, "MuSPAD")
-GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("male",	3861, 39.2, "MuSPAD")
-GenderDataMuspad$gender <- factor(GenderDataMuspad$gender, levels = c("female", "male"))
+GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("female", 5953, 100*5953/(5953+3847+15), "MuSPAD")
+GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("male",	3847, 100*3847/(5953+3847+15), "MuSPAD")
+GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("diverse",	15, 100*15/(5953+3847+15), "MuSPAD")
+GenderDataMuspad$gender <- factor(GenderDataMuspad$gender, levels = c("female", "male", "diverse"))
 GenderDataMuspad$n <- as.integer(GenderDataMuspad$n)
 GenderDataMuspad$percent <- as.double(GenderDataMuspad$percent)
 
-GenderData %>% filter(gender != "diverse") %>%
-                  filter(gender != "I Don't Want To Answer") %>% 
+GenderData %>% filter(gender != "I Don't Want To Answer") %>% 
                   count(gender) %>% mutate(percent = 100 * n / sum(n)) %>% mutate(Source = "Survey") %>% 
                   rbind(GenderDataStatBundesamt) %>%
                   rbind(GenderDataMuspad) %>%
@@ -586,6 +613,15 @@ AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("80-99", 84669326*0.
 AgeDataStatBundesamt$n <- as.integer(AgeDataStatBundesamt$n)
 AgeDataStatBundesamt$percent <- as.double(AgeDataStatBundesamt$percent)
 AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99"))
+
+AgeMuspad <- MusPAD %>% select(s22_birth_date_yyyy) %>% 
+                        filter(s22_birth_date_yyyy > 1900) %>%
+                        mutate(age_bracket = case_when(s22_birth_date_yyyy <= 1953 ~ "70+",
+                                                                s22_birth_date_yyyy <= 1963 ~ "60-70",
+                                                                s22_birth_date_yyyy <= 1973 ~ "50-60",
+                                                                s22_birth_date_yyyy <= 1983 ~ "40-50",
+                                                                s22_birth_date_yyyy <= 1993 ~ "30-40",
+                                                                s22_birth_date_yyyy <= 2005 ~ "18-30"))
 
 AgeDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeDataMuspad) <- c("age_bracket", "n", "percent", "source")
@@ -691,12 +727,14 @@ EducationDataStatBundesamt $n <- as.integer(EducationDataStatBundesamt $n)
 EducationDataStatBundesamt $percent <- as.double(EducationDataStatBundesamt $percent)
 EducationDataStatBundesamt $highest_educational_qualification <- factor(EducationDataStatBundesamt $highest_educational_qualification, levels = c("Higher Education", "Certification after 10 years", "Certification after 9 years", "Other"))
 
+Education <- MusPAD %>% select(s22_education) %>% count(s22_education)
+
 EducationDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(EducationDataMuspad) <- c("highest_educational_qualification", "n", "percent", "source")
-EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Higher Education", 5085, 52.7, "MuSPAD")
-EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Certification after 10 years", 2545, 26.4, "MuSPAD")
-EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Certification after 9 years", 1122, 11.6, "MuSPAD")
-EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Other", 905, 9.5, "MuSPAD")
+EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Higher Education", 4804+279, 100*(4804+279)/(4804+279+2544+945+178+903), "MuSPAD")
+EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Certification after 10 years", 2544, 100*2544/(4804+279+2544+945+178+903), "MuSPAD")
+EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Certification after 9 years", 945+178, 100*(945+178)/(4804+279+2544+945+178+903), "MuSPAD")
+EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Other", 903, 100*903/(4804+279+2544+945+178+903), "MuSPAD")
 EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- (c("Other", 0, 0, "Survey")) 
 EducationDataMuspad$n <- as.integer(EducationDataMuspad$n)
 EducationDataMuspad$percent <- as.double(EducationDataMuspad$percent)
