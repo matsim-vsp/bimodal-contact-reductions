@@ -5,43 +5,57 @@ library(RColorBrewer)
 
 source("DataCleaningPrepForContactAnalysis.R")
 
-MusPAD <- read_delim("ADD PATH")
+MuSPAD <- read_delim("ADD PATH")
+count_na <- function(row) {
+  sum(grepl("^s22_", names(row)) & !is.na(row))
+}
+MuSPAD$count_na <- apply(MuSPAD, 1, count_na)
+MuSPAD <- MuSPAD %>% filter(count_na != 0) # We are excluding all participants who did not answer anything in the s22 survey
 
 # Number of infections ----------------------------------------------------
 
 palette <- function() {
-  c("#ECA400", "#006992", "#001D4A")
+  c("#FFD269", "#ECA400", "#006992")
 }
 
-data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "Never",
-                                                                    num_c19_infs == "Einmal" ~ "Once",
-                                                                    num_c19_infs == "Zweimal" ~ "Twice",
-                                                                    num_c19_infs == "Dreimal" ~ "Three Times",
-                                                                    num_c19_infs == "Mehr als dreimal" ~ "More Than Three Times",
+data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "0",
+                                                                    num_c19_infs == "Einmal" ~ "1",
+                                                                    num_c19_infs == "Zweimal" ~ "2+",
+                                                                    num_c19_infs == "Dreimal" ~ "2+",
+                                                                    num_c19_infs == "Mehr als dreimal" ~ "2+",
                                                                     num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
 
-data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
+data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("0", "1", "2+"))
 
-InfectionsMuspad <- MusPAD %>% select(w22_positive_test) %>% count(w22_positive_test)
+InfectionsMuspad <- MuSPAD %>% select(w22_positive_test) %>% count(w22_positive_test)
+InfectionsMuspad <- InfectionsMuspad %>% filter(!is.na(w22_positive_test))
 
 InfectionsDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(InfectionsDataMuspad) <- c("num_c19_infs_eng", "n", "percent", "Source")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Never", 2817, 100*2817/(2817+5093+728+93+257), "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Once",	5093, 100*5093/(2817+5093+728+93+257), "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Twice", 728, 100*728/(2817+5093+728+93+257), "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("Three Times",	93, 100*93/(2817+5093+728+93+257), "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("More Than Three Times", 257, 100*257/(2817+5093+728+93+257), "MuSPAD")
-InfectionsDataMuspad$num_c19_infs_eng <- factor(InfectionsDataMuspad$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("0", (InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n/sum(InfectionsMuspad$n), "MuSPAD")
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("1",	(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n/sum(InfectionsMuspad$n), "MuSPAD")
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("2+", (InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n, 100*((InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n)/sum(InfectionsMuspad$n), "MuSPAD")
+InfectionsDataMuspad$num_c19_infs_eng <- factor(InfectionsDataMuspad$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataMuspad$n <- as.integer(InfectionsDataMuspad$n)
 InfectionsDataMuspad$percent <- as.double(InfectionsDataMuspad$percent)
 
+InfectionsDataTwitter <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(InfectionsDataTwitter) <- c("num_c19_infs_eng", "n", "percent", "Source")
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1191, 28.25, "Twitter")
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1",	2310, 54.77, "Twitter")
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 716, 16.98, "Twitter")
+InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
+InfectionsDataTwitter$n <- as.integer(InfectionsDataTwitter$n)
+InfectionsDataTwitter$percent <- as.double(InfectionsDataTwitter$percent)
+
 data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   count(num_c19_infs_eng) %>%
-  mutate(percent = 100 * n / sum(n)) %>%  
+  mutate(percent = 100 * n / sum(n)) %>%
   mutate(Source = "Survey") %>%
   rbind(InfectionsDataMuspad) %>%
+  rbind(InfectionsDataTwitter) %>%
   ggplot(aes(num_c19_infs_eng, percent)) +
-  geom_bar(aes(fill=factor(Source, levels = c("Survey", "MuSPAD", "Statistisches Bundesamt (2019)"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill=factor(Source, levels = c("Twitter", "Survey", "MuSPAD"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
   #facet_wrap(~name, nrow=2) +
   ylab("Share [Percentage]") +
@@ -52,92 +66,89 @@ data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   theme(legend.position = "bottom", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
-        axis.ticks.length = unit(5, "pt")) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.75, hjust=0.7))
+        axis.ticks.length = unit(5, "pt")) 
 
-ggsave("NoInfections_Comparison.pdf", dpi = 500, w =9.5, h = 9)
-ggsave("NoInfections_Comparison.png", dpi = 500, w =9.5, h = 9)
-
-
+ggsave("NoInfections_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
+ggsave("NoInfections_Comparison.png", dpi = 500,  w = 9.5, h = 6)
 
 
 # Vaccination -------------------------------------------------------------
 
-VaccinationYesNo <- data_reduced %>% select(c19_vaccination_status, year_of_birth)
-#VaccinationYesNo <- VaccinationYesNo[!is.na(VaccinationYesNo$user_id),]
+# VaccinationYesNo <- data_reduced %>% select(c19_vaccination_status, year_of_birth)
+# #VaccinationYesNo <- VaccinationYesNo[!is.na(VaccinationYesNo$user_id),]
 
-VaccinationYesNo$c19_vaccination_status <- factor(VaccinationYesNo$c19_vaccination_status, levels = c("Ja", "Nein", "Weiß ich nicht", "Ich möchte nicht antworten", NA))
+# VaccinationYesNo$c19_vaccination_status <- factor(VaccinationYesNo$c19_vaccination_status, levels = c("Ja", "Nein", "Weiß ich nicht", "Ich möchte nicht antworten", NA))
 
-VaccinationYesNo <- VaccinationYesNo %>% mutate(c19_vaccination_status_eng = case_when(c19_vaccination_status == "Ja" ~ "Yes",
-                                                                                        c19_vaccination_status == "Nein" ~ "No",
-                                                                                        c19_vaccination_status == "Weiß ich nicht" ~ "I Don't Know",
-                                                                                        c19_vaccination_status == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))
+# VaccinationYesNo <- VaccinationYesNo %>% mutate(c19_vaccination_status_eng = case_when(c19_vaccination_status == "Ja" ~ "Yes",
+#                                                                                         c19_vaccination_status == "Nein" ~ "No",
+#                                                                                         c19_vaccination_status == "Weiß ich nicht" ~ "I Don't Know",
+#                                                                                         c19_vaccination_status == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))
 
-VaccinationYesNo$c19_vaccination_status_eng <- factor(VaccinationYesNo$c19_vaccination_status_eng, levels = c("Yes", "No", "I Don't Know", "I Don't Want To Answer"))
+# VaccinationYesNo$c19_vaccination_status_eng <- factor(VaccinationYesNo$c19_vaccination_status_eng, levels = c("Yes", "No", "I Don't Know", "I Don't Want To Answer"))
 
-VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% count(c19_vaccination_status_eng) %>%
-  mutate(percent = 100 * n / sum(n)) %>%
-  mutate(lci =  n - 1.96*(n*(n-1)/567)^0.5) %>%
-  mutate(lci = 100/567*lci) %>%
-  mutate(uci =  n + 1.96*(n*(n-1)/567)^0.5) %>%
-  mutate(uci =  100/567*uci) %>%
-  ggplot(aes(c19_vaccination_status_eng, percent)) + 
-  geom_bar(stat = "identity", position = "dodge", width = 0.8, fill = "#998ec3") +
-  geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci), color = "#542788", position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
-  theme_minimal() +
-  ylab("Share [Percentage]") +
-  xlab("Have you received any COVID-19 vaccine?") +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(legend.position = "none") +
-  theme(text = element_text(size = 30)) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
-  theme(axis.ticks.x = element_line(),
-        axis.ticks.y = element_line(),
-        axis.ticks.length = unit(5, "pt"))
-ggsave("ShareVaccinated.png", dpi = 500, w = 9, h = 6)
-ggsave("ShareVaccinated.pdf", dpi = 500, w = 9, h = 6)
+# VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% count(c19_vaccination_status_eng) %>%
+#   mutate(percent = 100 * n / sum(n)) %>%
+#   mutate(lci =  n - 1.96*(n*(n-1)/567)^0.5) %>%
+#   mutate(lci = 100/567*lci) %>%
+#   mutate(uci =  n + 1.96*(n*(n-1)/567)^0.5) %>%
+#   mutate(uci =  100/567*uci) %>%
+#   ggplot(aes(c19_vaccination_status_eng, percent)) + 
+#   geom_bar(stat = "identity", position = "dodge", width = 0.8, fill = "#998ec3") +
+#   geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci), color = "#542788", position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+#   theme_minimal() +
+#   ylab("Share [Percentage]") +
+#   xlab("Have you received any COVID-19 vaccine?") +
+#   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+#   theme(legend.position = "none") +
+#   theme(text = element_text(size = 30)) +
+#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
+#   theme(axis.ticks.x = element_line(),
+#         axis.ticks.y = element_line(),
+#         axis.ticks.length = unit(5, "pt"))
+# ggsave("ShareVaccinated.png", dpi = 500, w = 9, h = 6)
+# ggsave("ShareVaccinated.pdf", dpi = 500, w = 9, h = 6)
 
-VaccinationYesNo <- VaccinationYesNo %>% mutate(age_bracket = case_when(year_of_birth <= 1962 ~ "60+",
-                                                                        year_of_birth > 1962 ~ "18-59"))
-
-
-palette <- function() {
-  c("#998ec3", "#f1a340")
-}
-
-palette2 <- function() {
-  c("#542788", "#b35806")
-}
+# VaccinationYesNo <- VaccinationYesNo %>% mutate(age_bracket = case_when(year_of_birth <= 1962 ~ "60+",
+#                                                                         year_of_birth > 1962 ~ "18-59"))
 
 
-VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% filter(!is.na(age_bracket)) %>% group_by(age_bracket) %>% count(c19_vaccination_status_eng) %>%
-  mutate(percent = 100 * n / sum(n)) %>%
-  mutate(lci = case_when(age_bracket == "60+" ~ n - 1.96*(n*(n-1)/75)^0.5, 
-                          age_bracket == "18-59" ~ n - 1.96*(n*(n-1)/484)^0.5)) %>%
-  mutate(lci = case_when(age_bracket == "60+" ~ 100/75*lci,
-                        age_bracket == "18-59" ~ 100/484*lci)) %>%
-  mutate(uci =  case_when(age_bracket == "60+" ~ n + 1.96*(n*(n-1)/75)^0.5,
-                          age_bracket == "18-59" ~ n + 1.96*(n*(n-1)/484)^0.5)) %>%
-  mutate(uci =  case_when(age_bracket == "60+" ~ 100/75*uci,
-                          age_bracket == "18-59" ~ 100/484*uci)) %>%
-  ggplot(aes(c19_vaccination_status_eng, percent, fill = age_bracket)) +
-  geom_bar(stat = "identity", position = "dodge", width = 0.8)+
-  geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci, color=age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
-  theme_minimal() +
-  ylab("Share [Percentage]") +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  xlab("Have you received any COVID-19 vaccine?") +
-  scale_fill_manual(values = palette()) +
-  scale_color_manual(values = palette2()) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
-  theme(text = element_text(size = 30)) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
-  theme(text = element_text(size = 15)) +
-  theme(axis.ticks.x = element_line(),
-        axis.ticks.y = element_line(),
-        axis.ticks.length = unit(5, "pt"))
-ggsave("ShareVaccinated_AgeBracket.png", dpi = 500, w = 9, h = 6)
-ggsave("ShareVaccinated_AgeBracket.pdf", dpi = 500, w = 9, h = 6)
+# palette <- function() {
+#   c("#998ec3", "#f1a340")
+# }
+
+# palette2 <- function() {
+#   c("#542788", "#b35806")
+# }
+
+
+# VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% filter(!is.na(age_bracket)) %>% group_by(age_bracket) %>% count(c19_vaccination_status_eng) %>%
+#   mutate(percent = 100 * n / sum(n)) %>%
+#   mutate(lci = case_when(age_bracket == "60+" ~ n - 1.96*(n*(n-1)/75)^0.5, 
+#                           age_bracket == "18-59" ~ n - 1.96*(n*(n-1)/484)^0.5)) %>%
+#   mutate(lci = case_when(age_bracket == "60+" ~ 100/75*lci,
+#                         age_bracket == "18-59" ~ 100/484*lci)) %>%
+#   mutate(uci =  case_when(age_bracket == "60+" ~ n + 1.96*(n*(n-1)/75)^0.5,
+#                           age_bracket == "18-59" ~ n + 1.96*(n*(n-1)/484)^0.5)) %>%
+#   mutate(uci =  case_when(age_bracket == "60+" ~ 100/75*uci,
+#                           age_bracket == "18-59" ~ 100/484*uci)) %>%
+#   ggplot(aes(c19_vaccination_status_eng, percent, fill = age_bracket)) +
+#   geom_bar(stat = "identity", position = "dodge", width = 0.8)+
+#   geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci, color=age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+#   theme_minimal() +
+#   ylab("Share [Percentage]") +
+#   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+#   xlab("Have you received any COVID-19 vaccine?") +
+#   scale_fill_manual(values = palette()) +
+#   scale_color_manual(values = palette2()) +
+#   theme(legend.position = "bottom", legend.title = element_blank()) +
+#   theme(text = element_text(size = 30)) +
+#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
+#   theme(text = element_text(size = 15)) +
+#   theme(axis.ticks.x = element_line(),
+#         axis.ticks.y = element_line(),
+#         axis.ticks.length = unit(5, "pt"))
+# ggsave("ShareVaccinated_AgeBracket.png", dpi = 500, w = 9, h = 6)
+# ggsave("ShareVaccinated_AgeBracket.pdf", dpi = 500, w = 9, h = 6)
 
 # Vaccination Supplier ----------------------------------------------------
 
@@ -192,23 +203,72 @@ vaccinationData <- vaccinationData %>% mutate(vaccineNo = case_when(Impfserie ==
                                                                     Impfserie == "4" ~ "4th COVID-19 Vaccination"
                                                                     ))
 
+#Compare to MuSPAD data
+
+VaccinationSupplierMuspad <- MuSPAD %>% select(w22_vacc_type_1, w22_vacc_type_2, w22_vacc_type_3, w22_vacc_type_4)
+VaccinationSupplierMuspad1 <- VaccinationSupplierMuspad %>% count(w22_vacc_type_1) %>% filter(!is.na(w22_vacc_type_1)) %>%
+                                                            mutate(w22_vacc_type_1 = case_when(w22_vacc_type_1 %in% c("Andere", "Novavax", "Gamaleya Sputnik V") ~ "Other", 
+                                                            .default = w22_vacc_type_1))
+VaccinationSupplierMuspad2 <- VaccinationSupplierMuspad %>% count(w22_vacc_type_2) %>% filter(!is.na(w22_vacc_type_2)) %>%
+                                                            mutate(w22_vacc_type_2 = case_when(w22_vacc_type_2 %in% c("Andere", "Novavax", "Gamaleya Sputnik V") ~ "Other", 
+                                                            .default = w22_vacc_type_2))
+VaccinationSupplierMuspad3 <- VaccinationSupplierMuspad %>% count(w22_vacc_type_3) %>% filter(!is.na(w22_vacc_type_3)) %>%
+                                                            mutate(w22_vacc_type_3 = case_when(w22_vacc_type_3 %in% c("Andere", "Novavax", "Gamaleya Sputnik V") ~ "Other", 
+                                                            .default = w22_vacc_type_3))
+VaccinationSupplierMuspad4 <- VaccinationSupplierMuspad %>% count(w22_vacc_type_4) %>% filter(!is.na(w22_vacc_type_4)) %>%
+                                                            mutate(w22_vacc_type_4 = case_when(w22_vacc_type_4 %in% c("Andere", "Novavax", "Gamaleya Sputnik V") ~ "Other", 
+                                                            .default = w22_vacc_type_4))
+
+
+VaccinationSupplierDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
+colnames(VaccinationSupplierDataMuspad) <- c("vaccineNo", "Source", "value_eng", "n", "percent")
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "BioNTech"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "Moderna", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Moderna"))$n,100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Moderna"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "Other", sum((VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Other"))$n), 100*sum((VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Other"))$n)/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "BioNTech"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Moderna"))$n, 100* (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Moderna"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "Other", sum((VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Other"))$n), 100*sum((VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Other"))$n)/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "BioNTech"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Moderna"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Moderna"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "Other", sum((VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Other"))$n), 100*sum((VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Other"))$n)/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "BioNTech"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Moderna"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Moderna"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "Other", sum((VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Other"))$n), 100*sum((VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Other"))$n)/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad$n <- as.integer(VaccinationSupplierDataMuspad$n)
+VaccinationSupplierDataMuspad$percent <- as.double(VaccinationSupplierDataMuspad$percent)
+VaccinationSupplierDataMuspad$value_eng <- factor(VaccinationSupplierDataMuspad$value_eng, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/Johnson & Johnson", "Gamaleya Sputnik V", "Other", "I Don't Want To Answer", "Does Not Apply"))
+
+
+palette <- function() {
+  c("#ECA400", "#006992", "#001D4A")
+}
+
 
 vaccinationData %>% filter(value_eng != "Does Not Apply") %>% filter(value_eng != "I Don't Want To Answer") %>% group_by(vaccineNo, Source) %>% count(value_eng) %>%
                     mutate(percent = 100 * n / sum(n)) %>% mutate(percent = round(percent, digits = 2)) %>%
+                    rbind(VaccinationSupplierDataMuspad) %>%
 ggplot(aes(value_eng, percent)) +
-  geom_bar(aes(fill = Source), stat = "identity", position = "dodge", width = 0.8) +
-  geom_text(aes(label = percent, 
-                  y = percent, 
-                  group = Source),
-              position = position_dodge(width = 0.8),
-              vjust = -1, size = 6) +
+  geom_bar(aes(fill = factor(Source, levels = c("Survey", "MuSPAD", "RKI"))), stat = "identity", position = "dodge", width = 0.8) +
+  # geom_text(aes(label = percent, 
+  #                 y = percent, 
+  #                 group = Source),
+  #             position = position_dodge(width = 0.8),
+  #             vjust = -1, size = 6) +
   theme_minimal() +
   facet_wrap(~vaccineNo, nrow=2) +
   ylab("Share [Percentage]") +
   scale_y_continuous(limits=c(0,110), labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   xlab("Vaccination Supplier") +
   scale_fill_manual(values = palette()) +
-  scale_color_manual(values = palette2()) +
+  #scale_color_manual(values = palette2()) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   theme(text = element_text(size = 30)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
@@ -261,12 +321,18 @@ vaccinationData$dose_2_received <- factor(vaccinationData$dose_2_received, level
 vaccinationData$dose_3_received <- factor(vaccinationData$dose_3_received, levels = c("Yes", "No", NA, "I Don't Want To Answer"))
 vaccinationData$dose_4_received<- factor(vaccinationData$dose_4_received, levels = c("Yes", "No", NA, "I Don't Want To Answer"))
 
-# RKI data: https://impfdashboard.de/
+# RKI data: https://impfdashboard.de/ 
+
+MuSPAD1st <- MusPAD %>% count(w22_vacc_type_1)
+
 data1st <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(data1st) <- c("dose_1_received", "n", "percent", "source")
 data1st [nrow(data1st)+1,] <- c("Yes", 64900000, 100*64900000/78000000, "RKI")
 data1st [nrow(data1st)+1,] <- c("No", 13100000, 100*13100000/78000000, "RKI")
 data1st [nrow(data1st)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
+data1st [nrow(data1st)+1,] <- c("Yes", 5+1256+2814+1), "MuSPAD")
+data1st [nrow(data1st)+1,] <- c("No", 13, 100*13/(10+2096+4823+1+270+968+16+13), "MuSPAD")
+data1st [nrow(data1st)+1,] <- c("I Don't Want To Answer", 0, 0, "MuSPAD")
 data1st [nrow(data1st)+1,] <- c("No", 0, 0, "Survey")
 data1st$n <- as.integer(data1st$n)
 data1st$percent <- as.double(data1st$percent)
@@ -276,6 +342,9 @@ colnames(data2nd) <- c("dose_2_received", "n", "percent", "source")
 data2nd [nrow(data2nd)+1,] <- c("Yes", 63600000, 100*63600000/78000000, "RKI")
 data2nd [nrow(data2nd)+1,] <- c("No", 14400000,100*14400000/78000000, "RKI")
 data2nd [nrow(data2nd)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
+data2nd [nrow(data2nd)+1,] <- c("Yes", 26+591+6062+15+1429+9, 100*(26+591+6062+15+1429+9)/(26+591+6062+15+1429+9+32), "MuSPAD")
+data2nd [nrow(data2nd)+1,] <- c("No", 32,100*32/(26+591+6062+15+1429+9+32), "MuSPAD")
+data2nd [nrow(data2nd)+1,] <- c("I Don't Want To Answer", 0, 0, "MuSPAD")
 data2nd$n <- as.integer(data2nd$n)
 data2nd$percent <- as.double(data2nd$percent)
 
@@ -284,6 +353,9 @@ colnames(data3rd) <- c("dose_3_received", "n", "percent", "source")
 data3rd [nrow(data3rd)+1,] <- c("Yes", 52100000, 100*52100000/78000000, "RKI")
 data3rd [nrow(data3rd)+1,] <- c("No", 25900000, 100*25900000/78000000, "RKI")
 data3rd [nrow(data3rd)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
+data3rd [nrow(data3rd)+1,] <- c("Yes", 78+44+4558+2+11+2917+13, 100*(78+44+4558+2+11+2917+13)/(78+44+4558+2+11+2917+13+252), "MuSPAD")
+data3rd [nrow(data3rd)+1,] <- c("No", 252, 100*252/(78+44+4558+2+11+2917+13+252), "MuSPAD")
+data3rd [nrow(data3rd)+1,] <- c("I Don't Want To Answer", 0, 0, "MuSPAD")
 data3rd$n <- as.integer(data3rd$n)
 data3rd$percent <- as.double(data3rd$percent)
 
@@ -292,13 +364,16 @@ colnames(data4th) <- c("dose_4_received", "n", "percent", "source")
 data4th [nrow(data4th)+1,] <- c("Yes", 1200000, 100*1200000/78000000, "RKI")
 data4th [nrow(data4th)+1,] <- c("No", 76800000, 100*76800000/78000000, "RKI")
 data4th [nrow(data4th)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
+data4th [nrow(data4th)+1,] <- c("Yes", 54+7+1344+1+1+179+8, 100*(54+7+1344+1+1+179+8)/(54+7+1344+1+1+179+8+1105+7141), "MuSPAD")
+data4th [nrow(data4th)+1,] <- c("No", 1105+7141, 100*(1105+7141)//(54+7+1344+1+1+179+8+1105+7141, "MuSPAD")
+data4th [nrow(data4th)+1,] <- c("I Don't Want To Answer", 0, 0, "MuSPAD")
 data4th$n <- as.integer(data4th$n)
 data4th$percent <- as.double(data4th$percent)
 
 doses <- c("1st", "2nd", "3rd", "4th")
 
 palette <- function() {
-  c("#998ec3", "#f1a340")
+  c("#ECA400", "#006992", "#001D4A")
 }
 
 for(dose in doses){
@@ -316,32 +391,24 @@ for(dose in doses){
     data <- data4th
   }
 
-  vaccinationData %>% filter(!is.na(!!sym(column)))  %>% count(!!sym(column)) %>%
+  vaccinationData %>% filter(!is.na(!!sym(column))) %>% filter(!!sym(column) != "I Don't Want To Answer") %>% count(!!sym(column)) %>%
     mutate(percent = 100 * n / sum(n)) %>% mutate(source = "Survey") %>%
-    rbind(data) %>%
+    rbind(data) %>% filter(!!sym(column) != "I Don't Want To Answer") %>%
     mutate(percent = round(percent, digits = 2)) %>%
-    # mutate(lci = case_when(age_bracket == "60+" ~ n - 1.96*(n*(n-1)/75)^0.5, 
-    #                         age_bracket == "18-59" ~ n - 1.96*(n*(n-1)/484)^0.5)) %>%
-    # mutate(lci = case_when(age_bracket == "60+" ~ 100/75*lci,
-    #                       age_bracket == "18-59" ~ 100/484*lci)) %>%
-    # mutate(uci =  case_when(age_bracket == "60+" ~ n + 1.96*(n*(n-1)/75)^0.5,
-    #                         age_bracket == "18-59" ~ n + 1.96*(n*(n-1)/484)^0.5)) %>%
-    # mutate(uci =  case_when(age_bracket == "60+" ~ 100/75*uci,
-    #                         age_bracket == "18-59" ~ 100/484*uci)) %>%
     ggplot(aes(!!sym(column), percent)) +
-    geom_bar(aes(fill=source), stat = "identity", position = "dodge", width = 0.8)+
-    geom_text(aes(label = percent, 
-                  y = percent, 
-                  group = source),
-              position = position_dodge(width = 0.8),
-              vjust = -1, size = 6) +
+    geom_bar(aes(fill=factor(source, levels = c("Survey", "MuSPAD", "RKI"))), stat = "identity", position = "dodge", width = 0.8)+
+    # geom_text(aes(label = percent, 
+    #               y = percent, 
+    #               group = source),
+    #           position = position_dodge(width = 0.8),
+    #           vjust = -1, size = 6) +
     #geom_errorbar(aes(x=dose_2_received, ymin=lci, ymax=uci, color=age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
     theme_minimal() +
     ylab("Share [Percentage]") +
     scale_y_continuous(limits=c(0,110), labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
     xlab(paste0("Have you received a ", dose, " dose \nof a COVID-19-vaccine?")) +
     scale_fill_manual(values = palette()) +
-    scale_color_manual(values = palette2()) +
+    #scale_color_manual(values = palette2()) +
     theme(legend.position = "bottom", legend.title = element_blank()) +
     theme(text = element_text(size = 30)) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
@@ -396,38 +463,38 @@ HouseholdDataStatBundesamt$n <- as.integer(HouseholdDataStatBundesamt$n)
 HouseholdDataStatBundesamt$percent <- as.double(HouseholdDataStatBundesamt$percent)
 HouseholdDataStatBundesamt$name <- factor(HouseholdDataStatBundesamt$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
 
-MusPAD$w22_contact_household_count <- as.integer(MusPAD$w22_contact_household_count)
-MusPAD <- MusPAD %>% mutate(HouseholdCount = case_when(!is.na(s23_household_count) ~ s23_household_count,
+MuSPAD$w22_contact_household_count <- as.integer(MuSPAD$w22_contact_household_count)
+MuSPAD <- MuSPAD %>% mutate(HouseholdCount = case_when(!is.na(s23_household_count) ~ s23_household_count,
                                                         .default = w22_contact_household_count)) 
-HouseholdMuSPAD <- MusPAD %>% select(HouseholdCount) %>% filter(HouseholdCount <= 22) %>% filter(HouseholdCount > 0) %>%
+HouseholdMuSPAD <- MuSPAD %>% select(HouseholdCount) %>% filter(HouseholdCount <= 22) %>% filter(HouseholdCount > 0) %>%
                               mutate(HouseholdCountAggregated = case_when(HouseholdCount == 1 ~ "1",
                                                                       HouseholdCount == 2 ~ "2",
                                                                       HouseholdCount == 3 ~ "3",
                                                                       HouseholdCount == 4 ~ "4",
                                                                       HouseholdCount > 4 ~ "5+"))
-HouseholdMuSPAD %>% count(HouseholdCountAggregated)
+HouseholdMuSPAD <- HouseholdMuSPAD %>% count(HouseholdCountAggregated)
 HouseholdDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(HouseholdDataMuspad) <- c("name", "value", "n", "percent", "Source")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "1", 1763, 100*1763/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "1", 1763, 100*1763/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "1", 1763, 100*1763/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "1", 1763, 100*1763/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "2", 4288, 100*4288/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "2", 4288, 100*4288/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "2", 4288, 100*4288/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "2", 4288, 100*4288/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "3", 1446, 100*1446/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "3", 1446, 100*1446/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "3", 1446, 100*1446/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "3", 1446, 100*1446/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "4", 1144, 100*1144/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "4", 1144, 100*1144/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "4", 1144, 100*1144/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "4", 1144, 100*1144/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "5+", 1144, 100*416/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "5+", 416, 100*416/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "5+", 416, 100*416/(1763+4288+1446+1144+416), "MuSPAD")
-HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "5+", 416, 100*416/(1763+4288+1446+1144+416), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "1", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "1"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "1"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "1", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "1"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "1"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "1", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "1"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "1"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "1", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "1"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "1"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "2", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "2"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "2"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "2", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "2"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "2"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "2", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "2"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "2"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "2", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "2"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "2"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "3", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "3"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "3"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "3", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "3"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "3"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "3", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "3"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "3"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "3", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "3"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "3"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "4", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "4"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "4"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "4", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "4"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "4"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "4", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "4"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "4"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "4", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "4"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "4"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "5+", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "5+"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "5+"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 3/20", "5+", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "5+"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "5+"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size Summer/21", "5+", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "5+"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "5+"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
+HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 1/23", "5+", (HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "5+"))$n, 100*(HouseholdMuSPAD %>% filter(HouseholdCountAggregated == "5+"))$n/sum(HouseholdMuSPAD$n), "MuSPAD")
 HouseholdDataMuspad$n <- as.integer(HouseholdDataMuspad$n)
 HouseholdDataMuspad$percent <- as.double(HouseholdDataMuspad$percent)
 HouseholdDataMuspad$name <- factor(HouseholdDataMuspad$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
@@ -472,25 +539,26 @@ Children <- data_reduced %>% select(respondent_hsld_size_persons_under_14) %>%
                             respondent_hsld_size_persons_under_14  == 3 ~ "3+",
                             respondent_hsld_size_persons_under_14  == 4 ~ "3+"))
 
-MusPAD <- MusPAD %>% mutate(ChildrenUnder14 = case_when(!is.na(w22_kids_under14_count) ~ w22_kids_under14_count,
+MuSPAD <- MuSPAD %>% mutate(ChildrenUnder14 = case_when(!is.na(w22_kids_under14_count) ~ w22_kids_under14_count,
                                                         .default = s22_household_under14)) 
 
 
-ChildrenMuspad <- MusPAD %>% select(ChildrenUnder14) %>%
+ChildrenMuspad <- MuSPAD %>% select(ChildrenUnder14) %>%
                             mutate(ChildrenUnder14 = case_when(ChildrenUnder14  == 0 ~ "0",
                             ChildrenUnder14  == 1 ~ "1",
                             ChildrenUnder14  == 2 ~ "2",
                             ChildrenUnder14  == 3 ~ "3+",
                             ChildrenUnder14  > 3 ~ "3+"))
 
-ChildrenMuspad %>% count(ChildrenUnder14)                    
+ChildrenMuspad <- ChildrenMuspad %>% count(ChildrenUnder14) %>% filter(!is.na(ChildrenUnder14))                  
 
 ChildrenDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(ChildrenDataMuspad) <- c("respondent_hsld_size_persons_under_14", "n", "percent", "Source")
-ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("0", 6932, 100*6932/(6932+1238+935+197), "MuSPAD")
-ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("1",	1200, 100*1238/(6932+1238+935+197), "MuSPAD")
-ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("2",	934, 100*935/(6932+1238+935+197), "MuSPAD")
-ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("3+",	194, 100*197/(6932+1238+935+197), "MuSPAD")
+ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("0", (ChildrenMuspad %>% filter(ChildrenUnder14 == "0"))$n, 100*(ChildrenMuspad %>% filter(ChildrenUnder14 == "0"))$n/sum(ChildrenMuspad$n), "MuSPAD")
+ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("1",	(ChildrenMuspad %>% filter(ChildrenUnder14 == "1"))$n, 100*(ChildrenMuspad %>% filter(ChildrenUnder14 == "1"))$n/sum(ChildrenMuspad$n), "MuSPAD")
+ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("2",	(ChildrenMuspad %>% filter(ChildrenUnder14 == "2"))$n, 100*(ChildrenMuspad %>% filter(ChildrenUnder14 == "2"))$n/sum(ChildrenMuspad$n), "MuSPAD")
+ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("3+",	(ChildrenMuspad %>% filter(ChildrenUnder14 == "3+"))$n, 100*(ChildrenMuspad %>% filter(ChildrenUnder14 == "3+"))$n/sum(ChildrenMuspad$n), "MuSPAD")
+
 ChildrenDataMuspad$respondent_hsld_size_persons_under_14 <- factor(ChildrenDataMuspad$respondent_hsld_size_persons_under_14, levels = c("0", "1", "2", "3+"))
 ChildrenDataMuspad$n <- as.integer(ChildrenDataMuspad$n)
 ChildrenDataMuspad$percent <- as.double(ChildrenDataMuspad$percent)
@@ -544,13 +612,13 @@ GenderDataStatBundesamt$gender <- factor(GenderDataStatBundesamt$gender, levels 
 GenderDataStatBundesamt$n <- as.integer(GenderDataStatBundesamt$n)
 GenderDataStatBundesamt$percent <- as.double(GenderDataStatBundesamt$percent)
 
-GenderMus <- MusPAD %>% select(s22_sex) %>% count(s22_sex)
+GenderMus <- MuSPAD %>% select(s22_sex) %>% count(s22_sex) %>% filter(!is.na(s22_sex))
 
 GenderDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(GenderDataMuspad) <- c("gender", "n", "percent", "Source")
-GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("female", 5953, 100*5953/(5953+3847+15), "MuSPAD")
-GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("male",	3847, 100*3847/(5953+3847+15), "MuSPAD")
-GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("diverse",	15, 100*15/(5953+3847+15), "MuSPAD")
+GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("female", (GenderMus %>% filter(s22_sex == "female"))$n, 100*(GenderMus %>% filter(s22_sex == "female"))$n/sum(GenderMus$n), "MuSPAD")
+GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("male",	(GenderMus %>% filter(s22_sex == "male"))$n, 100*(GenderMus %>% filter(s22_sex == "male"))$n/sum(GenderMus$n), "MuSPAD")
+GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("diverse",	(GenderMus %>% filter(s22_sex == "diverse"))$n, 100*(GenderMus %>% filter(s22_sex == "diverse"))$n/sum(GenderMus$n), "MuSPAD")
 GenderDataMuspad$gender <- factor(GenderDataMuspad$gender, levels = c("female", "male", "diverse"))
 GenderDataMuspad$n <- as.integer(GenderDataMuspad$n)
 GenderDataMuspad$percent <- as.double(GenderDataMuspad$percent)
@@ -575,18 +643,6 @@ ggplot(aes(gender, percent)) +
 
 ggsave("Gender_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
 ggsave("Gender_Comparison.png", dpi = 500, w = 9.5, h = 6)
-
-
-ggplot(GenderData) + 
-  geom_bar(aes(x= gender, y = ..prop.., group = 1), fill = "#1b9e77") +
-  theme_minimal() +
-  ylab("Frequency") +
-  xlab("") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(text = element_text(size = 15))
-
-ggsave("Gender.png", dpi = 500, w = 9, h = 4.5)
 
 # Age ---------------------------------------------------------------------
 
@@ -614,22 +670,21 @@ AgeDataStatBundesamt$n <- as.integer(AgeDataStatBundesamt$n)
 AgeDataStatBundesamt$percent <- as.double(AgeDataStatBundesamt$percent)
 AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99"))
 
-AgeMuspad <- MusPAD %>% select(s22_birth_date_yyyy) %>% 
+AgeMuspad <- MuSPAD %>% select(s22_birth_date_yyyy) %>% 
                         filter(s22_birth_date_yyyy > 1900) %>%
-                        mutate(age_bracket = case_when(s22_birth_date_yyyy <= 1953 ~ "70+",
-                                                                s22_birth_date_yyyy <= 1963 ~ "60-70",
-                                                                s22_birth_date_yyyy <= 1973 ~ "50-60",
-                                                                s22_birth_date_yyyy <= 1983 ~ "40-50",
-                                                                s22_birth_date_yyyy <= 1993 ~ "30-40",
-                                                                s22_birth_date_yyyy <= 2005 ~ "18-30"))
+                        mutate(age_bracket = case_when(s22_birth_date_yyyy <= 1910 ~ "80-99",
+                                                                s22_birth_date_yyyy <= 1953 ~ "60-79",
+                                                                s22_birth_date_yyyy <= 1963 ~ "40-59",
+                                                                s22_birth_date_yyyy <= 1983 ~ "20-39",
+                                                                s22_birth_date_yyyy <= 2003 ~ "Below 20 (*)")) %>% count(age_bracket)
 
 AgeDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeDataMuspad) <- c("age_bracket", "n", "percent", "source")
-AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("Below 20 (*)", 84669326*0.188, 50, "MuSPAD")
-AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("20-39", 84669326*0.245, 50, "MuSPAD")
-AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("40-59", 84669326*0.268, 50, "MuSPAD")
-AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("60-79", 84669326*0.226, 50, "MuSPAD")
-AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("80-99", 84669326*0.072, 50, "MuSPAD")
+AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("Below 20 (*)", (AgeMuspad %>% filter(age_bracket=="Below 20 (*)"))$n, 100*(AgeMuspad %>% filter(age_bracket=="Below 20 (*)"))$n/sum(AgeMuspad$n), "MuSPAD")
+AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("20-39", (AgeMuspad %>% filter(age_bracket=="20-39"))$n, 100*(AgeMuspad %>% filter(age_bracket=="20-39"))$n/sum(AgeMuspad$n), "MuSPAD")
+AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("40-59", (AgeMuspad %>% filter(age_bracket=="40-59"))$n, 100*(AgeMuspad %>% filter(age_bracket=="40-59"))$n/sum(AgeMuspad$n), "MuSPAD")
+AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("60-79", (AgeMuspad %>% filter(age_bracket=="60-79"))$n, 100*(AgeMuspad %>% filter(age_bracket=="60-79"))$n/sum(AgeMuspad$n), "MuSPAD")
+AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("80-99", (AgeMuspad %>% filter(age_bracket=="80-99"))$n, 100*(AgeMuspad %>% filter(age_bracket=="80-99"))$n/sum(AgeMuspad$n), "MuSPAD")
 AgeDataMuspad$n <- as.integer(AgeDataMuspad$n)
 AgeDataMuspad$percent <- as.double(AgeDataMuspad$percent)
 AgeDataMuspad$age_bracket <- factor(AgeDataMuspad$age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99"))
@@ -655,19 +710,6 @@ ggplot(aes(age_bracket, percent)) +
 
 ggsave("Age_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
 ggsave("Age_Comparison.png", dpi = 500, w = 9.5, h = 6)
-
-
-AgeData <- na.omit(AgeData)
-ggplot(AgeData) + 
-  geom_bar(aes(x= age, y = ..prop.., group = 1), fill = "#1b9e77") +
-  theme_minimal() +
-  ylab("Frequency") +
-  xlab("") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(text = element_text(size = 15))
-
-ggsave("Age.png", dpi = 500, w = 9, h = 4.5)
 
 # Comorbidities -----------------------------------------------------------
 
@@ -727,7 +769,7 @@ EducationDataStatBundesamt $n <- as.integer(EducationDataStatBundesamt $n)
 EducationDataStatBundesamt $percent <- as.double(EducationDataStatBundesamt $percent)
 EducationDataStatBundesamt $highest_educational_qualification <- factor(EducationDataStatBundesamt $highest_educational_qualification, levels = c("Higher Education", "Certification after 10 years", "Certification after 9 years", "Other"))
 
-Education <- MusPAD %>% select(s22_education) %>% count(s22_education)
+Education <- MuSPAD %>% select(s22_education) %>% count(s22_education) %>% filter(!is.na(s22_education))
 
 EducationDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(EducationDataMuspad) <- c("highest_educational_qualification", "n", "percent", "source")
