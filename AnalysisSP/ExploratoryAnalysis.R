@@ -3,16 +3,20 @@ library(RColorBrewer)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
+setwd("./AnalysisSP") # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
 source("DataCleaningPrepForContactAnalysis.R")
 
-MuSPAD <- read_delim("ADD PATH")
+MuSPAD <- read_delim("ADD PATH") # Enter MuSPAD path
 count_na <- function(row) {
   sum(grepl("^s22_", names(row)) & !is.na(row))
 }
 MuSPAD$count_na <- apply(MuSPAD, 1, count_na)
-MuSPAD <- MuSPAD %>% filter(count_na != 0) # We are excluding all participants who did not answer anything in the s22 survey
+MuSPAD <- MuSPAD %>% filter(count_na != 0) # We are excluding all participants who did not answer anything in the s22 survey -> Replace to match MuSPAD's procedure
 
 # Number of infections ----------------------------------------------------
+
+# The following section creates the bar chart depicting how often people have been infected
+# To do: Include COSMO data
 
 palette <- function() {
   c("#FFD269", "#ECA400", "#006992")
@@ -72,85 +76,9 @@ ggsave("NoInfections_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
 ggsave("NoInfections_Comparison.png", dpi = 500,  w = 9.5, h = 6)
 
 
-# Vaccination -------------------------------------------------------------
-
-# VaccinationYesNo <- data_reduced %>% select(c19_vaccination_status, year_of_birth)
-# #VaccinationYesNo <- VaccinationYesNo[!is.na(VaccinationYesNo$user_id),]
-
-# VaccinationYesNo$c19_vaccination_status <- factor(VaccinationYesNo$c19_vaccination_status, levels = c("Ja", "Nein", "Weiß ich nicht", "Ich möchte nicht antworten", NA))
-
-# VaccinationYesNo <- VaccinationYesNo %>% mutate(c19_vaccination_status_eng = case_when(c19_vaccination_status == "Ja" ~ "Yes",
-#                                                                                         c19_vaccination_status == "Nein" ~ "No",
-#                                                                                         c19_vaccination_status == "Weiß ich nicht" ~ "I Don't Know",
-#                                                                                         c19_vaccination_status == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))
-
-# VaccinationYesNo$c19_vaccination_status_eng <- factor(VaccinationYesNo$c19_vaccination_status_eng, levels = c("Yes", "No", "I Don't Know", "I Don't Want To Answer"))
-
-# VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% count(c19_vaccination_status_eng) %>%
-#   mutate(percent = 100 * n / sum(n)) %>%
-#   mutate(lci =  n - 1.96*(n*(n-1)/567)^0.5) %>%
-#   mutate(lci = 100/567*lci) %>%
-#   mutate(uci =  n + 1.96*(n*(n-1)/567)^0.5) %>%
-#   mutate(uci =  100/567*uci) %>%
-#   ggplot(aes(c19_vaccination_status_eng, percent)) + 
-#   geom_bar(stat = "identity", position = "dodge", width = 0.8, fill = "#998ec3") +
-#   geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci), color = "#542788", position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
-#   theme_minimal() +
-#   ylab("Share [Percentage]") +
-#   xlab("Have you received any COVID-19 vaccine?") +
-#   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-#   theme(legend.position = "none") +
-#   theme(text = element_text(size = 30)) +
-#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
-#   theme(axis.ticks.x = element_line(),
-#         axis.ticks.y = element_line(),
-#         axis.ticks.length = unit(5, "pt"))
-# ggsave("ShareVaccinated.png", dpi = 500, w = 9, h = 6)
-# ggsave("ShareVaccinated.pdf", dpi = 500, w = 9, h = 6)
-
-# VaccinationYesNo <- VaccinationYesNo %>% mutate(age_bracket = case_when(year_of_birth <= 1962 ~ "60+",
-#                                                                         year_of_birth > 1962 ~ "18-59"))
-
-
-# palette <- function() {
-#   c("#998ec3", "#f1a340")
-# }
-
-# palette2 <- function() {
-#   c("#542788", "#b35806")
-# }
-
-
-# VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% filter(!is.na(age_bracket)) %>% group_by(age_bracket) %>% count(c19_vaccination_status_eng) %>%
-#   mutate(percent = 100 * n / sum(n)) %>%
-#   mutate(lci = case_when(age_bracket == "60+" ~ n - 1.96*(n*(n-1)/75)^0.5, 
-#                           age_bracket == "18-59" ~ n - 1.96*(n*(n-1)/484)^0.5)) %>%
-#   mutate(lci = case_when(age_bracket == "60+" ~ 100/75*lci,
-#                         age_bracket == "18-59" ~ 100/484*lci)) %>%
-#   mutate(uci =  case_when(age_bracket == "60+" ~ n + 1.96*(n*(n-1)/75)^0.5,
-#                           age_bracket == "18-59" ~ n + 1.96*(n*(n-1)/484)^0.5)) %>%
-#   mutate(uci =  case_when(age_bracket == "60+" ~ 100/75*uci,
-#                           age_bracket == "18-59" ~ 100/484*uci)) %>%
-#   ggplot(aes(c19_vaccination_status_eng, percent, fill = age_bracket)) +
-#   geom_bar(stat = "identity", position = "dodge", width = 0.8)+
-#   geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci, color=age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
-#   theme_minimal() +
-#   ylab("Share [Percentage]") +
-#   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-#   xlab("Have you received any COVID-19 vaccine?") +
-#   scale_fill_manual(values = palette()) +
-#   scale_color_manual(values = palette2()) +
-#   theme(legend.position = "bottom", legend.title = element_blank()) +
-#   theme(text = element_text(size = 30)) +
-#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
-#   theme(text = element_text(size = 15)) +
-#   theme(axis.ticks.x = element_line(),
-#         axis.ticks.y = element_line(),
-#         axis.ticks.length = unit(5, "pt"))
-# ggsave("ShareVaccinated_AgeBracket.png", dpi = 500, w = 9, h = 6)
-# ggsave("ShareVaccinated_AgeBracket.pdf", dpi = 500, w = 9, h = 6)
-
 # Vaccination Supplier ----------------------------------------------------
+
+# The following section creates bar plots which show the share of the different vaccination suppliers for the different doses
 
 vaccinationData <- data_reduced %>% select(c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
 vaccinationData <- na.omit(vaccinationData)
@@ -257,18 +185,12 @@ vaccinationData %>% filter(value_eng != "Does Not Apply") %>% filter(value_eng !
                     rbind(VaccinationSupplierDataMuspad) %>%
 ggplot(aes(value_eng, percent)) +
   geom_bar(aes(fill = factor(Source, levels = c("Survey", "MuSPAD", "RKI"))), stat = "identity", position = "dodge", width = 0.8) +
-  # geom_text(aes(label = percent, 
-  #                 y = percent, 
-  #                 group = Source),
-  #             position = position_dodge(width = 0.8),
-  #             vjust = -1, size = 6) +
   theme_minimal() +
   facet_wrap(~vaccineNo, nrow=2) +
   ylab("Share [Percentage]") +
   scale_y_continuous(limits=c(0,110), labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   xlab("Vaccination Supplier") +
   scale_fill_manual(values = palette()) +
-  #scale_color_manual(values = palette2()) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   theme(text = element_text(size = 30)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
@@ -279,7 +201,89 @@ ggplot(aes(value_eng, percent)) +
 ggsave("ShareVaccinationSupplier.pdf", dpi = 500, w = 21, h = 15)
 ggsave("ShareVaccinationSupplier.png", dpi = 500, w = 21, h = 15)
 
+# Vaccination -------------------------------------------------------------
+
+# To do: This section needs to be reworked (SP, 13.09.24)
+
+# VaccinationYesNo <- data_reduced %>% select(c19_vaccination_status, year_of_birth)
+# #VaccinationYesNo <- VaccinationYesNo[!is.na(VaccinationYesNo$user_id),]
+
+# VaccinationYesNo$c19_vaccination_status <- factor(VaccinationYesNo$c19_vaccination_status, levels = c("Ja", "Nein", "Weiß ich nicht", "Ich möchte nicht antworten", NA))
+
+# VaccinationYesNo <- VaccinationYesNo %>% mutate(c19_vaccination_status_eng = case_when(c19_vaccination_status == "Ja" ~ "Yes",
+#                                                                                         c19_vaccination_status == "Nein" ~ "No",
+#                                                                                         c19_vaccination_status == "Weiß ich nicht" ~ "I Don't Know",
+#                                                                                         c19_vaccination_status == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))
+
+# VaccinationYesNo$c19_vaccination_status_eng <- factor(VaccinationYesNo$c19_vaccination_status_eng, levels = c("Yes", "No", "I Don't Know", "I Don't Want To Answer"))
+
+# VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% count(c19_vaccination_status_eng) %>%
+#   mutate(percent = 100 * n / sum(n)) %>%
+#   mutate(lci =  n - 1.96*(n*(n-1)/567)^0.5) %>%
+#   mutate(lci = 100/567*lci) %>%
+#   mutate(uci =  n + 1.96*(n*(n-1)/567)^0.5) %>%
+#   mutate(uci =  100/567*uci) %>%
+#   ggplot(aes(c19_vaccination_status_eng, percent)) + 
+#   geom_bar(stat = "identity", position = "dodge", width = 0.8, fill = "#998ec3") +
+#   geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci), color = "#542788", position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+#   theme_minimal() +
+#   ylab("Share [Percentage]") +
+#   xlab("Have you received any COVID-19 vaccine?") +
+#   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+#   theme(legend.position = "none") +
+#   theme(text = element_text(size = 30)) +
+#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
+#   theme(axis.ticks.x = element_line(),
+#         axis.ticks.y = element_line(),
+#         axis.ticks.length = unit(5, "pt"))
+# ggsave("ShareVaccinated.png", dpi = 500, w = 9, h = 6)
+# ggsave("ShareVaccinated.pdf", dpi = 500, w = 9, h = 6)
+
+# VaccinationYesNo <- VaccinationYesNo %>% mutate(age_bracket = case_when(year_of_birth <= 1962 ~ "60+",
+#                                                                         year_of_birth > 1962 ~ "18-59"))
+
+
+# palette <- function() {
+#   c("#998ec3", "#f1a340")
+# }
+
+# palette2 <- function() {
+#   c("#542788", "#b35806")
+# }
+
+
+# VaccinationYesNo %>% filter(!is.na(c19_vaccination_status_eng)) %>% filter(!is.na(age_bracket)) %>% group_by(age_bracket) %>% count(c19_vaccination_status_eng) %>%
+#   mutate(percent = 100 * n / sum(n)) %>%
+#   mutate(lci = case_when(age_bracket == "60+" ~ n - 1.96*(n*(n-1)/75)^0.5, 
+#                           age_bracket == "18-59" ~ n - 1.96*(n*(n-1)/484)^0.5)) %>%
+#   mutate(lci = case_when(age_bracket == "60+" ~ 100/75*lci,
+#                         age_bracket == "18-59" ~ 100/484*lci)) %>%
+#   mutate(uci =  case_when(age_bracket == "60+" ~ n + 1.96*(n*(n-1)/75)^0.5,
+#                           age_bracket == "18-59" ~ n + 1.96*(n*(n-1)/484)^0.5)) %>%
+#   mutate(uci =  case_when(age_bracket == "60+" ~ 100/75*uci,
+#                           age_bracket == "18-59" ~ 100/484*uci)) %>%
+#   ggplot(aes(c19_vaccination_status_eng, percent, fill = age_bracket)) +
+#   geom_bar(stat = "identity", position = "dodge", width = 0.8)+
+#   geom_errorbar(aes(x=c19_vaccination_status_eng, ymin=lci, ymax=uci, color=age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+#   theme_minimal() +
+#   ylab("Share [Percentage]") +
+#   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+#   xlab("Have you received any COVID-19 vaccine?") +
+#   scale_fill_manual(values = palette()) +
+#   scale_color_manual(values = palette2()) +
+#   theme(legend.position = "bottom", legend.title = element_blank()) +
+#   theme(text = element_text(size = 30)) +
+#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
+#   theme(text = element_text(size = 15)) +
+#   theme(axis.ticks.x = element_line(),
+#         axis.ticks.y = element_line(),
+#         axis.ticks.length = unit(5, "pt"))
+# ggsave("ShareVaccinated_AgeBracket.png", dpi = 500, w = 9, h = 6)
+# ggsave("ShareVaccinated_AgeBracket.pdf", dpi = 500, w = 9, h = 6)
+
 # How many respondents are vaccinated? How often have they been vaccinated?
+
+# Todo: This needs to be reworked and merged with the section about
 
 vaccinationData <- data_reduced %>% select(c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
 
@@ -323,14 +327,14 @@ vaccinationData$dose_4_received<- factor(vaccinationData$dose_4_received, levels
 
 # RKI data: https://impfdashboard.de/ 
 
-MuSPAD1st <- MusPAD %>% count(w22_vacc_type_1)
+MuSPAD1st <- MusPAD %>% count(w22_vacc_type_1) 
 
 data1st <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(data1st) <- c("dose_1_received", "n", "percent", "source")
 data1st [nrow(data1st)+1,] <- c("Yes", 64900000, 100*64900000/78000000, "RKI")
 data1st [nrow(data1st)+1,] <- c("No", 13100000, 100*13100000/78000000, "RKI")
 data1st [nrow(data1st)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
-data1st [nrow(data1st)+1,] <- c("Yes", 5+1256+2814+1), "MuSPAD")
+data1st [nrow(data1st)+1,] <- c("Yes", 100*(5+1256+2814+1)/(10+2096+4823+1+270+968+16+13), "MuSPAD") # To do: MuSPAD rows need to be adapted --> Right now: # of vaccinations have been manually entered
 data1st [nrow(data1st)+1,] <- c("No", 13, 100*13/(10+2096+4823+1+270+968+16+13), "MuSPAD")
 data1st [nrow(data1st)+1,] <- c("I Don't Want To Answer", 0, 0, "MuSPAD")
 data1st [nrow(data1st)+1,] <- c("No", 0, 0, "Survey")
@@ -365,7 +369,7 @@ data4th [nrow(data4th)+1,] <- c("Yes", 1200000, 100*1200000/78000000, "RKI")
 data4th [nrow(data4th)+1,] <- c("No", 76800000, 100*76800000/78000000, "RKI")
 data4th [nrow(data4th)+1,] <- c("I Don't Want To Answer", 0, 0, "RKI")
 data4th [nrow(data4th)+1,] <- c("Yes", 54+7+1344+1+1+179+8, 100*(54+7+1344+1+1+179+8)/(54+7+1344+1+1+179+8+1105+7141), "MuSPAD")
-data4th [nrow(data4th)+1,] <- c("No", 1105+7141, 100*(1105+7141)//(54+7+1344+1+1+179+8+1105+7141, "MuSPAD")
+data4th [nrow(data4th)+1,] <- c("No", 1105+7141, 100*(1105+7141)//(54+7+1344+1+1+179+8+1105+7141), "MuSPAD")
 data4th [nrow(data4th)+1,] <- c("I Don't Want To Answer", 0, 0, "MuSPAD")
 data4th$n <- as.integer(data4th$n)
 data4th$percent <- as.double(data4th$percent)
@@ -397,18 +401,11 @@ for(dose in doses){
     mutate(percent = round(percent, digits = 2)) %>%
     ggplot(aes(!!sym(column), percent)) +
     geom_bar(aes(fill=factor(source, levels = c("Survey", "MuSPAD", "RKI"))), stat = "identity", position = "dodge", width = 0.8)+
-    # geom_text(aes(label = percent, 
-    #               y = percent, 
-    #               group = source),
-    #           position = position_dodge(width = 0.8),
-    #           vjust = -1, size = 6) +
-    #geom_errorbar(aes(x=dose_2_received, ymin=lci, ymax=uci, color=age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
     theme_minimal() +
     ylab("Share [Percentage]") +
     scale_y_continuous(limits=c(0,110), labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
     xlab(paste0("Have you received a ", dose, " dose \nof a COVID-19-vaccine?")) +
     scale_fill_manual(values = palette()) +
-    #scale_color_manual(values = palette2()) +
     theme(legend.position = "bottom", legend.title = element_blank()) +
     theme(text = element_text(size = 30)) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
@@ -421,7 +418,9 @@ for(dose in doses){
 }
 
 
-# Household Size and No. of Children --------------------------------------
+# Household Size ----------------------------------------------------
+
+# The following section compares the household sizes for the survey, MuSPAD and the Statistisches Bundesamt
 
 HouseholdData <- data_reduced %>% select(respondent_hsld_size_2019, respondent_hsld_size_03_2020, respondent_hsld_size_summer_2021, respondent_hsld_size_01_2023, respondent_hsld_size_persons_under_14, number_of_children_under_18)
 HouseholdData <- HouseholdData %>% pivot_longer(cols = c("respondent_hsld_size_2019", "respondent_hsld_size_03_2020", "respondent_hsld_size_summer_2021", "respondent_hsld_size_01_2023", "respondent_hsld_size_persons_under_14", "number_of_children_under_18"))
@@ -526,7 +525,7 @@ ggplot(aes(value, percent)) +
 ggsave("HouseholdSize.png", dpi = 500, w = 9.5, h = 6)
 ggsave("HouseholdSize.pdf", dpi = 500, w = 9.5, h = 6)
 
-# children under 14 ------------------------------------------------------------------
+# Children under 14 ------------------------------------------------------------------
 
 palette <- function() {
   c("#ECA400", "#006992", "#001D4A")
@@ -713,33 +712,35 @@ ggsave("Age_Comparison.png", dpi = 500, w = 9.5, h = 6)
 
 # Comorbidities -----------------------------------------------------------
 
-comorbidities <- raw_data %>% select(user_id, cond_hbp, cond_diabetes, cond_cardio, cond_resp, cond_immuno, cond_cancer, cond_post_c19, cond_none)
-comorbidities <- comorbidities %>% pivot_longer(cols=c(cond_hbp, cond_diabetes, cond_cardio, cond_resp, cond_immuno, cond_cancer, cond_post_c19, cond_none))
-ggplot(comorbidities  %>% filter(!is.na(value))) + 
-  geom_bar(aes(x= value, y = ..prop.., group = 1), fill = "#1b9e77") +
-  theme_minimal() +
-  facet_wrap(~name)+
-  ylab("Frequency") +
-  xlab("") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(text = element_text(size = 15)) 
+# To do: This is old work --> Do we want to compare the % of people with comorbidities? Y/N?
 
-ggsave("Comorbidities.png", dpi = 500, w = 9, h = 4.5)
+# comorbidities <- raw_data %>% select(user_id, cond_hbp, cond_diabetes, cond_cardio, cond_resp, cond_immuno, cond_cancer, cond_post_c19, cond_none)
+# comorbidities <- comorbidities %>% pivot_longer(cols=c(cond_hbp, cond_diabetes, cond_cardio, cond_resp, cond_immuno, cond_cancer, cond_post_c19, cond_none))
+# ggplot(comorbidities  %>% filter(!is.na(value))) + 
+#   geom_bar(aes(x= value, y = ..prop.., group = 1), fill = "#1b9e77") +
+#   theme_minimal() +
+#   facet_wrap(~name)+
+#   ylab("Frequency") +
+#   xlab("") +
+#   theme(legend.position = "none") +
+#   scale_fill_brewer(palette = "Dark2") +
+#   theme(text = element_text(size = 15)) 
 
-smoking <- raw_data %>% select(user_id, smoking_status)
-smoking$smoking_status <- factor(smoking$smoking_status, levels = c("Ich habe noch nie geraucht.", "Nein, nicht mehr", "Ja, gelegentlich", "Ja, täglich", "Ich möchte nicht antworten"))
-ggplot(smoking  %>% filter(!is.na(smoking_status))) + 
-  geom_bar(aes(x= smoking_status, y = ..prop.., group = 1), fill = "#1b9e77") +
-  theme_minimal() +
-  ylab("Frequency") +
-  xlab("") +
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(text = element_text(size = 15)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+# ggsave("Comorbidities.png", dpi = 500, w = 9, h = 4.5)
 
-ggsave("Smoking.png", dpi = 500, w = 9, h = 4.5)
+# smoking <- raw_data %>% select(user_id, smoking_status)
+# smoking$smoking_status <- factor(smoking$smoking_status, levels = c("Ich habe noch nie geraucht.", "Nein, nicht mehr", "Ja, gelegentlich", "Ja, täglich", "Ich möchte nicht antworten"))
+# ggplot(smoking  %>% filter(!is.na(smoking_status))) + 
+#   geom_bar(aes(x= smoking_status, y = ..prop.., group = 1), fill = "#1b9e77") +
+#   theme_minimal() +
+#   ylab("Frequency") +
+#   xlab("") +
+#   theme(legend.position = "none") +
+#   scale_fill_brewer(palette = "Dark2") +
+#   theme(text = element_text(size = 15)) +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# ggsave("Smoking.png", dpi = 500, w = 9, h = 4.5)
 
 # Education / Occupation --------------------------------------------------
 
@@ -809,6 +810,9 @@ ggsave("EducationLevel_Comparison.png", dpi = 500, w =9.5, h = 9)
 
 
 #Occupation
+
+# To do: The following section needs to be updated once we've received the according data from MuSPAD
+
 currentOccupation <- data_reduced %>% select(current_occupation)
 
 currentOccupation <- currentOccupation %>% mutate(current_occupation = case_when(current_occupation == "Ich bin in einem anderen Beruf tätig." ~ "Other",
@@ -822,14 +826,17 @@ currentOccupation <- currentOccupation %>% mutate(current_occupation = case_when
                                                                                  is.na(current_occupation) ~ "Unknown")) %>%
                                             filter(current_occupation != "Unknown")
 
+OccupationMuSPAD <- MuSPAD %>% count(s23_work_type)
+
+#Where to put "Mutterschafts-, Erziehungsurlaub, Elternzeit oder sonstige Beurlaubung" ??
+
 OccupationDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
-OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Other", 4558, 46.6, "MuSPAD")
-OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Teaching Sector", 486, 4.8, "MuSPAD")
-OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Medical Sector", 719, 7.3, "MuSPAD")
-#OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Unknown", 2545, 100*0, "MuSPAD")
-OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Retired", 3546, 36.2, "MuSPAD")
-OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Unemployed", 107, 1.1, "MuSPAD")
-OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Student", 393, 4, "MuSPAD") 
+OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Other", (OccupationMuSPAD %>% filter(s23_work_type == "Andere"))$n + (OccupationMuSPAD %>% filter(s23_work_type == "Voll- oder Teilzeit erwerbstätig"))$n, /sum(OccupationMuSPAD$n), "MuSPAD")
+OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Teaching Sector", TODO, 100*TODO/sum(OccupationMuSPAD$n), "MuSPAD") ## TO DO
+OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Medical Sector", TODO, 100*TODO/sum(OccupationMuSPAD$n), "MuSPAD") ## TO DO
+OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Retired", (OccupationMuSPAD %>% filter(s23_work_type == "Vorruheständler:In, Rentner:In, Pensionär:In ohne Nebenverdienst"))$n, 100*(OccupationMuSPAD %>% filter(s23_work_type == "Vorruheständler:In, Rentner:In, Pensionär:In ohne Nebenverdienst"))$n/sum(OccupationMuSPAD$n), "MuSPAD")
+OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Unemployed", (OccupationMuSPAD %>% filter(s23_work_type == "Arbeitslos/-suchend gemeldet"))$n, 100*(OccupationMuSPAD %>% filter(s23_work_type == "Arbeitslos/-suchend gemeldet"))$n/sum(OccupationMuSPAD$n), "MuSPAD")
+OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Student", (OccupationMuSPAD %>% filter(s23_work_type == "Schüler/-innen oder Studierende, die nicht gegen Geld arbeiten"))$n, 100*(OccupationMuSPAD %>% filter(s23_work_type == "Schüler/-innen oder Studierende, die nicht gegen Geld arbeiten"))$n/sum(OccupationMuSPAD$n), "MuSPAD") 
 colnames(OccupationDataMuspad) <- c("current_occupation", "n", "percent", "source")
 OccupationDataMuspad$n <- as.integer(OccupationDataMuspad$n)
 OccupationDataMuspad$percent <- as.double(OccupationDataMuspad$percent)
@@ -858,52 +865,11 @@ ggsave("Occupation_Comparison.pdf", dpi = 500, w =9.5, h = 9)
 ggsave("Occupation_Comparison.png", dpi = 500, w =9.5, h = 9)
 
 
-# Behavior Change ---------------------------------------------------------
-
-behaviorChange <- raw_data %>% select(user_id, beh_change_start_pandemic_avoid_in_person, beh_change_start_pandemic_avoid_careless_contacts, beh_change_start_pandemic_contact_cautious_people,
-                                      beh_change_start_pandemic_avoid_peak_hours, beh_change_start_pandemic_maintain_distance,
-                                      beh_change_start_pandemic_outdoor_only, beh_change_start_pandemic_no_visit_high_risk, beh_change_start_pandemic_avoid_busy_places,
-                                      beh_change_start_pandemic_avoid_public_trans, beh_change_start_pandemic_mask_public_trans, beh_change_start_pandemic_mask_supermarket, beh_change_start_pandemic_work_from_home, 
-                                      beh_change_start_pandemic_children_limited_contacts, beh_change_start_pandemic_meet_close_despite_restrict)
-behaviorChange <- behaviorChange %>% pivot_longer(cols = c("beh_change_start_pandemic_avoid_in_person", "beh_change_start_pandemic_avoid_careless_contacts", "beh_change_start_pandemic_contact_cautious_people",
-                                                           "beh_change_start_pandemic_avoid_peak_hours", "beh_change_start_pandemic_maintain_distance",
-                                                           "beh_change_start_pandemic_outdoor_only", "beh_change_start_pandemic_no_visit_high_risk", "beh_change_start_pandemic_avoid_busy_places",
-                                                           "beh_change_start_pandemic_avoid_public_trans", "beh_change_start_pandemic_mask_public_trans", "beh_change_start_pandemic_mask_supermarket", "beh_change_start_pandemic_work_from_home", 
-                                                           "beh_change_start_pandemic_children_limited_contacts", "beh_change_start_pandemic_meet_close_despite_restrict"))
-
-behaviorChange <- behaviorChange %>% mutate(name = case_when(name == "beh_change_start_pandemic_avoid_in_person" ~ "avoid in person meetings", 
-                                                             name == "beh_change_start_pandemic_avoid_careless_contacts" ~ "avoid careless contacts",
-                                                             name == "beh_change_start_pandemic_contact_cautious_people" ~ "meet similarly cautious people",
-                                                             name == "beh_change_start_pandemic_avoid_peak_hours" ~ "no shopping during peak hours", 
-                                                             name == "beh_change_start_pandemic_maintain_distance" ~ "keep 1.5m distance to others",
-                                                             name == "beh_change_start_pandemic_outdoor_only" ~ "only meet outdoors", 
-                                                             name == "beh_change_start_pandemic_no_visit_high_risk" ~ "avoid visiting of high-risk persons", 
-                                                             name == "beh_change_start_pandemic_avoid_busy_places" ~ "avoid crowded places",
-                                                             name == "beh_change_start_pandemic_avoid_public_trans" ~ "avoid public transport", 
-                                                             name == "beh_change_start_pandemic_mask_public_trans" ~ "wear mask on public transport", 
-                                                             name == "beh_change_start_pandemic_mask_supermarket" ~ "wear mask in supermarket", 
-                                                             name == "beh_change_start_pandemic_work_from_home" ~ "work from home", 
-                                                             name == "beh_change_start_pandemic_children_limited_contacts" ~ "limit children's contacts", 
-                                                             name == "beh_change_start_pandemic_meet_close_despite_restrict" ~ "meet close contacts despite restrictions"))
-
-behaviorChange$value <- factor(behaviorChange$value, levels = c("viel weniger", "weniger", "etwas weniger", "genauso", "etwas mehr", "mehr", "viel mehr", "trifft nicht zu", "keine Angabe"))
-
-ggplot(behaviorChange %>% filter(!is.na(value))) + 
-  geom_bar(aes(x= value, y = ..prop.., group = 1), fill = "#1b9e77") +
-  theme_minimal() +
-  ylab("Frequency") +
-  xlab("") +
-  facet_wrap(~name)+
-  theme(legend.position = "none") +
-  scale_fill_brewer(palette = "Dark2") +
-  theme(text = element_text(size = 15)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-ggsave("BehaviorChange.png", dpi = 500, w = 12, h = 9)
-ggsave("BehaviorChange.pdf", dpi = 500, w = 12, h = 9)
-
 # Infection context -------------------------------------------------------
 
-ownInfection <- raw_data %>% select(user_id, loc_home, loc_work, loc_school, loc_friends,
+# To discuss: Would we like to include a pie chart(?) on the infection context?
+
+ownInfection <- data_reduced %>% select(loc_home, loc_work, loc_school, loc_friends,
                                     loc_sport_event, loc_health_fac, loc_shopping, loc_party,
                                     loc_conference, loc_unknown, loc_no_info, loc_other)
 
@@ -938,25 +904,3 @@ householdInfections <- na.omit(householdInfections)
 householdInfections <- householdInfections %>% filter(value != "Nein")
 
 householdInfections %>% count(name)
-
-
-# Change of CC ------------------------------------------------------------
-
-ChangeOfCC <- raw_data %>% select(cc_change_during_pandemic, reasons_change_conts_op)
-
-ChangeOfCC <- ChangeOfCC %>% mutate(cc_change_during_pandemic = case_when(cc_change_during_pandemic == "Ja" ~ "Yes",
-                                                                          cc_change_during_pandemic == "Nein" ~ "No"))
-ChangeOfCC$cc_change_during_pandemic <- factor(ChangeOfCC$cc_change_during_pandemic, levels = c("Yes", "No"))
-ggplot(ChangeOfCC %>% filter(is.na(cc_change_during_pandemic) == FALSE)) + 
-  geom_bar(aes(cc_change_during_pandemic, y = ..prop.., group = 1), fill = "#1b9e77") +
-  theme_minimal() +
-  xlab("Did you change your CC \n during the pandemic?") +
-  ylab("Share") +
-  theme(text = element_text(size = 20)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
-
-ggsave("ChangeOfCC.png", dpi = 500, w = 6, h = 3)
-ggsave("ChangeOfCC.pdf", dpi = 500, w = 6, h = 3)
-
-YesChangeOfCC <- ChangeOfCC %>% filter(cc_change_during_pandemic == "Yes")
-unique(YesChangeOfCC$reasons_change_conts_op)
