@@ -1,12 +1,13 @@
 library(tidyverse)
 library(RColorBrewer)
+library(cowplot)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
 setwd("./AnalysisSP") # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
 source("DataCleaningPrepForContactAnalysis.R")
 
-MuSPAD <- read_delim("ADD PATH") # Enter MuSPAD path
+MuSPAD <- read_delim("/Users/sydney/Downloads/Uni_Lübeck/MuSPAD_data_subset.csv") # Enter MuSPAD path
 count_na <- function(row) {
   sum(grepl("^s22_", names(row)) & !is.na(row))
 }
@@ -19,7 +20,11 @@ MuSPAD <- MuSPAD %>% filter(count_na != 0) # We are excluding all participants w
 # To do: Include COSMO data
 
 palette <- function() {
-  c("#FFD269", "#ECA400", "#006992")
+  c("#FFD269", "#ECA400", "#006992", "#27476E")
+}
+
+palette2 <- function() {
+  c("#ECA400", "#ab7700", "#006992", "#27476E")
 }
 
 data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "0",
@@ -34,14 +39,16 @@ data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = 
 InfectionsMuspad <- MuSPAD %>% select(w22_positive_test) %>% count(w22_positive_test)
 InfectionsMuspad <- InfectionsMuspad %>% filter(!is.na(w22_positive_test))
 
-InfectionsDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
-colnames(InfectionsDataMuspad) <- c("num_c19_infs_eng", "n", "percent", "Source")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("0", (InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n/sum(InfectionsMuspad$n), "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("1",	(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n/sum(InfectionsMuspad$n), "MuSPAD")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("2+", (InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n, 100*((InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n)/sum(InfectionsMuspad$n), "MuSPAD")
+InfectionsDataMuspad <- data.frame(matrix(nrow = 0, ncol = 6))
+colnames(InfectionsDataMuspad) <- c("num_c19_infs_eng", "n", "percent", "Source", "lci", "uci")
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("0", (InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n/sum(InfectionsMuspad$n), "MuSPAD", 32.8-1, 32.8-1)
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("1",	(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n/sum(InfectionsMuspad$n), "MuSPAD", 56.2-1, 56.2-1)
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("2+", (InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n, 100*((InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n)/sum(InfectionsMuspad$n), "MuSPAD", 11-1, 11-1)
 InfectionsDataMuspad$num_c19_infs_eng <- factor(InfectionsDataMuspad$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataMuspad$n <- as.integer(InfectionsDataMuspad$n)
 InfectionsDataMuspad$percent <- as.double(InfectionsDataMuspad$percent)
+InfectionsDataMuspad$lci <- as.double(InfectionsDataMuspad$lci)
+InfectionsDataMuspad$uci <- as.double(InfectionsDataMuspad$uci)
 
 InfectionsDataTwitter <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(InfectionsDataTwitter) <- c("num_c19_infs_eng", "n", "percent", "Source")
@@ -51,20 +58,43 @@ InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 716, 16.98, 
 InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataTwitter$n <- as.integer(InfectionsDataTwitter$n)
 InfectionsDataTwitter$percent <- as.double(InfectionsDataTwitter$percent)
+ 
+# Data comes from https://projekte.uni-erfurt.de/cosmo2020/files/COSMO_W70.pdf --> DEC 2022!
+InfectionsDataCOSMO <- data.frame(matrix(nrow = 0, ncol = 6))
+colnames(InfectionsDataCOSMO) <- c("num_c19_infs_eng", "n", "percent", "Source", "lci", "uci")
+InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("0", 1003*0.5, 50, "COSMO", 50-1, 50-1)
+InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("1",	1003*0.42, 42, "COSMO", 42-1, 42-1)
+InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("2+", 1003*0.08, 8, "COSMO", 8-1, 8-1)
+InfectionsDataCOSMO$num_c19_infs_eng <- factor(InfectionsDataCOSMO$num_c19_infs_eng, levels = c("0", "1", "2+"))
+InfectionsDataCOSMO$n <- as.integer(InfectionsDataCOSMO$n)
+InfectionsDataCOSMO$percent <- as.double(InfectionsDataCOSMO$percent)
+InfectionsDataCOSMO$lci <- as.double(InfectionsDataCOSMO$lci)
+InfectionsDataCOSMO$uci <- as.double(InfectionsDataCOSMO$uci)
 
 data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   count(num_c19_infs_eng) %>%
   mutate(percent = 100 * n / sum(n)) %>%
   mutate(Source = "Survey") %>%
-  rbind(InfectionsDataMuspad) %>%
   rbind(InfectionsDataTwitter) %>%
+  mutate(lci = case_when(Source == "Survey" ~ n - 1.96*(n*(n-1)/(294+483+89))^0.5,
+                          Source == "Twitter" ~ n - 1.96*(n*(n-1)/(1191+2310+716))^0.5)) %>%#
+  mutate(lci = case_when(Source == "Survey" ~ 100/(294+483+89)*lci,
+                         Source == "Twitter" ~ 100/(1191+2310+716)*lci)) %>%
+  mutate(uci = case_when(Source == "Survey" ~ n + 1.96*(n*(n-1)/(294+483+89))^0.5,
+                          Source == "Twitter" ~ n + 1.96*(n*(n-1)/(1191+2310+716))^0.5)) %>%
+  mutate(uci = case_when(Source == "Survey" ~ 100/(294+483+89)*uci,
+                          Source == "Twitter" ~ 100/(1191+2310+716)*uci)) %>%
+  rbind(InfectionsDataMuspad) %>%
+  rbind(InfectionsDataCOSMO) %>% 
   ggplot(aes(num_c19_infs_eng, percent)) +
-  geom_bar(aes(fill=factor(Source, levels = c("Twitter", "Survey", "MuSPAD"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill=factor(Source, levels = c("Twitter", "Survey", "MuSPAD", "COSMO"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, colour = factor(Source, levels = c("Twitter", "Survey", "MuSPAD", "COSMO"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   #facet_wrap(~name, nrow=2) +
   ylab("Share [Percentage]") +
   xlab("No. Of Infections") +
   scale_fill_manual(values = palette()) +
+  scale_color_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(text = element_text(size = 30)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
@@ -72,8 +102,8 @@ data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt")) 
 
-ggsave("NoInfections_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
-ggsave("NoInfections_Comparison.png", dpi = 500,  w = 9.5, h = 6)
+#ggsave("NoInfections_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
+#ggsave("NoInfections_Comparison.png", dpi = 500,  w = 9.5, h = 6)
 
 
 # Vaccination Supplier ----------------------------------------------------
@@ -503,27 +533,29 @@ palette <- function() {
   c("#ECA400", "#006992", "#001D4A")
 }
 
-HouseholdData %>% filter(name != "Children < 14 in household") %>%
+HouseholdPlot <- HouseholdData %>% filter(name != "Children < 14 in household") %>%
                   filter(name != "# Children < 18") %>%  filter(!is.na(name)) %>% filter(!is.na(value)) %>% 
                   group_by(name) %>% count(value) %>% mutate(percent = 100 * n / sum(n)) %>% mutate(Source = "Survey") %>% 
                   rbind(HouseholdDataStatBundesamt) %>% 
                   rbind(HouseholdDataMuspad) %>% filter(name == "Household size 1/23") %>% filter(!is.na(Source)) %>%
-ggplot(aes(value, percent)) +
+ ggplot(aes(value, percent)) +
   geom_bar(aes(fill=factor(Source, levels = c("Survey", "MuSPAD", "Statistisches Bundesamt (2023)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
+  theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
+  #ylab("") +
   ylab("Share [Percentage]") +
   xlab("Household size [# Members]") +
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(text = element_text(size = 30)) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("HouseholdSize.png", dpi = 500, w = 9.5, h = 6)
-ggsave("HouseholdSize.pdf", dpi = 500, w = 9.5, h = 6)
+ggsave("HouseholdSize.png", household, dpi = 500, w = 9.5, h = 6)
+ggsave("HouseholdSize.pdf", household, dpi = 500, w = 9.5, h = 6)
 
 # Children under 14 ------------------------------------------------------------------
 
@@ -562,7 +594,7 @@ ChildrenDataMuspad$respondent_hsld_size_persons_under_14 <- factor(ChildrenDataM
 ChildrenDataMuspad$n <- as.integer(ChildrenDataMuspad$n)
 ChildrenDataMuspad$percent <- as.double(ChildrenDataMuspad$percent)
 
-Children %>% filter(!is.na(respondent_hsld_size_persons_under_14)) %>% 
+ChildrenPlot <- Children %>% filter(!is.na(respondent_hsld_size_persons_under_14)) %>% 
                   count(respondent_hsld_size_persons_under_14) %>% 
                   mutate(percent = 100 * n / sum(n)) %>% 
                   mutate(Source = "Survey") %>% 
@@ -571,19 +603,21 @@ Children %>% filter(!is.na(respondent_hsld_size_persons_under_14)) %>%
 ggplot(aes(respondent_hsld_size_persons_under_14, percent)) +
   geom_bar(aes(fill=factor(Source, levels = c("Survey", "MuSPAD"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
+  theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
-  ylab("Share [Percentage]") +
+  ylab("") +
+  #ylab("Share [Percentage]") +
   xlab("Children Under 14") +
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(text = element_text(size = 30)) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("Children_Comparison.png", dpi = 500, w = 9.5, h = 6)
-ggsave("Children_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
+ggsave("Children_Comparison.png", ChildrenPlot, dpi = 500, w = 9.5, h = 6)
+ggsave("Children_Comparison.pdf", ChildrenPlot, dpi = 500, w = 9.5, h = 6)
 
 
 # Gender ------------------------------------------------------------------
@@ -597,7 +631,8 @@ GenderData <- data_reduced %>% select(gender)
 GenderData <- GenderData %>% mutate(gender = case_when(gender == "Weiblich" ~ "female", 
                                                         gender == "Männlich" ~ "male",
                                                         gender == "Divers" ~ "diverse",
-                                                        gender == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))
+                                                        gender == "Ich möchte nicht antworten" ~ "I Don't Want To Answer")) %>% 
+                                                        filter(gender != "I Don't Want To Answer")
 
 GenderData$gender <- factor(GenderData$gender, levels = c("female", "male", "diverse", "I Don't Want To Answer"))
 
@@ -614,6 +649,7 @@ GenderDataStatBundesamt$percent <- as.double(GenderDataStatBundesamt$percent)
 GenderMus <- MuSPAD %>% select(s22_sex) %>% count(s22_sex) %>% filter(!is.na(s22_sex))
 
 GenderDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
+
 colnames(GenderDataMuspad) <- c("gender", "n", "percent", "Source")
 GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("female", (GenderMus %>% filter(s22_sex == "female"))$n, 100*(GenderMus %>% filter(s22_sex == "female"))$n/sum(GenderMus$n), "MuSPAD")
 GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("male",	(GenderMus %>% filter(s22_sex == "male"))$n, 100*(GenderMus %>% filter(s22_sex == "male"))$n/sum(GenderMus$n), "MuSPAD")
@@ -622,26 +658,26 @@ GenderDataMuspad$gender <- factor(GenderDataMuspad$gender, levels = c("female", 
 GenderDataMuspad$n <- as.integer(GenderDataMuspad$n)
 GenderDataMuspad$percent <- as.double(GenderDataMuspad$percent)
 
-GenderData %>% filter(gender != "I Don't Want To Answer") %>% 
-                  count(gender) %>% mutate(percent = 100 * n / sum(n)) %>% mutate(Source = "Survey") %>% 
+GenderPlot <- GenderData %>% count(gender) %>% mutate(percent = 100 * n / sum(n)) %>% mutate(Source = "Survey") %>% 
                   rbind(GenderDataStatBundesamt) %>%
                   rbind(GenderDataMuspad) %>%
 ggplot(aes(gender, percent)) +
   geom_bar(aes(fill=factor(Source, levels = c("Survey", "MuSPAD", "Statistisches Bundesamt (2023)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
+  theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
   ylab("Share [Percentage]") +
   xlab("Gender") +
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(text = element_text(size = 30)) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("Gender_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
-ggsave("Gender_Comparison.png", dpi = 500, w = 9.5, h = 6)
+ggsave("Gender_Comparison.pdf", GenderPlot, dpi = 500, w = 9.5, h = 6)
+ggsave("Gender_Comparison.png", GenderPlot, dpi = 500, w = 9.5, h = 6)
 
 # Age ---------------------------------------------------------------------
 
@@ -688,7 +724,7 @@ AgeDataMuspad$n <- as.integer(AgeDataMuspad$n)
 AgeDataMuspad$percent <- as.double(AgeDataMuspad$percent)
 AgeDataMuspad$age_bracket <- factor(AgeDataMuspad$age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99"))
 
-AgeData %>% filter(!is.na(age_bracket)) %>% count(age_bracket) %>% 
+AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% count(age_bracket) %>% 
             mutate(percent = 100 * n / sum(n)) %>% 
             mutate(source = "Survey") %>%
             rbind(AgeDataStatBundesamt) %>%
@@ -696,13 +732,15 @@ AgeData %>% filter(!is.na(age_bracket)) %>% count(age_bracket) %>%
 ggplot(aes(age_bracket, percent)) +
   geom_bar(aes(fill=factor(source, levels = c("Survey", "MuSPAD", "Statistisches Bundesamt (2023)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
+    theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
-  ylab("Share [Percentage]") +
+  ylab("") +
+  #ylab("Share [Percentage]") +
   xlab("Age Bracket (2023)") +
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(text = element_text(size = 30)) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
@@ -752,38 +790,38 @@ palette <- function() {
 
 educationLevel <- data_reduced %>% select(highest_educational_qualification)
 
-educationLevel <- educationLevel %>% mutate(highest_educational_qualification = case_when(highest_educational_qualification == "Haupt-/ Volksschulabschluss" ~ "Certification after 9 years",
-                                                                                          highest_educational_qualification == "Realschulabschluss" ~ "Certification after 10 years",
+educationLevel <- educationLevel %>% mutate(highest_educational_qualification = case_when(highest_educational_qualification == "Haupt-/ Volksschulabschluss" ~ "Certification\nafter 9 years",
+                                                                                          highest_educational_qualification == "Realschulabschluss" ~ "Certification\nafter 10 years",
                                                                                           highest_educational_qualification == "Abitur / Fachhochschulabitur" ~ "Higher Education",
                                                                                           highest_educational_qualification == "Anderer" ~ "Other"))
 
-educationLevel$highest_educational_qualification <- factor(educationLevel$highest_educational_qualification, levels = c("Higher Education", "Certification after 10 years", "Certification after 9 years", "Other"))
+educationLevel$highest_educational_qualification <- factor(educationLevel$highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other"))
 
 #https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Bildungsstand/Tabellen/bildungsabschluss.html
 EducationDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(EducationDataStatBundesamt ) <- c("highest_educational_qualification", "n", "percent", "source")
 EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Higher Education", 82000000*0.335*100, 33.5, "Statistisches Bundesamt (2019)")
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification after 10 years", 82000000*0.3*100, 30, "Statistisches Bundesamt (2019)")
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification after 9 years", 82000000*0.286*100, 28.6, "Statistisches Bundesamt (2019)")
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 10 years", 82000000*0.3*100, 30, "Statistisches Bundesamt (2019)")
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 9 years", 82000000*0.286*100, 28.6, "Statistisches Bundesamt (2019)")
 EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Other", 82000000*0.077*100, 7.7, "Statistisches Bundesamt (2019)")
 EducationDataStatBundesamt $n <- as.integer(EducationDataStatBundesamt $n)
 EducationDataStatBundesamt $percent <- as.double(EducationDataStatBundesamt $percent)
-EducationDataStatBundesamt $highest_educational_qualification <- factor(EducationDataStatBundesamt $highest_educational_qualification, levels = c("Higher Education", "Certification after 10 years", "Certification after 9 years", "Other"))
+EducationDataStatBundesamt $highest_educational_qualification <- factor(EducationDataStatBundesamt $highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other"))
 
 Education <- MuSPAD %>% select(s22_education) %>% count(s22_education) %>% filter(!is.na(s22_education))
 
 EducationDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(EducationDataMuspad) <- c("highest_educational_qualification", "n", "percent", "source")
 EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Higher Education", 4804+279, 100*(4804+279)/(4804+279+2544+945+178+903), "MuSPAD")
-EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Certification after 10 years", 2544, 100*2544/(4804+279+2544+945+178+903), "MuSPAD")
-EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Certification after 9 years", 945+178, 100*(945+178)/(4804+279+2544+945+178+903), "MuSPAD")
+EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Certification\nafter 10 years", 2544, 100*2544/(4804+279+2544+945+178+903), "MuSPAD")
+EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Certification\nafter 9 years", 945+178, 100*(945+178)/(4804+279+2544+945+178+903), "MuSPAD")
 EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Other", 903, 100*903/(4804+279+2544+945+178+903), "MuSPAD")
 EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- (c("Other", 0, 0, "Survey")) 
 EducationDataMuspad$n <- as.integer(EducationDataMuspad$n)
 EducationDataMuspad$percent <- as.double(EducationDataMuspad$percent)
-EducationDataMuspad$highest_educational_qualification <- factor(EducationDataMuspad$highest_educational_qualification, levels = c("Higher Education", "Certification after 10 years", "Certification after 9 years", "Other"))
+EducationDataMuspad$highest_educational_qualification <- factor(EducationDataMuspad$highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other"))
 
-educationLevel %>% filter(!is.na(highest_educational_qualification)) %>% 
+EducationPlot <- educationLevel %>% filter(!is.na(highest_educational_qualification)) %>% 
             filter(highest_educational_qualification != "Other") %>%
             count(highest_educational_qualification) %>% 
             mutate(percent = 100 * n / sum(n)) %>% 
@@ -793,20 +831,22 @@ educationLevel %>% filter(!is.na(highest_educational_qualification)) %>%
 ggplot(aes(highest_educational_qualification, percent)) +
   geom_bar(aes(fill=factor(source, levels = c("Survey", "MuSPAD", "Statistisches Bundesamt (2019)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
+  theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
+  #ylab("") +
   ylab("Share [Percentage]") +
   xlab("Education") +
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(text = element_text(size = 30)) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt")) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.75, hjust=0.7))
 
-ggsave("EducationLevel_Comparison.pdf", dpi = 500, w =9.5, h = 9)
-ggsave("EducationLevel_Comparison.png", dpi = 500, w =9.5, h = 9)
+ggsave("EducationLevel_Comparison.pdf", EducationPlot, dpi = 500, w =9.5, h = 9)
+ggsave("EducationLevel_Comparison.png", EducationPlot, dpi = 500, w =9.5, h = 9)
 
 
 #Occupation
@@ -841,7 +881,7 @@ colnames(OccupationDataMuspad) <- c("current_occupation", "n", "percent", "sourc
 OccupationDataMuspad$n <- as.integer(OccupationDataMuspad$n)
 OccupationDataMuspad$percent <- as.double(OccupationDataMuspad$percent)
 
-currentOccupation %>% filter(!is.na(current_occupation)) %>% 
+OccupationPlot <- currentOccupation %>% filter(!is.na(current_occupation)) %>% 
             count(current_occupation) %>% 
             mutate(percent = 100 * n / sum(n)) %>% 
             mutate(source = "Survey") %>%
@@ -849,20 +889,29 @@ currentOccupation %>% filter(!is.na(current_occupation)) %>%
 ggplot(aes(current_occupation, percent)) +
   geom_bar(aes(fill=factor(source, levels = c("Survey", "MuSPAD"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
+  theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
-  ylab("Share [Percentage]") +
+  ylab("") +
   xlab("Current Occupation") +
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(text = element_text(size = 30)) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt")) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.75, hjust=0.7))
 
-ggsave("Occupation_Comparison.pdf", dpi = 500, w =9.5, h = 9)
-ggsave("Occupation_Comparison.png", dpi = 500, w =9.5, h = 9)
+ggsave("Occupation_Comparison.pdf", OccupationPlot, dpi = 500, w =9.5, h = 9)
+ggsave("Occupation_Comparison.png", OccupationPlot, dpi = 500, w =9.5, h = 9)
+
+## All plots together
+#plot_grid(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = "AUTO", nrow = 3, label_size = 24, rel_heights = c(1,1,1.25))
+
+ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2,font.label = list(size = 30), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
+
+ggsave("DemographicComparison.pdf", dpi = 500, w = 21, h = 24)
+ggsave("DemographicComparison.png", dpi = 500, w = 21, h = 24)
 
 
 # Infection context -------------------------------------------------------
