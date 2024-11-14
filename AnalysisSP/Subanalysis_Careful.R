@@ -5,6 +5,7 @@ library(see)
 library(RColorBrewer)
 library(patchwork)
 library(ggpubr)
+library(ggh4x)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -14,7 +15,7 @@ library(ggpubr)
 
 source("DataCleaningPrepForContactAnalysis.R")
 
-## ATTITUDE SCORE
+## RISK-PERCEPTION SCORE
 
 data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "Never",
                                                                     num_c19_infs == "Einmal" ~ "Once",
@@ -40,7 +41,7 @@ p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>%
     filter(!is.na(RiskyCarefulAtt )) %>% 
     filter(!is.na(TypeOfContact)) %>% 
     filter(TypeOfContact %in% c("Work", "Leisure")) %>%
-   filter(value > -150) %>% filter(value < 40) %>%  
+   filter(value > -150) %>% filter(value < 100) %>%  
     filter(!is.na(TypeOfContact)) %>% group_by(RiskyCarefulAtt, TypeOfContact, time), aes(RiskyCarefulAtt, value)) +
   geom_violin(aes(fill = RiskyCarefulAtt, color = RiskyCarefulAtt), scale = "area", trim = TRUE) +  
   stat_summary(aes(color=RiskyCarefulAtt ), fun.data=mean_sdl, fun.args = list(mult=1), 
@@ -50,17 +51,17 @@ p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>%
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
-  facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
+  facet_nested(~ TypeOfContact + time) +
   theme_minimal() +
-  xlab("Point In Time") +
   theme(panel.spacing = unit(4, "lines")) +
-  ylab("Change Of No. Of \n Contacts [Percentage]") +
+  ylab("Change of No. of \n Contacts [in percent]") +
   theme(text = element_text(size = 30)) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "bottom", legend.title = element_blank())
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(panel.spacing.x = unit(c(rep(0,2),5, 0,0), "lines"))
 
-ggsave("CollectionViolinplots_AttCarefulnessScore.pdf", p1, dpi = 500, w = 15, h = 12)
-ggsave("CollectionViolinplots_AttCarefulnessScore.png", p1, dpi = 500, w = 15, h = 12)
+ggsave("CollectionViolinplots_AttCarefulnessScore.pdf", p1, dpi = 500, w = 22, h = 9)
+ggsave("CollectionViolinplots_AttCarefulnessScore.png", p1, dpi = 500, w = 22, h = 9)
 
 ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(RiskyCarefulAtt)) %>% 
