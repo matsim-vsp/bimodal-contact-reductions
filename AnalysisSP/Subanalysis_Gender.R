@@ -4,6 +4,7 @@ library(see)
 library(RColorBrewer)
 library(patchwork)
 library(ggpubr)
+library(ggh4x)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -43,7 +44,7 @@ data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(gender = case_when(gen
 p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(TypeOfContact)) %>% 
     filter(gender %in% c("female", "male")) %>% filter(TypeOfContact %in% c("Leisure", "Work")) %>%
-   filter(value > -150) %>% filter(value < 40) %>%  
+    filter(value < 100) %>% filter(value > -150) %>%  
     filter(!is.na(TypeOfContact)) %>% group_by(gender, time), aes(gender, value)) +
   geom_violin(aes(fill = gender, color = gender), scale = "area", trim = TRUE) +  
   stat_summary(aes(color=gender), fun.data=mean_sdl, fun.args = list(mult=1), 
@@ -58,10 +59,16 @@ p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>%
   theme_minimal() +
   xlab("Point In Time") +
   theme(panel.spacing = unit(4, "lines")) +
-  ylab("Change Of No. Of \n Contacts [Percentage]") +
+  ylab("Change of No. of \n Contacts [in percent]") +
   theme(text = element_text(size = 30)) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   theme(panel.spacing.x = unit(c(rep(0,2),5, 0,0), "lines"))
 ggsave("CollectionViolinplots_Gender.pdf", p1, dpi = 500, w = 22, h = 9)
 ggsave("CollectionViolinplots_Gender.png", p1, dpi = 500, w = 22, h = 9)
+
+mean <- data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+    filter(!is.na(TypeOfContact)) %>% 
+    filter(gender %in% c("female", "male")) %>% filter(TypeOfContact %in% c("Leisure", "Work")) %>%
+    filter(value < 100) %>% filter(value > -150) %>%  
+    filter(!is.na(TypeOfContact)) %>% group_by(TypeOfContact, gender, time) %>% summarise(mean =mean(value))
