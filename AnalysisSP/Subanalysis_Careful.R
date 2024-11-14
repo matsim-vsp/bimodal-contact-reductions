@@ -26,7 +26,6 @@ data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_inf
 data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
 
 
-
 palette <- function() {
   c("#f1a340", "#998ec3")
 }
@@ -35,94 +34,257 @@ palette2 <- function() {
   c("#b35806", "#542788")
 }
 
-my_comparisons <- list(c("Careful", "Risky"))
+my_comparisons <- list(c("Risk-averse", "Risk-tolerant"))
 
 p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
-    filter(!is.na(RiskyCarefulAtt )) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Work", "Leisure")) %>%
-    filter(value > -50) %>% filter(value < 150) %>%  
-    filter(!is.na(TypeOfContact)), aes(RiskyCarefulAtt , value)) +
-  geom_violin(aes(fill = RiskyCarefulAtt , color = RiskyCarefulAtt ), scale = "area", trim = TRUE) + 
+    filter(!is.na(RiskyCarefulAtt )) %>% 
+    filter(!is.na(TypeOfContact)) %>% 
+    filter(TypeOfContact %in% c("Work", "Leisure")) %>%
+   filter(value > -150) %>% filter(value < 40) %>%  
+    filter(!is.na(TypeOfContact)) %>% group_by(RiskyCarefulAtt, TypeOfContact, time), aes(RiskyCarefulAtt, value)) +
+  geom_violin(aes(fill = RiskyCarefulAtt, color = RiskyCarefulAtt), scale = "area", trim = TRUE) +  
   stat_summary(aes(color=RiskyCarefulAtt ), fun.data=mean_sdl, fun.args = list(mult=1), 
                  geom="pointrange", linewidth = 1) +
-  stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.5, label.y.npc = 0)+
+  stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = 0, label.y.npc = 0)+
   #geom_violin(aes(color=WhoseContacts), size = 1.3) +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-50, 0,50, 100)) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
   facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
   theme_minimal() +
-  ylab("Reduction Of Contacts [Percentage]") +
+  xlab("Point In Time") +
+  theme(panel.spacing = unit(4, "lines")) +
+  ylab("Change Of No. Of \n Contacts [Percentage]") +
   theme(text = element_text(size = 30)) +
-  theme(panel.spacing.y = unit(3, "lines")) +
-  theme(panel.spacing.x = unit(3, "lines")) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
-  #labs(color ="Attitude Score ") +
-  theme(panel.spacing = unit(0.8, "cm", data = NULL))
-  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(legend.position = "bottom", legend.title = element_blank())
 
-ggsave("CollectionViolinplots_AttCarefulnessScore.pdf", p1, dpi = 500, w = 15, h = 10)
-ggsave("CollectionViolinplots_AttCarefulnessScore.png", p1, dpi = 500, w = 15, h = 10)
+ggsave("CollectionViolinplots_AttCarefulnessScore.pdf", p1, dpi = 500, w = 15, h = 12)
+ggsave("CollectionViolinplots_AttCarefulnessScore.png", p1, dpi = 500, w = 15, h = 12)
 
-palette2 <- function() {
-  c("#b35806", "#542788")
+ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% 
+    filter(!is.na(RiskyCarefulAtt)) %>% 
+    filter(!is.na(TypeOfContact)) %>% filter(value < 250) %>%
+    filter(TypeOfContact %in% c("Work", "Leisure")) %>% filter(time ==  "2019") %>%  
+    group_by(RiskyCarefulAtt, TypeOfContact), aes(RiskyCarefulAtt, value)) +
+  geom_violin(aes(fill = RiskyCarefulAtt, color = RiskyCarefulAtt), scale = "area", trim = TRUE) +  
+  stat_summary(aes(color=RiskyCarefulAtt ), fun.data=mean_sdl, fun.args = list(mult=1), 
+                 geom="pointrange", linewidth = 1) +
+  stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = 0, label.y.npc = 0)+
+  #geom_violin(aes(color=WhoseContacts), size = 1.3) +
+  scale_fill_manual(values = palette()) +
+  scale_color_manual(values = palette2()) +
+  facet_wrap(vars(TypeOfContact)) +
+  theme_minimal() +
+  xlab("Point In Time") +
+  theme(panel.spacing = unit(4, "lines")) +
+  ylab("No. Of \n Contacts") +
+  theme(text = element_text(size = 30)) +
+  theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
+  theme(legend.position = "bottom", legend.title = element_blank())
+
+ggsave("CollectionViolinplots_AttCarefulnessScore.pdf", p1, dpi = 500, w = 15, h = 12)
+ggsave("CollectionViolinplots_AttCarefulnessScore.png", p1, dpi = 500, w = 15, h = 12)
+
+## Are respondents sociable across categories?
+
+palette <- function() {
+  c("#f1a340", "#998ec3")
 }
 
-ggplot(data_reduced %>% mutate(respondent_work_2019 = case_when(respondent_work_2019 == 0 ~ 0.1,
+options(scipen = 999)
+
+ggplot(data_reduced %>% mutate(respondent_work_2019 = case_when(respondent_work_2019 == 0 ~ 0.01,
                                          .default = respondent_work_2019)) %>%
-                        mutate(respondent_leisure_2019 = case_when(respondent_leisure_2019 == 0 ~ 0.1,
+                        mutate(respondent_leisure_2019 = case_when(respondent_leisure_2019 == 0 ~ 0.01,
                                          .default = respondent_leisure_2019)) %>%
         filter(!is.na(RiskyCarefulAtt)) %>%
         filter(respondent_work_2019 > -1000) %>%
-        filter(respondent_work_2019 < 200) %>%
+        filter(respondent_work_2019 < 100) %>%
         filter(respondent_leisure_2019 > -1000) %>%
-        filter(respondent_leisure_2019 < 200)) +
-geom_jitter(aes(x=respondent_work_2019, y = respondent_leisure_2019, color = RiskyCarefulAtt), alpha = 0.7,  size = 2) +
+        filter(respondent_leisure_2019 <= 50)) +
+#geom_smooth(aes(x=respondent_work_2019, y = respondent_leisure_2019, color = RiskyCarefulAtt, size = RiskyCarefulAtt), method = 'lm', alpha = 0.7, se = FALSE) +
+#geom_jitter(aes(x=respondent_work_2019, y = respondent_leisure_2019, color = RiskyCarefulAtt, size = RiskyCarefulAtt), alpha = 0.7) +
+geom_smooth(aes(x=(respondent_work_2019 - min(respondent_work_2019)) / (max(respondent_work_2019)-min(respondent_work_2019)),
+ y = (respondent_leisure_2019 - min(respondent_leisure_2019)) / (max(respondent_leisure_2019)-min(respondent_leisure_2019)), color = RiskyCarefulAtt, size = RiskyCarefulAtt), method = 'lm', se = FALSE) +
+geom_jitter(aes(x=(respondent_work_2019 - min(respondent_work_2019)) / (max(respondent_work_2019)-min(respondent_work_2019)),
+ y = (respondent_leisure_2019 - min(respondent_leisure_2019)) / (max(respondent_leisure_2019)-min(respondent_leisure_2019)), color = RiskyCarefulAtt, size = RiskyCarefulAtt), alpha = 0.7) +
 theme_minimal() + 
-scale_color_manual(values = palette2()) +
-theme(legend.position = "bottom") +
-scale_y_log10() +
-scale_x_log10() +
-xlab("Respondents' No. Of Work Contacts (2019)") +
-ylab("Respondents' No. Of Leisure Contacts (2019)") +
-theme(text = element_text(size = 30))
-
-ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>% 
-        filter(!is.na(RiskyCarefulAtt)) %>%
-        filter(respondent_work_rel_2019_2020 > -50) %>%
-        filter(respondent_work_rel_2019_2020 < 150) %>%
-        filter(respondent_leisure_rel_2019_2020 > -50) %>%
-        filter(respondent_leisure_rel_2019_2020 < 150)) +
-geom_jitter(aes(x=respondent_work_rel_2019_2020, y = respondent_leisure_rel_2019_2020, color = RiskyCarefulAtt), alpha = 0.7,  size = 2) +
-theme_minimal() + 
-scale_x_continuous(breaks = c(-25,0,25, 50,75, 100)) +
-scale_y_continuous(breaks = c(-25,0,25, 50,75, 100), limits = c(-25,100)) +
-scale_color_manual(values = palette2()) +
-theme(legend.position = "bottom") +
+scale_color_manual(values = palette()) +
+scale_size_manual(values=c(7,3))+
+theme(legend.position = "bottom", legend.title = element_blank()) +
 #scale_y_log10() +
 #scale_x_log10() +
-xlab("2020 Reduction Of Work Contacts [Percentage]") +
-ylab("2020 Reduction Of Leisure Contacts [Percentage]") +
+#scale_x_continuous(limits = c(0,100), breaks=c(0,20,40,60,80)) +
+#scale_y_continuous(limits = c(0,100), breaks=c(0,20,40,60,80)) +
+xlab("# Work Contacts (2019)") +
+ylab("# Leisure Contacts (2019)") +
 theme(text = element_text(size = 30))
 
-ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>% 
-        filter(!is.na(RiskyCarefulAtt)) %>%
-        filter(respondent_work_2019 - respondent_work_summer_2021 > -20) %>%
-        filter(respondent_work_2019 - respondent_work_summer_2021 < 100) %>%
-        filter(respondent_leisure_2019 - respondent_leisure_summer_2021 > -20) %>%
-        filter(respondent_leisure_2019 - respondent_leisure_summer_2021 < 100)) +
-geom_jitter(aes(x=respondent_work_2019 - respondent_work_summer_2021, y = respondent_leisure_2019 - respondent_leisure_summer_2021, color = RiskyCarefulAtt), alpha = 0.7,  size = 2) +
+ggsave("WorkvsLeisureContacts_AttitudeScore.pdf", dpi = 500, w = 9, h = 9)
+ggsave("WorkvsLeisureContacts_AttitudeScore.png", dpi = 500, w = 9, h = 9)
+
+
+palette <- function() {
+  c("#f1a340", "#998ec3")
+}
+
+options(scipen = 999)
+
+ggplot(data_reduced %>% filter(respondent_work_2019 > -1) %>% filter(respondent_leisure_2019 > -1) %>%
+        filter(respondent_work_2019 < 300) %>% filter(respondent_leisure_2019 < 500) %>%
+        filter(!is.na(RiskyCarefulAtt))) +
+geom_point(aes(x = respondent_work_2019, y = respondent_leisure_2019, color = RiskyCarefulAtt)) +
+#geom_jitter(aes(x=(respondent_work_2019 - min(respondent_work_2019)) / (max(respondent_work_2019)-min(respondent_work_2019)),
 theme_minimal() + 
-#scale_x_continuous(breaks = c(-25,0,25, 50,75, 100)) +
-#scale_y_continuous(breaks = c(-25,0,25, 50,75, 100), limits = c(-25,100)) +
-scale_color_manual(values = palette2()) +
-theme(legend.position = "bottom") +
+scale_color_manual(values = palette()) +
+scale_size_manual(values=c(7,3))+
+theme(legend.position = "bottom", legend.title = element_blank()) +
 #scale_y_log10() +
 #scale_x_log10() +
-xlab("Reduced Work Contacts by X") +
-ylab("Reduction Leisure Contacts by Y") +
+#scale_x_continuous(limits = c(0,100), breaks=c(0,20,40,60,80)) +
+#scale_y_continuous(limits = c(0,100), breaks=c(0,20,40,60,80)) +
+xlab("# Work Contacts (2019)") +
+ylab("# Leisure Contacts (2019)") +
 theme(text = element_text(size = 30))
 
+ggsave("WorkvsLeisureContacts_AttitudeScore.pdf", dpi = 500, w = 9, h = 9)
+ggsave("WorkvsLeisureContacts_AttitudeScore.png", dpi = 500, w = 9, h = 9)
+
+
+## 2019 Contacts vs Reduction [Percentage]
+
+timepointOfComparison <- c("respondent_work_rel_2019_2020", "respondent_work_rel_2019_2021", "respondent_work_rel_2019_2023",
+                          "respondent_leisure_rel_2019_2020", "respondent_leisure_rel_2019_2021", "respondent_leisure_rel_2019_2023")
+
+for (timepoint in timepointOfComparison){
+
+  if (timepoint == "respondent_work_rel_2019_2020"){
+    context <- "Work"
+    time <- "2020"
+    context2019 <- "respondent_work_2019"
+  } else if (timepoint == "respondent_work_rel_2019_2021"){
+    context <- "Work"
+    time <- "2021"
+    context2019 <- "respondent_work_2019"
+  } else if (timepoint == "respondent_work_rel_2019_2023"){
+    context <- "Work"
+    time <- "2023"
+    context2019 <- "respondent_work_2019"
+  } else if(timepoint == "respondent_leisure_rel_2019_2020"){
+    context <- "Leisure"
+    time <- "2020"
+    context2019 <- "respondent_leisure_2019" 
+  } else if(timepoint == "respondent_leisure_rel_2019_2021"){
+    context <- "Leisure"
+    time <- "2021"
+    context2019 <- "respondent_leisure_2019"
+  } else if(timepoint == "respondent_leisure_rel_2019_2023"){
+    context <- "Leisure"
+    time <- "2023"
+    context2019 <- "respondent_leisure_2019"
+  }
+
+  ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>%
+          filter(!is.na(RiskyCarefulAtt)) %>%
+          filter(!!sym(context2019) < 100) %>%
+          filter(!!sym(context2019) > -10) %>%
+          filter(!!sym(timepoint) > -25) %>%
+          filter(!!sym(timepoint) < 150)) +
+  geom_jitter(aes(x=!!sym(context2019), y = !!sym(timepoint), color = RiskyCarefulAtt, size = RiskyCarefulAtt), alpha = 0.7) +
+  theme_minimal() + 
+  scale_x_continuous(breaks = c(0, 20, 40, 60, 80, 100), limits = c(-2, 100)) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0, 20, 40, 60, 80, 100), limits = c(-2, 100)) +
+  scale_color_manual(values = palette()) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  #scale_y_log10() +
+  #scale_x_log10() +
+  xlab(paste0("# ", context , "Contacts (2019)")) +
+  scale_size_manual(values=c(8,3)) +
+  ylab(paste0(time, " Reduction Of ", context, " Contacts [Percentage]")) +
+  theme(text = element_text(size = 30)) +
+  theme(axis.ticks.x = element_line(),
+          axis.ticks.y = element_line(),
+          axis.ticks.length = unit(5, "pt"))
+
+  ggsave(paste0(context, "2019vsReduction", time, ".png"), dpi = 500, w = 12, h = 12)
+  ggsave(paste0(context, "2019vsReduction", time, ".pdf"), dpi = 500, w = 12, h = 12)
+}
+
+#2019 Contacts vs Reduction [Absolute]
+
+data_reduced <- data_reduced %>% mutate(
+        respondent_work_absred_2019_2020 = respondent_work_2019 - respondent_work_03_2020,
+        respondent_work_absred_2019_2021 = respondent_work_2019 - respondent_work_summer_2021,
+        respondent_work_absred_2019_2023 = respondent_work_2019 - respondent_work_01_2023,
+        respondent_leisure_absred_2019_2020 = respondent_leisure_2019 - respondent_leisure_03_2020,
+        respondent_leisure_absred_2019_2021 = respondent_leisure_2019 - respondent_leisure_summer_2021,
+        respondent_leisure_absred_2019_2023 = respondent_leisure_2019 - respondent_leisure_01_2023
+)
+
+timepointOfComparison <- c("respondent_work_absred_2019_2020", "respondent_work_absred_2019_2021", "respondent_work_absred_2019_2023",
+                            "respondent_leisure_absred_2019_2020", "respondent_leisure_absred_2019_2021", "respondent_leisure_absred_2019_2023")
+
+for (timepoint in timepointOfComparison){
+
+  if (timepoint == "respondent_work_absred_2019_2020"){
+    context <- "Work"
+    time <- "2020"
+    context2019 <- "respondent_work_2019"
+  } else if (timepoint == "respondent_work_absred_2019_2021"){
+    context <- "Work"
+    time <- "2021"
+    context2019 <- "respondent_work_2019"
+  } else if (timepoint == "respondent_work_absred_2019_2023"){
+    context <- "Work"
+    time <- "2023"
+    context2019 <- "respondent_work_2019"
+  } else if(timepoint == "respondent_leisure_absred_2019_2020"){
+    context <- "Leisure"
+    time <- "2020"
+    context2019 <- "respondent_leisure_2019" 
+  } else if(timepoint == "respondent_leisure_absred_2019_2021"){
+    context <- "Leisure"
+    time <- "2021"
+    context2019 <- "respondent_leisure_2019"
+  } else if(timepoint == "respondent_leisure_absred_2019_2023"){
+    context <- "Leisure"
+    time <- "2023"
+    context2019 <- "respondent_leisure_2019"
+  }
+
+  ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>%
+          filter(!is.na(RiskyCarefulAtt)) %>%
+          filter(!!sym(context2019) < 100) %>%
+          filter(!!sym(context2019) > -10) %>%
+          filter(!!sym(timepoint) > -25) %>%
+          filter(!!sym(timepoint) < 150)) +
+  geom_jitter(aes(x=!!sym(context2019), y = !!sym(timepoint), color = RiskyCarefulAtt, size = RiskyCarefulAtt), alpha = 0.7) +
+  theme_minimal() + 
+  scale_x_continuous(breaks = c(0, 20, 40, 60, 80, 100), limits = c(-2, 60)) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100), limits = c(-2, 60)) +
+  scale_color_manual(values = palette()) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  #scale_y_log10() +
+  #scale_x_log10() +
+  xlab(paste0("# ", context , "Contacts (2019)")) +
+  scale_size_manual(values=c(8,3)) +
+  ylab(paste0(time, " Reduction Of ", context, " Contacts [Absolute]")) +
+  theme(text = element_text(size = 30)) +
+  theme(axis.ticks.x = element_line(),
+          axis.ticks.y = element_line(),
+          axis.ticks.length = unit(5, "pt"))
+
+  ggsave(paste0(context, "2019vsAbsReduction", time, ".png"), dpi = 500, w = 12, h = 12)
+  ggsave(paste0(context, "2019vsAbsReduction", time, ".pdf"), dpi = 500, w = 12, h = 12)
+}
+
+data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
+                                        .default = as.Date(as.character(date_f1_inf)))) %>%
+                                filter(date_f1_inf != as.Date("1922-03-01")) %>%
+                                filter(date_f1_inf != as.Date("1965-06-12")) %>%
+                                filter(date_f1_inf != as.Date("2000-12-13")) %>%
+                                filter(date_f1_inf != as.Date("2019-12-21")) 
 
 p2 <- ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)), aes(date_f1_inf, color = RiskyCarefulAtt)) +
 stat_ecdf(geom="smooth", size = 2) +
@@ -138,18 +300,28 @@ guides(color = guide_legend(nrow = 2))
 ggsave("ECDF_AttCarefulnessScore.pdf", p2, dpi = 500, w = 9, h = 9)
 ggsave("ECDF_AttCarefulnessScore.png", p2, dpi = 500, w = 9, h = 9)
 
+
+RemainingAnswers <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(RemainingAnswers) <- c("RiskyCarefulAtt", "num_c19_infs_eng", "n", "percent")
+RemainingAnswers[nrow(RemainingAnswers)+1, ] <- c("Risk-tolerant", "Three Times", 0, 0)
+RemainingAnswers[nrow(RemainingAnswers)+1, ] <- c("Risk-tolerant", "More Than Three Times", 0, 0)
+RemainingAnswers[nrow(RemainingAnswers)+1, ] <- c("Risk-tolerant", "I Don't Want To Answer", 0, 0)
+RemainingAnswers$n <- as.integer(RemainingAnswers$n)
+RemainingAnswers$percent <- as.integer(RemainingAnswers$percent)
+
+
 p3 <- data_reduced %>%
   count(RiskyCarefulAtt, num_c19_infs_eng) %>%
-  mutate(percent = 100 * n / sum(n), .by = RiskyCarefulAtt) %>%
-  mutate(lci = case_when(RiskyCarefulAtt == "Risky" ~ n - 1.96*(n*(n-1)/39)^0.5,
-                          RiskyCarefulAtt == "Careful" ~ n - 1.96*(n*(n-1)/293)^0.5)) %>%#
-  mutate(lci = case_when(RiskyCarefulAtt == "Risky" ~ 100/39*lci,
-                         RiskyCarefulAtt == "Careful" ~ 100/293*lci)) %>%
-  mutate(uci = case_when(RiskyCarefulAtt == "Risky" ~ n + 1.96*(n*(n-1)/39)^0.5,
-                          RiskyCarefulAtt == "Careful" ~ n + 1.96*(n*(n-1)/293)^0.5)) %>%
-  mutate(uci = case_when(RiskyCarefulAtt == "Risky" ~ 100/39*uci,
-                          RiskyCarefulAtt == "Careful" ~ 100/293*uci)) %>%
-  filter(!is.na(RiskyCarefulAtt)) %>% filter(num_c19_infs_eng %in% c("Never", "Once", "Twice")) %>%
+  mutate(percent = 100 * n / sum(n), .by = RiskyCarefulAtt) %>% rbind(RemainingAnswers) %>%
+  mutate(lci = case_when(RiskyCarefulAtt == "Risk-tolerant" ~ n - 1.96*(n*(n-1)/43)^0.5,
+                          RiskyCarefulAtt == "Risk-averse" ~ n - 1.96*(n*(n-1)/350)^0.5)) %>%#
+  mutate(lci = case_when(RiskyCarefulAtt == "Risk-tolerant" ~ 100/43*lci,
+                         RiskyCarefulAtt == "Risk-averse" ~ 100/350*lci)) %>%
+  mutate(uci = case_when(RiskyCarefulAtt == "Risk-tolerant" ~ n + 1.96*(n*(n-1)/43)^0.5,
+                          RiskyCarefulAtt == "Risk-averse" ~ n + 1.96*(n*(n-1)/350)^0.5)) %>%
+  mutate(uci = case_when(RiskyCarefulAtt == "Risk-tolerant" ~ 100/43*uci,
+                          RiskyCarefulAtt == "Risk-averse" ~ 100/350*uci)) %>%
+  filter(!is.na(RiskyCarefulAtt)) %>% 
   ggplot(aes(num_c19_infs_eng, percent, fill = RiskyCarefulAtt)) +
   #geom_col(position = position_dodge(preserve = 'single')) +
   geom_bar(stat = "identity", position = "dodge", width = 0.8) +
@@ -172,7 +344,6 @@ patch <- (p3/p2) +  plot_annotation(tag_levels = "A")
 p4 <- p1  + plot_spacer() + patch + plot_layout(widths = c(13, 0.5, 4.5)) +  plot_annotation(tag_levels = "A") 
 ggsave("BoxplotNoInfectionsECDF_attitudeScore.pdf", p4, dpi = 500, w = 18, h = 14)
 ggsave("BoxplotNoInfectionsECDF_attitudeScore.png", p4, dpi = 500, w = 18, h = 14)
-
 
 
 # Did careful attitudes/behaviors result in less/later infections? --------
@@ -300,41 +471,6 @@ ggsave(paste0(attBeh, "_changeCC.pdf"), dpi = 500, w = 9, h = 9)
 ggsave(paste0(attBeh, "_changeCC.png"), dpi = 500, w = 9, h = 9)
 }
 
-comparedToAverage <- c("Risky", "Careful", "Neutral")
-
-data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
-                                        .default = as.Date(as.character(date_f1_inf)))) %>%
-                                filter(date_f1_inf != as.Date("1922-03-01")) %>%
-                                filter(date_f1_inf != as.Date("1965-06-12")) %>%
-                                filter(date_f1_inf != as.Date("2000-12-13")) %>%
-                                filter(date_f1_inf != as.Date("2019-12-21")) 
-
-summaryStats <- data.frame(matrix(nrow = 0, ncol = 10))
-colnames(summaryStats) <- c("attitude", "average", "min", "firstquartile", "median", "mean", "thirdquartile", "max", "numbersanswers", "numbernoinfections")
-class(summaryStats$min) <- "Date"
-class(summaryStats$firstquartile) <- "Date"
-class(summaryStats$median) <- "Date"
-class(summaryStats$mean) <- "Date"
-class(summaryStats$thirdquartile) <- "Date"
-class(summaryStats$max) <- "Date"
-for(attBeh in attitudesAndBehaviors){
-    for(avg in comparedToAverage){
-    data_reduced_filtered <- data_reduced %>% filter(!!sym(attBeh) == avg)
-    data_reduced_noInf <- data_reduced_filtered %>% filter(num_c19_infs == "Nie")
-    data_reduced_noInf <- nrow(data_reduced_noInf)
-    summaryStats[nrow(summaryStats) + 1, 1] <- attBeh
-    summaryStats[nrow(summaryStats), 2] <- avg
-    summaryStats[nrow(summaryStats), 3] <- min(reduced_data_filtered$date_f1_inf, na.rm=TRUE)
-    summaryStats[nrow(summaryStats), 4] <- unname(quantile(reduced_data_filtered$date_f1_inf, type=1, na.rm=TRUE))[2]
-    summaryStats[nrow(summaryStats), 5] <- unname(quantile(reduced_data_filtered$date_f1_inf, type=1, na.rm=TRUE))[3]
-    summaryStats[nrow(summaryStats), 6] <- mean(reduced_data_filtered$date_f1_inf, na.rm=TRUE)
-    summaryStats[nrow(summaryStats), 7] <- unname(quantile(reduced_data_filtered$date_f1_inf, type=1, na.rm=TRUE))[4]
-    summaryStats[nrow(summaryStats), 8] <- max(reduced_data_filtered$date_f1_inf, na.rm=TRUE)
-    summaryStats[nrow(summaryStats), 9] <- length(reduced_data_filtered$date_f1_inf)
-    summaryStats[nrow(summaryStats), 10] <- reduced_data_noInf
-    }
-}
-
 palette <- function() {
   c("#008083", "#FFBC42", "#fd5901")
 }
@@ -387,13 +523,13 @@ data_reduced %>% count(behaviorChangeScore)
 
 data_reduced$attitudeScore <- factor(data_reduced$attitudeScore)
 
-data_reduced <- data_reduced %>% mutate(RiskyCarefulAtt = case_when(attitudeScore %in% c(-9,-8,-7,-6,-5,-4,-3,-2,-1, 0,1,2,3) ~ "Risky",
-                                                                attitudeScore %in% c(4,5,6,7,8,9) ~ "Careful")) %>%
+data_reduced <- data_reduced %>% mutate(RiskyCarefulAtt = case_when(attitudeScore %in% c(-9,-8,-7,-6,-5,-4,-3,-2,-1, 0,1,2,3) ~ "Risk-tolerant",
+                                                                attitudeScore %in% c(4,5,6,7,8,9) ~ "Risk-averse")) %>%
                                 mutate(RiskyCarefulBeh = case_when(behaviorChangeScore %in% c(-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1) ~ "Risky",
-                                                                    behaviorChangeScore %in% c(14,13,12,11,10,9,8,7,6,5,4,3,2,1) ~ "Careful"))
+                                                                    behaviorChangeScore %in% c(14,13,12,11,10,9,8,7,6,5,4,3,2,1) ~ "Risk-averse"))
 
-data_reduced$RiskyCarefulAtt <- factor(data_reduced$RiskyCarefulAtt, levels = c("Risky", "Careful"))
-data_reduced$RiskyCarefulBeh <- factor(data_reduced$RiskyCarefulBeh, levels = c("Risky", "Careful"))
+data_reduced$RiskyCarefulAtt <- factor(data_reduced$RiskyCarefulAtt, levels = c("Risk-tolerant", "Risk-averse"))
+data_reduced$RiskyCarefulBeh <- factor(data_reduced$RiskyCarefulBeh, levels = c("Risk-tolerant", "Risk-averse"))
 
 
 data_reduced %>% count(RiskyCarefulAtt)
@@ -499,27 +635,4 @@ guides(color = guide_legend(nrow = 2))
 
 ggsave(paste0(attBeh, ".pdf"), dpi = 500, w = 14, h = 4.5)
 ggsave(paste0(attBeh, ".png"), dpi = 500, w = 14, h = 4.5)
-}
-
-
-data_reduced <- data_reduced %>% mutate(noInfInt = case_when(num_c19_infs == "Nie" ~ 0,
-                                                            num_c19_infs == "Einmal" ~ 1,
-                                                            num_c19_infs == "Zweimal" ~ 2,
-                                                            num_c19_infs == "Dreimal" ~ 3,
-                                                            num_c19_infs == "Mehr als dreimal" ~ 4))
-
-summaryStats <- data.frame(matrix(nrow = 0, ncol = 8))
-colnames(summaryStats) <- c("attitude", "average", "min", "firstquartile", "median", "mean", "thirdquartile", "max")
-for(attBeh in attitudesAndBehaviors){
-    for(avg in comparedToAverage){
-    data_reduced_filtered <- data_reduced %>% filter(!!sym(attBeh) == avg)
-    summaryStats[nrow(summaryStats) + 1, 1] <- attBeh
-    summaryStats[nrow(summaryStats), 2] <- avg
-    summaryStats[nrow(summaryStats), 3] <- min(data_reduced_filtered$noInfInt, na.rm=TRUE)
-    summaryStats[nrow(summaryStats), 4] <- unname(quantile(data_reduced_filtered$noInfInt, type=1, na.rm=TRUE))[2]
-    summaryStats[nrow(summaryStats), 5] <- unname(quantile(data_reduced_filtered$noInfInt, type=1, na.rm=TRUE))[3]
-    summaryStats[nrow(summaryStats), 6] <- mean(data_reduced_filtered$noInfInt, na.rm=TRUE)
-    summaryStats[nrow(summaryStats), 7] <- unname(quantile(data_reduced_filtered$noInfInt, type=1, na.rm=TRUE))[4]
-    summaryStats[nrow(summaryStats), 8] <- max(data_reduced_filtered$noInfInt, na.rm=TRUE)
-    }
 }
