@@ -19,14 +19,14 @@ data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_in
                                 filter(date_f1_inf != as.Date("2000-12-13")) %>%
                                 filter(date_f1_inf != as.Date("2019-12-21")) 
 
-data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "Never",
-                                                                    num_c19_infs == "Einmal" ~ "Once",
-                                                                    num_c19_infs == "Zweimal" ~ "Twice",
-                                                                    num_c19_infs == "Dreimal" ~ "Three Times",
-                                                                    num_c19_infs == "Mehr als dreimal" ~ "More Than Three Times",
+data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "0",
+                                                                    num_c19_infs == "Einmal" ~ "1",
+                                                                    num_c19_infs == "Zweimal" ~ "2",
+                                                                    num_c19_infs == "Dreimal" ~ "3+",
+                                                                    num_c19_infs == "Mehr als dreimal" ~ "3+",
                                                                     num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
 
-data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
+data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("0", "1", "2", "3+", "I Don't Want To Answer"))
 
 data_reduced <- data_reduced %>% mutate(cond_hbp  = case_when(cond_hbp == "Ja" ~ "Yes",
                                 cond_hbp == "Nicht Gewählt" ~ "No")) %>% 
@@ -56,6 +56,8 @@ data_reduced$cond_none <- factor(data_reduced$cond_none, levels = c("No Comorbid
 
 comorbidities <- c("cond_hbp", "cond_diabetes", "cond_cardio", "cond_resp",
                     "cond_immuno", "cond_cancer", "cond_post_c19", "cond_none")
+
+
 
 data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(cond_hbp  = case_when(cond_hbp == "Ja" ~ "Yes",
                                 cond_hbp == "Nicht Gewählt" ~ "No")) %>% 
@@ -116,129 +118,129 @@ for (com in comorbidities){
     ggsave(paste0("CollectionViolinplots_", com, ".pdf"), p1,  dpi = 500, w = 22, h = 9)
     ggsave(paste0("CollectionViolinplots_", com, ".png"), p1, dpi = 500, w = 22, h = 9)
 
-  #   p2 <- ggplot(data_reduced %>% filter(!is.na(!!sym(com))), aes(date_f1_inf, color = !!sym(com))) +
-  #   stat_ecdf(geom="smooth", size = 2) +
-  #   theme_minimal() +
-  #   ylab("Empirical Cumulative \n Density Function") +
-  #   xlab("Date Of First Infection") +
-  #   coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01")), ylim=c(0, 0.75)) +
-  #   theme(text = element_text(size = 30)) +
-  #   theme(legend.position = "none") +
-  #   #labs(color = "Comorbidity") +
-  #   guides(color = guide_legend(nrow = 2)) +
-  #   scale_color_manual(values = palette())
+    p2 <- ggplot(data_reduced %>% filter(!is.na(!!sym(com))), aes(date_f1_inf, color = !!sym(com))) +
+    stat_ecdf(geom="smooth", size = 2) +
+    theme_minimal() +
+    ylab("Empirical Cumulative \n Density Function") +
+    xlab("Date Of First Infection") +
+    coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01")), ylim=c(0, 0.75)) +
+    theme(text = element_text(size = 30)) +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+    #labs(color = "Comorbidity") +
+    #guides(color = guide_legend(nrow = 2)) +
+    scale_color_manual(values = palette())
 
-  #   ggsave(paste0("TimingOfInfection_", com, ".pdf"), p2, dpi = 500, w = 9, h = 9)
-  #   ggsave(paste0("TimingOfInfection_", com, ".png"), p2, dpi = 500, w = 9, h = 9)
+     ggsave(paste0("TimingOfInfection_", com, ".pdf"), p2, dpi = 500, w = 9, h = 9)
+     ggsave(paste0("TimingOfInfection_", com, ".png"), p2, dpi = 500, w = 9, h = 9)
 
-  #   if(com == "cond_hbp"){
-  #     yes <- 149
-  #     no <- 119
-  #   }else if(com == "cond_diabetes"){
-  #     yes <- 27
-  #     no <- 241
-  #   }else if(com == "cond_cardio"){
-  #     yes <- 25
-  #     no <- 243
-  #   }else if(com == "cond_resp"){
-  #     yes <- 84
-  #     no <- 184
-  #   }else if(com == "cond_immuno"){
-  #     yes <- 24
-  #     no <- 244
-  #   }else if(com == "cond_cancer"){
-  #     yes <- 11
-  #     no <- 257
-  #   }else if(com == "cond_post_c19"){
-  #     yes <- 33
-  #     no <- 235
-  #   }else if(com == "cond_none"){
-  #     yes <- 590
-  #     no <- 268
-  #   }
+    if(com == "cond_hbp"){
+      yes <- 149
+      no <- 119
+    }else if(com == "cond_diabetes"){
+      yes <- 27
+      no <- 241
+    }else if(com == "cond_cardio"){
+      yes <- 25
+      no <- 243
+    }else if(com == "cond_resp"){
+      yes <- 84
+      no <- 184
+    }else if(com == "cond_immuno"){
+      yes <- 24
+      no <- 244
+    }else if(com == "cond_cancer"){
+      yes <- 11
+      no <- 257
+    }else if(com == "cond_post_c19"){
+      yes <- 33
+      no <- 235
+    }else if(com == "cond_none"){
+      yes <- 590
+      no <- 268
+    }
 
-  # data <- data.frame(matrix(nrow = 0, ncol = 4))
-  # if(com=="cond_hbp"){
-  #   colnames(data) <- c("cond_hbp", "num_c19_infs_eng", "n", "percent")
-  #   data[nrow(data)+1,] <- c("No", "Three Times", 0, 0)
-  #   data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0, 0)
-  #   data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0, 0)
-  # } else if(com=="cond_diabetes"){
-  #   colnames(data) <- c("cond_diabetes", "num_c19_infs_eng", "n", "percent")
-  #   data[nrow(data)+1,] <- c("Yes", "Three Times", 0, 0)
-  #   data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0, 0)
-  #   data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0, 0)
-  # } else if(com=="cond_cardio"){
-  #   colnames(data) <- c("cond_cardio", "num_c19_infs_eng", "n", "percent")
-  #   data[nrow(data)+1,] <- c("Yes", "Twice", 0,0)
-  #   data[nrow(data)+1,] <- c("No", "Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0,0)
-  # } else if(com=="cond_resp"){
-  #   colnames(data) <- c("cond_resp", "num_c19_infs_eng", "n", "percent")
-  #   data[nrow(data)+1,] <- c("Yes", "Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("No", "I Don't Want To Answer", 0,0)
-  # } else if(com=="cond_immuno"){
-  #   colnames(data) <- c("cond_immuno", "num_c19_infs_eng", "n", "percent")
-  #   data[nrow(data)+1,] <- c("Yes", "Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0,0)
-  # } else if(com=="cond_cancer"){
-  #   colnames(data) <- c("cond_cancer", "num_c19_infs_eng", "n", "percent")
-  #   data[nrow(data)+1,] <- c("Yes", "Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0,0)
-  # } else if(com == "cond_post_c19"){
-  #   colnames(data) <- c("cond_post_c19", "num_c19_infs_eng", "n", "percent")
-  #   data[nrow(data)+1,] <- c("Yes", "Never", 0,0)
-  #   data[nrow(data)+1,] <- c("Yes", "Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("No", "More Than Three Times", 0,0)
-  #   data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0,0)
-  # } else if(com=="cond_none"){
-  #   colnames(data) <- c("cond_none", "num_c19_infs_eng", "n", "percent")
-  #   data[nrow(data)+1,] <- c("No Comorbidities", "I Don't Want To Answer", 0,0)
-  # }
-  # data$n <- as.integer(data$n)
-  # data$percent <- as.integer(data$percent)
+  data <- data.frame(matrix(nrow = 0, ncol = 4))
+  if(com=="cond_hbp"){
+    colnames(data) <- c("cond_hbp", "num_c19_infs_eng", "n", "percent")
+    data[nrow(data)+1,] <- c("No", "Three Times", 0, 0)
+    data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0, 0)
+    data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0, 0)
+  } else if(com=="cond_diabetes"){
+    colnames(data) <- c("cond_diabetes", "num_c19_infs_eng", "n", "percent")
+    data[nrow(data)+1,] <- c("Yes", "Three Times", 0, 0)
+    data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0, 0)
+    data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0, 0)
+  } else if(com=="cond_cardio"){
+    colnames(data) <- c("cond_cardio", "num_c19_infs_eng", "n", "percent")
+    data[nrow(data)+1,] <- c("Yes", "Twice", 0,0)
+    data[nrow(data)+1,] <- c("No", "Three Times", 0,0)
+    data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0,0)
+    data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0,0)
+  } else if(com=="cond_resp"){
+    colnames(data) <- c("cond_resp", "num_c19_infs_eng", "n", "percent")
+    data[nrow(data)+1,] <- c("Yes", "Three Times", 0,0)
+    data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0,0)
+    data[nrow(data)+1,] <- c("No", "I Don't Want To Answer", 0,0)
+  } else if(com=="cond_immuno"){
+    colnames(data) <- c("cond_immuno", "num_c19_infs_eng", "n", "percent")
+    data[nrow(data)+1,] <- c("Yes", "Three Times", 0,0)
+    data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0,0)
+    data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0,0)
+  } else if(com=="cond_cancer"){
+    colnames(data) <- c("cond_cancer", "num_c19_infs_eng", "n", "percent")
+    data[nrow(data)+1,] <- c("Yes", "Three Times", 0,0)
+    data[nrow(data)+1,] <- c("Yes", "More Than Three Times", 0,0)
+    data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0,0)
+  } else if(com == "cond_post_c19"){
+    colnames(data) <- c("cond_post_c19", "num_c19_infs_eng", "n", "percent")
+    data[nrow(data)+1,] <- c("Yes", "Never", 0,0)
+    data[nrow(data)+1,] <- c("Yes", "Three Times", 0,0)
+    data[nrow(data)+1,] <- c("No", "More Than Three Times", 0,0)
+    data[nrow(data)+1,] <- c("Yes", "I Don't Want To Answer", 0,0)
+  } else if(com=="cond_none"){
+    colnames(data) <- c("cond_none", "num_c19_infs_eng", "n", "percent")
+    data[nrow(data)+1,] <- c("No Comorbidities", "I Don't Want To Answer", 0,0)
+  }
+  data$n <- as.integer(data$n)
+  data$percent <- as.integer(data$percent)
 
-  #   p3 <- data_reduced %>%
-  #   count(!!sym(com), num_c19_infs_eng) %>%
-  #   mutate(percent = 100 * n / sum(n), .by = !!sym(com)) %>% rbind(data) %>%
-  #   mutate(lci = case_when(!!sym(com) == "Yes" ~ n - 1.96*(n*(n-1)/yes)^0.5,
-  #                         !!sym(com) == "No" ~ n - 1.96*(n*(n-1)/no)^0.5,
-  #                         !!sym(com) == "No Comorbidities" ~ n - 1.96*(n*(n-1)/yes)^0.5,
-  #                         !!sym(com) == "Some Comorbidity" ~ n - 1.96*(n*(n-1)/no)^0.5)) %>%#
-  #   mutate(lci = case_when(!!sym(com) == "Yes" ~ 100/yes*lci,
-  #                        !!sym(com) == "No" ~ 100/no*lci,
-  #                        !!sym(com) == "No Comorbidities" ~ 100/yes*lci,
-  #                        !!sym(com) == "Some Comorbidity" ~ 100/no*lci)) %>%
-  #   mutate(uci = case_when(!!sym(com) == "Yes" ~ n + 1.96*(n*(n-1)/yes)^0.5,
-  #                         !!sym(com) == "No" ~ n + 1.96*(n*(n-1)/no)^0.5,
-  #                         !!sym(com) == "No Comorbidities" ~ n + 1.96*(n*(n-1)/yes)^0.5,
-  #                         !!sym(com) == "Some Comorbidity" ~ n + 1.96*(n*(n-1)/no)^0.5)) %>%
-  #   mutate(uci = case_when(!!sym(com) == "Yes" ~ 100/yes*uci,
-  #                         !!sym(com) == "No" ~ 100/no*uci,
-  #                         !!sym(com) == "No Comorbidities" ~ 100/yes*uci,
-  #                         !!sym(com) == "Some Comorbidity" ~ 100/no*uci)) %>%
-  #   filter(!is.na(!!sym(com))) %>% 
-  #   ggplot(aes(num_c19_infs_eng, percent, fill = !!sym(com))) +
-  #   geom_bar(stat = "identity", position = "dodge", width = 0.8) +
-  #   scale_x_discrete(limits = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer")) +
-  #   geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = !!sym(com)), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
-  #   theme_minimal() +
-  #   ylab("Share [Percentage]") +
-  #   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
-  #   xlab("") +
-  #   theme(text = element_text(size = 30)) +
-  #   theme(legend.position = "bottom") +
-  #   #labs(fill="Comorbidity") +
-  #   theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
-  #   scale_fill_manual(values = palette()) +
-  #   scale_color_manual(values = palette2())
+    p3 <- data_reduced %>%
+    filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
+    count(!!sym(com), num_c19_infs_eng) %>%
+    mutate(percent = 100 * n / sum(n), .by = !!sym(com)) %>% rbind(data) %>%
+    mutate(lci = case_when(!!sym(com) == "Yes" ~ n - 1.96*(n*(n-1)/yes)^0.5,
+                          !!sym(com) == "No" ~ n - 1.96*(n*(n-1)/no)^0.5,
+                          !!sym(com) == "No Comorbidities" ~ n - 1.96*(n*(n-1)/yes)^0.5,
+                          !!sym(com) == "Some Comorbidity" ~ n - 1.96*(n*(n-1)/no)^0.5)) %>%#
+    mutate(lci = case_when(!!sym(com) == "Yes" ~ 100/yes*lci,
+                         !!sym(com) == "No" ~ 100/no*lci,
+                         !!sym(com) == "No Comorbidities" ~ 100/yes*lci,
+                         !!sym(com) == "Some Comorbidity" ~ 100/no*lci)) %>%
+    mutate(uci = case_when(!!sym(com) == "Yes" ~ n + 1.96*(n*(n-1)/yes)^0.5,
+                          !!sym(com) == "No" ~ n + 1.96*(n*(n-1)/no)^0.5,
+                          !!sym(com) == "No Comorbidities" ~ n + 1.96*(n*(n-1)/yes)^0.5,
+                          !!sym(com) == "Some Comorbidity" ~ n + 1.96*(n*(n-1)/no)^0.5)) %>%
+    mutate(uci = case_when(!!sym(com) == "Yes" ~ 100/yes*uci,
+                          !!sym(com) == "No" ~ 100/no*uci,
+                          !!sym(com) == "No Comorbidities" ~ 100/yes*uci,
+                          !!sym(com) == "Some Comorbidity" ~ 100/no*uci)) %>%
+    filter(!is.na(!!sym(com))) %>%
+    ggplot(aes(num_c19_infs_eng, percent, fill = !!sym(com))) +
+    geom_bar(stat = "identity", position = "dodge", width = 0.8) +
+    scale_x_discrete(limits = c("0", "1", "2", "3+")) +
+    geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = !!sym(com)), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+    theme_minimal() +
+    ylab("Share [Percentage]") +
+    scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
+    xlab("Number of Infections") +
+    theme(text = element_text(size = 30)) +
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+    #labs(fill="Comorbidity") +
+    scale_fill_manual(values = palette()) +
+    scale_color_manual(values = palette2())
 
-  #   ggsave(paste0("NumberOfInfection_", com, ".pdf"), p3, dpi = 500, w = 9, h = 9)
-  #   ggsave(paste0("NumberOfInfection_", com,".png"), p3, dpi = 500, w = 9, h = 9)
+    ggsave(paste0("NumberOfInfection_", com, ".pdf"), p3, dpi = 500, w = 9, h = 9)
+    ggsave(paste0("NumberOfInfection_", com,".png"), p3, dpi = 500, w = 9, h = 9)
 
 
   #patch <- (p3/p2) +  plot_annotation(tag_levels = "A")
