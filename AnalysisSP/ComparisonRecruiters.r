@@ -7,13 +7,14 @@ data_reduced <- read_csv(file = "/Users/sydney/Desktop/TwitterLimeSurvey/twitter
 
 # Gender ------------------------------------------------------------------
 
-GenderData <- data_reduced %>% select(gender, ref) %>% 
+GenderData <- data_reduced %>% select(gender, ref, origin) %>% 
 filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-mutate(ref = case_when(ref == "dec9d" ~ "Priesemann",
-                        ref ==  "6c8d7" ~ "CaleroValdez", 
-                        ref == "7b598" ~ "Franke", 
+mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                        ref == "4a76b" ~ "Bachmann",
                         ref == "008b5" ~ "Briest", 
-                        ref == "4a76b" ~ "Bachmann"))
+                        ref == "7b598" ~ "Franke", 
+                        ref == "6c8d7" ~ "CaleroValdez", 
+                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))
 
 GenderData <- GenderData %>% mutate(gender = case_when(gender == "Weiblich" ~ "female", 
                                                         gender == "Männlich" ~ "male",
@@ -36,7 +37,7 @@ GenderAdd$percent <- as.double(GenderAdd$percent)
 GenderPlot <- GenderData %>% group_by(ref) %>% count(gender) %>% mutate(percent = 100 * n / sum(n)) %>% 
 rbind(GenderAdd) %>%
 ggplot(aes(factor(gender, levels = c("female", "male", "diverse")), percent)) +
-  geom_bar(aes(fill=ref), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill=factor(ref, levels = c("Priesemann (Twitter)", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -50,19 +51,17 @@ ggplot(aes(factor(gender, levels = c("female", "male", "diverse")), percent)) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("Gender_Comparison.pdf", GenderPlot, dpi = 500, w = 9.5, h = 6)
-ggsave("Gender_Comparison.png", GenderPlot, dpi = 500, w = 9.5, h = 6)
-
 # Age ---------------------------------------------------------------------
 
-AgeData <- data_reduced %>% select(year_of_birth, ref) %>% mutate(age = 2023-year_of_birth) %>%
+AgeData <- data_reduced %>% select(year_of_birth, ref, origin) %>% mutate(age = 2023-year_of_birth) %>%
           mutate(age_bracket = case_when(age < 20 ~ "Below 20 (*)",
                                         age < 40 ~ "20-39",
                                         age < 60 ~ "40-59",
                                         age < 80 ~ "60-79",
                                         age < 100 ~ "80-99"))  %>%
             filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-            mutate(ref = case_when(ref == "dec9d" ~ "Priesemann",
+            mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
                         ref ==  "6c8d7" ~ "CaleroValdez", 
                         ref == "7b598" ~ "Franke", 
                         ref == "008b5" ~ "Briest", 
@@ -85,7 +84,7 @@ AgeAdd$percent <- as.double(AgeAdd$percent)
 AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% group_by(ref) %>% count(age_bracket) %>% 
             mutate(percent = 100 * n / sum(n)) %>% rbind(AgeAdd) %>%
 ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99")), percent)) +
-  geom_bar(aes(fill=ref), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill=factor(ref, levels = c("Priesemann (Twitter)", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
     theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -95,7 +94,7 @@ ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(text = element_text(size = 30)) +
-  theme(legend.position = "none", legend.title = element_blank()) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
@@ -104,9 +103,10 @@ ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-
 
 # The following section compares the household sizes for the survey, MuSPAD and the Federal Statistical Office
 
-HouseholdData <- data_reduced %>% select(ref, hsld_size_01_2023_) %>%
+HouseholdData <- data_reduced %>% select(ref, hsld_size_01_2023_, origin) %>%
             filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-            mutate(ref = case_when(ref == "dec9d" ~ "Priesemann",
+            mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
                         ref ==  "6c8d7" ~ "CaleroValdez", 
                         ref == "7b598" ~ "Franke", 
                         ref == "008b5" ~ "Briest", 
@@ -126,7 +126,7 @@ HouseholdAdd$percent <- as.double(HouseholdAdd$percent)
 HouseholdPlot <- HouseholdData %>% group_by(ref) %>% filter(!is.na(hsld_size_01_2023_ )) %>% 
                   count(hsld_size_01_2023_ ) %>% mutate(percent = 100 * n / sum(n)) %>% rbind(HouseholdAdd) %>%
  ggplot(aes(hsld_size_01_2023_ , percent)) +
-  geom_bar(aes(fill=ref), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill=factor(ref, levels = c("Priesemann (Twitter)", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -143,9 +143,10 @@ HouseholdPlot <- HouseholdData %>% group_by(ref) %>% filter(!is.na(hsld_size_01_
 
 # Children under 14 ------------------------------------------------------------------
 
-Children <- data_reduced %>% select(ref, total_hsld_size_persons_under_14) %>%
+Children <- data_reduced %>% select(ref, total_hsld_size_persons_under_14, origin) %>%
                         filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                        mutate(ref = case_when(ref == "dec9d" ~ "Priesemann",
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
                         ref ==  "6c8d7" ~ "CaleroValdez", 
                         ref == "7b598" ~ "Franke", 
                         ref == "008b5" ~ "Briest", 
@@ -171,7 +172,7 @@ ChildrenPlot <- Children %>% group_by(ref) %>% filter(!is.na(total_hsld_size_per
                   count(total_hsld_size_persons_under_14) %>% filter(!is.na(total_hsld_size_persons_under_14)) %>%
                   mutate(percent = 100 * n / sum(n)) %>% rbind(ChildrenAdd) %>%
 ggplot(aes(total_hsld_size_persons_under_14, percent)) +
-  geom_bar(aes(fill=ref), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill=factor(ref, levels = c("Priesemann (Twitter)", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -190,9 +191,10 @@ ggplot(aes(total_hsld_size_persons_under_14, percent)) +
 
 #Education 
 
-educationLevel <- data_reduced %>% select(highest_educational_qualification, ref) %>%
+educationLevel <- data_reduced %>% select(highest_educational_qualification, ref, origin) %>%
                         filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                        mutate(ref = case_when(ref == "dec9d" ~ "Priesemann",
+                    mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
                         ref ==  "6c8d7" ~ "CaleroValdez", 
                         ref == "7b598" ~ "Franke", 
                         ref == "008b5" ~ "Briest", 
@@ -218,7 +220,7 @@ EducationPlot <- educationLevel %>% group_by(ref) %>% filter(!is.na(highest_educ
             count(highest_educational_qualification) %>% 
             mutate(percent = 100 * n / sum(n)) %>% rbind(EducationAdd) %>%
 ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other/None")), percent)) +
-  geom_bar(aes(fill=ref), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill=factor(ref, levels = c("Priesemann (Twitter)", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -238,9 +240,10 @@ ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Educatio
 
 # To do: The following section needs to be updated once we've received the according data from MuSPAD
 
-currentOccupation <- data_reduced %>% select(ref, current_occupation) %>%
+currentOccupation <- data_reduced %>% select(ref, current_occupation, origin) %>%
                         filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                        mutate(ref = case_when(ref == "dec9d" ~ "Priesemann",
+                    mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
                         ref ==  "6c8d7" ~ "CaleroValdez", 
                         ref == "7b598" ~ "Franke", 
                         ref == "008b5" ~ "Briest", 
@@ -277,7 +280,7 @@ OccupationPlot <- currentOccupation %>% group_by(ref) %>% filter(!is.na(current_
             mutate(percent = 100 * n / sum(n)) %>% 
             rbind(OccupationAdd) %>%
 ggplot(aes(current_occupation, percent)) +
-  geom_bar(aes(fill=ref), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill=factor(ref, levels = c("Priesemann (Twitter)", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
