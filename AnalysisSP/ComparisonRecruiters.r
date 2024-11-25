@@ -5,16 +5,36 @@ library(ggpubr)
 
 data_reduced <- read_csv(file = "/Users/sydney/Desktop/TwitterLimeSurvey/twitter_data.csv")
 
+
+scenario <- "Twitter" #Alternative: "Twitter/Mastodon"
+
+if(scenario == "Twitter"){
+palette <- function() {
+  c("#fce9bb", "#ffe096", "#FFD269", "#fac548", "#ECA400")
+}
+}else if(scenario == "Twitter/Mastodon"){
+palette <- function() {
+  c("#fce9bb", "#006992")
+}
+}
+
+
 # Gender ------------------------------------------------------------------
 
-GenderData <- data_reduced %>% select(gender, ref, origin) %>% 
-filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
-                        ref == "4a76b" ~ "Bachmann",
-                        ref == "008b5" ~ "Briest", 
-                        ref == "7b598" ~ "Franke", 
-                        ref == "6c8d7" ~ "CaleroValdez", 
-                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))
+if(scenario == "Twitter"){
+    GenderData <- data_reduced %>% select(gender, ref, origin) %>% 
+    filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+    mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
+                            ref == "4a76b" ~ "Bachmann",
+                            ref == "008b5" ~ "Briest", 
+                            ref == "7b598" ~ "Franke", 
+                            ref == "6c8d7" ~ "CaleroValdez"))
+} else if (scenario == "Twitter/Mastodon"){
+    GenderData <- data_reduced %>% select(gender, ref, origin) %>% 
+    filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+    mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))    
+}
 
 GenderData <- GenderData %>% mutate(gender = case_when(gender == "Weiblich" ~ "female", 
                                                         gender == "Männlich" ~ "male",
@@ -53,19 +73,30 @@ ggplot(aes(factor(gender, levels = c("female", "male", "diverse")), percent)) +
 
 # Age ---------------------------------------------------------------------
 
-AgeData <- data_reduced %>% select(year_of_birth, ref, origin) %>% mutate(age = 2023-year_of_birth) %>%
-          mutate(age_bracket = case_when(age < 20 ~ "Below 20 (*)",
-                                        age < 40 ~ "20-39",
-                                        age < 60 ~ "40-59",
-                                        age < 80 ~ "60-79",
-                                        age < 100 ~ "80-99"))  %>%
-            filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-            mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
-                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
-                        ref ==  "6c8d7" ~ "CaleroValdez", 
-                        ref == "7b598" ~ "Franke", 
-                        ref == "008b5" ~ "Briest", 
-                        ref == "4a76b" ~ "Bachmann"))
+if(scenario == "Twitter"){
+    AgeData <- data_reduced %>% select(year_of_birth, ref, origin) %>% mutate(age = 2023-year_of_birth) %>%
+            mutate(age_bracket = case_when(age < 20 ~ "Below 20 (*)",
+                                            age < 40 ~ "20-39",
+                                            age < 60 ~ "40-59",
+                                            age < 80 ~ "60-79",
+                                            age < 100 ~ "80-99"))  %>%
+                filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
+                            ref ==  "6c8d7" ~ "CaleroValdez", 
+                            ref == "7b598" ~ "Franke", 
+                            ref == "008b5" ~ "Briest", 
+                            ref == "4a76b" ~ "Bachmann"))
+}else if(scenario == "Twitter/Mastodon"){
+    AgeData <- data_reduced %>% select(year_of_birth, ref, origin) %>% mutate(age = 2023-year_of_birth) %>%
+            mutate(age_bracket = case_when(age < 20 ~ "Below 20 (*)",
+                                            age < 40 ~ "20-39",
+                                            age < 60 ~ "40-59",
+                                            age < 80 ~ "60-79",
+                                            age < 100 ~ "80-99"))  %>%
+                filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))
+}
 
 AgeAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeAdd) <- c("ref", "age_bracket", "n", "percent")
@@ -103,14 +134,20 @@ ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-
 
 # The following section compares the household sizes for the survey, MuSPAD and the Federal Statistical Office
 
-HouseholdData <- data_reduced %>% select(ref, hsld_size_01_2023_, origin) %>%
-            filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-            mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
-                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
-                        ref ==  "6c8d7" ~ "CaleroValdez", 
-                        ref == "7b598" ~ "Franke", 
-                        ref == "008b5" ~ "Briest", 
-                        ref == "4a76b" ~ "Bachmann"))
+if(scenario == "Twitter"){
+    HouseholdData <- data_reduced %>% select(ref, hsld_size_01_2023_, origin) %>%
+                filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
+                            ref ==  "6c8d7" ~ "CaleroValdez", 
+                            ref == "7b598" ~ "Franke", 
+                            ref == "008b5" ~ "Briest", 
+                            ref == "4a76b" ~ "Bachmann"))
+}else if(scenario == "Twitter/Mastodon"){
+    HouseholdData <- data_reduced %>% select(ref, hsld_size_01_2023_, origin) %>%
+                filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))
+}
 
 HouseholdData <- HouseholdData %>% mutate(hsld_size_01_2023_ = case_when(hsld_size_01_2023_ == 1 ~ "1", hsld_size_01_2023_ == 2 ~ "2", hsld_size_01_2023_ == 3 ~ "3", hsld_size_01_2023_ == 4 ~ "4", hsld_size_01_2023_ >= 5 ~ "5+"))
 
@@ -143,10 +180,10 @@ HouseholdPlot <- HouseholdData %>% group_by(ref) %>% filter(!is.na(hsld_size_01_
 
 # Children under 14 ------------------------------------------------------------------
 
+if(scenario == "Twitter"){
 Children <- data_reduced %>% select(ref, total_hsld_size_persons_under_14, origin) %>%
                         filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
-                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
                         ref ==  "6c8d7" ~ "CaleroValdez", 
                         ref == "7b598" ~ "Franke", 
                         ref == "008b5" ~ "Briest", 
@@ -156,6 +193,17 @@ Children <- data_reduced %>% select(ref, total_hsld_size_persons_under_14, origi
                             total_hsld_size_persons_under_14  == 2 ~ "2",
                             total_hsld_size_persons_under_14  == 3 ~ "3+",
                             total_hsld_size_persons_under_14  == 4 ~ "3+"))
+}else if(scenario == "Twitter/Mastodon"){
+Children <- data_reduced %>% select(ref, total_hsld_size_persons_under_14, origin) %>%
+                        filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)")) %>%
+                            mutate(total_hsld_size_persons_under_14 = case_when(total_hsld_size_persons_under_14  == 0 ~ "0",
+                            total_hsld_size_persons_under_14  == 1 ~ "1",
+                            total_hsld_size_persons_under_14  == 2 ~ "2",
+                            total_hsld_size_persons_under_14  == 3 ~ "3+",
+                            total_hsld_size_persons_under_14  == 4 ~ "3+"))    
+}
 
 ChildrenAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(ChildrenAdd) <- c("ref", "total_hsld_size_persons_under_14", "n", "percent")
@@ -191,14 +239,20 @@ ggplot(aes(total_hsld_size_persons_under_14, percent)) +
 
 #Education 
 
-educationLevel <- data_reduced %>% select(highest_educational_qualification, ref, origin) %>%
-                        filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                    mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
-                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
-                        ref ==  "6c8d7" ~ "CaleroValdez", 
-                        ref == "7b598" ~ "Franke", 
-                        ref == "008b5" ~ "Briest", 
-                        ref == "4a76b" ~ "Bachmann"))
+if(scenario == "Twitter"){
+    educationLevel <- data_reduced %>% select(highest_educational_qualification, ref, origin) %>%
+                            filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
+                            ref ==  "6c8d7" ~ "CaleroValdez", 
+                            ref == "7b598" ~ "Franke", 
+                            ref == "008b5" ~ "Briest", 
+                            ref == "4a76b" ~ "Bachmann"))
+} else if(scenario == "Twitter/Mastodon"){
+    educationLevel <- data_reduced %>% select(highest_educational_qualification, ref, origin) %>%
+                            filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))    
+}
 
 educationLevel <- educationLevel %>% mutate(highest_educational_qualification = case_when(highest_educational_qualification == "Haupt-/ Volksschulabschluss" ~ "Certification\nafter 9 years",
                                                                                           highest_educational_qualification == "Realschulabschluss" ~ "Certification\nafter 10 years",
@@ -240,14 +294,20 @@ ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Educatio
 
 # To do: The following section needs to be updated once we've received the according data from MuSPAD
 
-currentOccupation <- data_reduced %>% select(ref, current_occupation, origin) %>%
-                        filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                    mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
-                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)",
-                        ref ==  "6c8d7" ~ "CaleroValdez", 
-                        ref == "7b598" ~ "Franke", 
-                        ref == "008b5" ~ "Briest", 
-                        ref == "4a76b" ~ "Bachmann"))
+if(scenario == "Twitter"){
+    currentOccupation <- data_reduced %>% select(ref, current_occupation, origin) %>%
+                            filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
+                            ref ==  "6c8d7" ~ "CaleroValdez", 
+                            ref == "7b598" ~ "Franke", 
+                            ref == "008b5" ~ "Briest", 
+                            ref == "4a76b" ~ "Bachmann"))
+}else if(scenario == "Twitter/Mastodon"){
+    currentOccupation <- data_reduced %>% select(ref, current_occupation, origin) %>%
+                            filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
+                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann (Twitter)",
+                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))
+}
 
 currentOccupation <- currentOccupation %>% mutate(current_occupation = case_when(current_occupation == "Ich bin in einem anderen Beruf tätig." ~ "Other",
                                                                                  current_occupation == "Ich bin als Lehrer:in oder Erzieher:in tätig." ~ "Teaching Sector", 
@@ -301,6 +361,11 @@ ggplot(aes(current_occupation, percent)) +
 
 ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2,font.label = list(size = 30), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("DemographicComparison_Recruiter.pdf", dpi = 500, w = 21, h = 24)
-ggsave("DemographicComparison_Recruiter.png", dpi = 500, w = 21, h = 24)
+if(scenario == "Twitter"){
+    ggsave("DemographicComparison_TwitterRecruiter.pdf", dpi = 500, w = 21, h = 24)
+    ggsave("DemographicComparison_TwitterRecruiter.png", dpi = 500, w = 21, h = 24)
+}else if(scenario == "Twitter/Mastodon"){
+    ggsave("DemographicComparison_TwvsMastRecruiter.pdf", dpi = 500, w = 21, h = 24)
+    ggsave("DemographicComparison_TwvsMastRecruiter.png", dpi = 500, w = 21, h = 24)
+}
 
