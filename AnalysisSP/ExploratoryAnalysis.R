@@ -106,7 +106,7 @@ data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   xlab("No. Of Infections") +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 0.5), breaks = c(0,12.5,25,37.5, 50,75,100)) +
   theme(text = element_text(size = 30)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
@@ -115,6 +115,86 @@ data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
 
 ggsave("NoInfections_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
 ggsave("NoInfections_Comparison.png", dpi = 500,  w = 9.5, h = 6)
+
+
+# Infection numbers (by recruiter)
+
+palette <- function() {
+  c("#fce9bb", "#ffe096", "#FFD269", "#fac548", "#ECA400", "#006992")
+}
+
+palette2 <- function() {
+  c("#FFD269", "#fac548", "#ECA400", "#c28700", "#8a640f", "#27476E")
+}
+
+
+#Priesemann
+InfectionsDataTwitter <- data.frame(matrix(nrow = 0, ncol = 5))
+colnames(InfectionsDataTwitter) <- c("num_c19_infs_eng", "n", "percent", "recruiter", "sum")
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 2120*(0.3030), 2120*(0.3030)/(2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390)), "Priesemann", 2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 2120*(0.5270), 2120*(0.5270)/(2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390)), "Priesemann", 2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 2120*(0.1390), 2120*(0.1390)/(2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390)), "Priesemann", 2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390))
+InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
+
+#Valdez
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 101*(0.1780), 101*(0.1780)/(101*(0.1780) + 101*(0.5740) + 101*(0.2180)), "CaleroValdez", 101*(0.1780) + 101*(0.5740) + 101*(0.2180))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 101*(0.5740), 101*(0.5740)/(101*(0.1780) + 101*(0.5740) + 101*(0.2180)), "CaleroValdez", 101*(0.1780) + 101*(0.5740) + 101*(0.2180))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 101*(0.2180), 101*(0.2180)/(101*(0.1780) + 101*(0.5740) + 101*(0.2180)), "CaleroValdez", 101*(0.1780) + 101*(0.5740) + 101*(0.2180))
+InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
+
+#Franke
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 111*(0.2610), 111*(0.2610)/(111*(0.2610) + 111*(0.5410) + 111*(0.1530)), "Franke", 111*(0.2610) + 111*(0.5410) + 111*(0.1530))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 111*(0.5410), 111*(0.5410)/(111*(0.2610) + 111*(0.5410) + 111*(0.1530)), "Franke", 111*(0.2610) + 111*(0.5410) + 111*(0.1530))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 111*(0.1530), 111*(0.1530)/(111*(0.2610) + 111*(0.5410) + 111*(0.1530)), "Franke", 111*(0.2610) + 111*(0.5410) + 111*(0.1530))
+InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
+
+#Briest
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 371*(0.2210), 371*(0.2210)/(371*(0.2210) + 371*(0.5690) + 371*(0.1640)), "Briest", 371*(0.2210) + 371*(0.5690) + 371*(0.1640))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 371*(0.5690), 371*(0.5690)/(371*(0.2210) + 371*(0.5690) + 371*(0.1640)), "Briest", 371*(0.2210) + 371*(0.5690) + 371*(0.1640))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 371*(0.1640), 371*(0.1640)/(371*(0.2210) + 371*(0.5690) + 371*(0.1640)), "Briest", 371*(0.2210) + 371*(0.5690) + 371*(0.1640))
+InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
+
+#Bachmann
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1667*(0.2520), 1667*(0.2520)/(1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930)), "Bachmann", 1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 1667*(0.5180), 1667*(0.5180)/(1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930)), "Bachmann", 1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 1667*(0.1930),  1667*(0.1930)/(1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930)), "Bachmann", 1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930))
+InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
+
+#Priesemann (Mastodon)
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1802*(0.37), 1802*(0.37)/(1802*(0.37) + 1802*(0.49) + 1802*(0.1200)), "Priesemann (Mastodon)", 1802*(0.37) + 1802*(0.49) + 1802*(0.1200))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 1802*(0.49), 1802*(0.49)/(1802*(0.37) + 1802*(0.49) + 1802*(0.1200)), "Priesemann (Mastodon)", 1802*(0.37) + 1802*(0.49) + 1802*(0.1200))
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 1802*(0.1200), 1802*(0.1200)/(1802*(0.37) + 1802*(0.49) + 1802*(0.1200)), "Priesemann (Mastodon)", 1802*(0.37) + 1802*(0.49) + 1802*(0.1200))
+InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
+
+InfectionsDataTwitter$n <- as.integer(InfectionsDataTwitter$n)
+InfectionsDataTwitter$percent <- as.double(InfectionsDataTwitter$percent)
+InfectionsDataTwitter$percent <- 100*(InfectionsDataTwitter$percent)
+InfectionsDataTwitter$sum <- as.double(InfectionsDataTwitter$sum)
+
+InfectionsDataTwitter %>% group_by(recruiter) %>%
+  mutate(lci = sum*(n/sum - 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
+  mutate(lci = 100/sum*lci) %>%
+  mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
+  mutate(uci = 100/sum*uci) %>%
+  ggplot(aes(num_c19_infs_eng, percent)) +
+  geom_bar(aes(fill=factor(recruiter, levels = c("Priesemann", "CaleroValdez", "Franke", "Briest", "Bachmann", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, colour = factor(recruiter, levels = c("Priesemann", "CaleroValdez", "Franke", "Briest", "Bachmann", "Priesemann (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  theme_minimal() +
+  #facet_wrap(~name, nrow=2) +
+  ylab("Share [Percentage]") +
+  xlab("No. Of Infections") +
+  scale_fill_manual(values = palette()) +
+  scale_color_manual(values = palette2()) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 0.5), breaks = c(0,12.5,25, 37.5, 50,75,100)) +
+  theme(text = element_text(size = 30)) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt")) +
+  guides(fill=guide_legend(nrow=2,byrow=TRUE))
+
+ggsave("NoInfections_Comparison_Recruiter.pdf", dpi = 500, w = 10, h = 7.5)
+ggsave("NoInfections_Comparison_Recruiter.png", dpi = 500,  w = 10, h = 7.5)
 
 
 # Vaccination Supplier ----------------------------------------------------
