@@ -13,14 +13,14 @@ data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_in
                                 filter(date_f1_inf != as.Date("2000-12-13")) %>%
                                 filter(date_f1_inf != as.Date("2019-12-21")) 
 
-data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "Never",
-                                                                    num_c19_infs == "Einmal" ~ "Once",
-                                                                    num_c19_infs == "Zweimal" ~ "Twice",
-                                                                    num_c19_infs == "Dreimal" ~ "Three Times",
-                                                                    num_c19_infs == "Mehr als dreimal" ~ "More Than Three Times",
+data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "0",
+                                                                    num_c19_infs == "Einmal" ~ "1",
+                                                                    num_c19_infs == "Zweimal" ~ "2",
+                                                                    num_c19_infs == "Dreimal" ~ "3+",
+                                                                    num_c19_infs == "Mehr als dreimal" ~ "3+",
                                                                     num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
 
-data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer"))
+data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("0", "1", "2", "3+", "I Don't Want To Answer"))
 
 
 # Detailed Analysis By Age ----------------------------------------------
@@ -35,7 +35,10 @@ palette <- function() {
   c("#542788", "#998ec3", "#d8daeb", "#fee0b6", "#f1a340", "#b35806")
 }
 
-p1 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% filter(value < 100) %>% filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)), aes(age_bracket, value)) +
+p1 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% 
+filter(value > -150) %>% filter(value < 100) %>% 
+filter(!is.na(age_bracket)) %>%
+ filter(!is.na(TypeOfContact)), aes(age_bracket, value)) +
   #geom_violin(aes(color = WhoseContacts), width = 1, trim = FALSE, position=position_dodge(0.9)) + 
   #geom_boxplot(aes(color = WhoseContacts), width = 0.1, position = position_dodge(0.9)) +
   geom_boxplot(aes(color = age_bracket), size = 1.3) +
@@ -68,8 +71,8 @@ palette2 <- function() {
 my_comparisons <- list(c("18-30", "30-40"), c("18-30", "40-50"), c("18-30", "50-60"), c("18-30", "60-70"), c("18-30", "70+"))
 
 ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
-filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Work", "Leisure")) %>%
-    filter(value > -50) %>% filter(value < 150) %>%  
+filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Leisure")) %>%
+    filter(value > -150) %>% filter(value < 100)  %>%
     filter(!is.na(TypeOfContact)), aes(age_bracket, value)) +
   geom_violin(aes(fill = age_bracket, color = age_bracket), scale = "area", trim = TRUE) + 
   stat_summary(aes(color=age_bracket), fun.data=mean_sdl, fun.args = list(mult=1), 
@@ -77,75 +80,70 @@ filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfC
   stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.2, label.y.npc = 0)+
   #geom_violin(aes(color=WhoseContacts), size = 1.3) +
   scale_fill_manual(values = palette()) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-50, 0,50, 100)) +
-  facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100,-50,0,50, 100)) +
+  facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette2()) +
-  ylab("Reduction Of Contacts [Percentage]") +
+  ylab("Change of No. of \n Contacts [in percent]") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggtitle("Leisure") +
   theme(text = element_text(size = 30)) +
   theme(panel.spacing.y = unit(3, "lines")) +
   theme(panel.spacing.x = unit(3, "lines")) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "bottom", legend.title = element_blank())
-
-ggsave("CollectionViolinplots_RemainingAgeGroups.pdf", dpi = 500, w = 27, h = 15)
-ggsave("CollectionViolinplots_RemainingAgeGroups.png", dpi = 500, w = 27, h = 15)
-
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE))
+ 
+ggsave("CollectionViolinplots_Leisure_AgeGroups.pdf", dpi = 500, w = 18, h = 9)
+ggsave("CollectionViolinplots_Leisure_AgeGroups.png", dpi = 500, w = 18, h = 9)
 
 data <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(data) <- c("age_bracket", "num_c19_infs_eng", "n", "percent")
-data[nrow(data)+1,] <- c("18-30", "I Don't Want To Answer", 0, 0)
-data[nrow(data)+1,] <- c("30-40", "More Than 3 Times", 0, 0)
-data[nrow(data)+1,] <- c("30-40", "I Don't Want To Answer", 0,0)
-data[nrow(data)+1,] <- c("60-70", "Three Times", 0,0)
-data[nrow(data)+1,] <- c("60-70", "More Than Three Times", 0,0)
-data[nrow(data)+1,] <- c("60-70", "I Don't Want To Answer", 0,0)
-data[nrow(data)+1,] <- c("70+", "Three Times", 0,0)
-data[nrow(data)+1,] <- c("70+", "More Than Three Times", 0,0)
-data[nrow(data)+1,] <- c("70+", "I Don't Want To Answer", 0,0)
+data[nrow(data)+1,] <- c("60-70", "3+", 0,0)
+data[nrow(data)+1,] <- c("70+", "3+", 0,0)
 data$n <- as.integer(data$n)
 data$percent <- as.integer(data$percent)
 
-p3 <- data_reduced %>% group_by(age_bracket)  %>%
-  count(num_c19_infs_eng) %>%
-  mutate(percent = 100 * n / sum(n)) %>% rbind(data) %>%
-  mutate(lci = case_when(age_bracket == "18-30" ~ n - 1.96*(n*(n-1)/30)^0.5,
-                          age_bracket == "30-40" ~ n - 1.96*(n*(n-1)/125)^0.5,
-                          age_bracket == "40-50" ~ n - 1.96*(n*(n-1)/291)^0.5,
-                          age_bracket == "50-60" ~ n - 1.96*(n*(n-1)/278)^0.5,
-                          age_bracket == "60-70" ~ n - 1.96*(n*(n-1)/110)^0.5,
-                          age_bracket == "70+" ~ n - 1.96*(n*(n-1)/20)^0.5)) %>%#
+p3 <- print(data_reduced %>% group_by(age_bracket)  %>%
+  count(num_c19_infs_eng) %>% 
+  filter(!is.na(age_bracket)) %>% 
+  filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
+  mutate(percent = 100 * n / sum(n)), n = 40) %>%
+  mutate(lci = case_when(age_bracket == "18-30" ~ 30*(n/30 - 1.96*(((n/30*(1-n/30))/30)^0.5)),
+                          age_bracket == "30-40" ~ 125*(n/125 - 1.96*(((n/125*(1-n/125))/125)^0.5)),
+                          age_bracket == "40-50" ~ 291*(n/291 - 1.96*(((n/291*(1-n/291))/291)^0.5)),
+                          age_bracket == "50-60" ~ 275*(n/275 - 1.96*(((n/275*(1-n/275))/275)^0.5)),
+                          age_bracket == "60-70" ~ 109*(n/109 - 1.96*(((n/109*(1-n/109))/109)^0.5)),
+                          age_bracket == "70+" ~ 20*(n/20 - 1.96*(((n/20*(1-n/20))/20)^0.5)))) %>%#
   mutate(lci = case_when(age_bracket == "18-30" ~ 100/30*lci,
                          age_bracket == "30-40" ~ 100/125*lci,
                          age_bracket == "40-50" ~ 100/291*lci,
-                         age_bracket == "50-60" ~ 100/278*lci,
-                         age_bracket == "60-70" ~ 100/110*lci,
+                         age_bracket == "50-60" ~ 100/275*lci,
+                         age_bracket == "60-70" ~ 100/109*lci,
                          age_bracket == "70+" ~ 100/20*lci)) %>%
-  mutate(uci = case_when(age_bracket == "18-30" ~ n + 1.96*(n*(n-1)/30)^0.5,
-                          age_bracket == "30-40" ~ n + 1.96*(n*(n-1)/125)^0.5,
-                          age_bracket == "40-50" ~ n + 1.96*(n*(n-1)/291)^0.5,
-                          age_bracket == "50-60" ~ n + 1.96*(n*(n-1)/278)^0.5,
-                          age_bracket == "60-70" ~ n + 1.96*(n*(n-1)/110)^0.5,
-                          age_bracket == "70+" ~ n + 1.96*(n*(n-1)/20)^0.5)) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = case_when(age_bracket == "18-30" ~ 30*(n/30 + 1.96*(((n/30*(1-n/30))/30)^0.5)),
+                          age_bracket == "30-40" ~ 125*(n/125 + 1.96*(((n/125*(1-n/125))/125)^0.5)),
+                          age_bracket == "40-50" ~ 291*(n/291 + 1.96*(((n/291*(1-n/291))/291)^0.5)),
+                          age_bracket == "50-60" ~ 275*(n/275 + 1.96*(((n/275*(1-n/275))/275)^0.5)),
+                          age_bracket == "60-70" ~ 109*(n/109 + 1.96*(((n/109*(1-n/109))/109)^0.5)),
+                          age_bracket == "70+" ~ 20*(n/20 + 1.96*(((n/20*(1-n/20))/20)^0.5)))) %>%
   mutate(uci = case_when(age_bracket == "18-30" ~ 100/30*uci,
                           age_bracket == "30-40" ~ 100/125*uci,
                           age_bracket == "40-50" ~ 100/291*uci,
-                          age_bracket == "50-60" ~ 100/278*uci,
-                          age_bracket == "60-70" ~ 100/110*uci,
+                          age_bracket == "50-60" ~ 100/275*uci,
+                          age_bracket == "60-70" ~ 100/109*uci,
                           age_bracket == "70+" ~ 100/20*uci)) %>%
-  filter(!is.na(age_bracket)) %>% 
   ggplot(aes(num_c19_infs_eng, percent, fill = age_bracket)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.8) +
-  scale_x_discrete(limits = c("Never", "Once", "Twice", "Three Times", "More Than Three Times", "I Don't Want To Answer")) +
+  scale_x_discrete(limits = c("0", "1", "2", "3+")) +
   geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
-  ylab("Share [Percentage]") +
+  ylab("Share [in percent]") +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
   xlab("") +
   theme(text = element_text(size = 30)) +
-  theme(legend.position = "none") +
-  labs(fill="Age Group") +
-  theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2())
 
@@ -159,8 +157,7 @@ ylab("Empirical Cumulative \n Density Function") +
 xlab("Date Of First Infection") +
 coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01")), ylim=c(0, 0.75)) +
 theme(text = element_text(size = 30)) +
-theme(legend.position = "none") +
-#labs(color="Age Group") +
+theme(legend.position = "bottom", legend.title = element_blank()) +
 guides(color = guide_legend(nrow = 2)) +
 scale_color_manual(values = palette())
 
