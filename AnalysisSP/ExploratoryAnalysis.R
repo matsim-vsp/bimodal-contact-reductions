@@ -120,11 +120,10 @@ ggsave("NoInfections_Comparison.png", dpi = 500,  w = 9.5, h = 6)
 # Infection numbers (by recruiter)
 
 palette <- function() {
-  c("#fce9bb", "#ffe096", "#FFD269", "#fac548", "#ECA400", "#006992")
+  c("#ffe6ab", "#FFD269", "#fac548", "#ECA400", "#ad8500", "#006992")
 }
-
 palette2 <- function() {
-  c("#FFD269", "#fac548", "#ECA400", "#c28700", "#8a640f", "#27476E")
+  c("#FFD269", "#fac548", "#ECA400", "#ad8500", "#6b5200", "#27476E")
 }
 
 
@@ -857,6 +856,7 @@ currentOccupation <- currentOccupation %>% mutate(current_occupation = case_when
 
 OccupationMuSPAD <- MuSPAD_s22_new %>% count(employment) %>% filter(employment != "") %>%
                     mutate(employment = case_when(employment == "Andere (z.B. Elternzeit, Sabbatical)" ~ "Other",
+                                                  employment == "Mutterschafts-, Erziehungsurlaub, Elternzeit oder sonstige Beurlaubung" ~ "Other",
                                                   employment == "Ich bin Rentner:In oder Pensionär:In" ~ "Retired",
                                                   employment == "Ich bin Rentner:in oder Pensionär:in." ~ "Retired",
                                                   employment == "Ich bin als Lehrer:In oder Erzieher:In tätig" ~ "Teaching Sector",
@@ -871,7 +871,6 @@ OccupationMuSPAD <- MuSPAD_s22_new %>% count(employment) %>% filter(employment !
                                                   employment == "Ich bin in einem medizinischen oder pflegerischen Beruf bei einem Gesundheitsversorger tätig." ~ "Medical Sector")) %>%
                                                   group_by(employment) %>% summarise(n = sum(n))
 
-#Where to put "Mutterschafts-, Erziehungsurlaub, Elternzeit oder sonstige Beurlaubung" ??
 
 OccupationDataMuspad <- data.frame(matrix(nrow = 0, ncol = 4))
 OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Other", (OccupationMuSPAD %>% filter(employment == "Other"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Other"))$n/sum(OccupationMuSPAD$n), "MuSPAD")
