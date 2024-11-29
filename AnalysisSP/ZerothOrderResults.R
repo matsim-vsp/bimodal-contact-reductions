@@ -119,7 +119,7 @@ palette2 <- function() {
   c("Respondent", "Closest Contact (During-Covid)"))
 
 p1_zeroth_order_percred_all <- ggplot(data_reduced_tidy_rel %>%  
-    filter((TypeOfContact %in% c("Work"))) %>% 
+    filter((TypeOfContact %in% c("Leisure"))) %>% 
     filter(!is.na(value)) %>%
        filter(value > -150) %>% filter(value < 100) %>%    
     filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
@@ -134,20 +134,20 @@ p1_zeroth_order_percred_all <- ggplot(data_reduced_tidy_rel %>%
   facet_wrap(~time) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Work") +
-  ylab("Change of No. of \n Work Contacts (in percent)") +
+  ggtitle("Leisure") +
+  ylab("Change of No. of \n Leisure Contacts (in percent)") +
   theme(text = element_text(size = 30)) +
   theme(panel.spacing.y = unit(3, "lines")) +
   theme(panel.spacing.x = unit(3, "lines")) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
-          theme(axis.ticks.x = element_line(size = 3, colour = "red"), 
-                   axis.ticks.y = element_line(size = 3, colour = "blue"),
+      theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
                    axis.ticks.length = unit(20, "pt"))
 
-ggsave("CollectionViolinplots_Work_All.pdf", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 9)
-ggsave("CollectionViolinplots_Work_All.png", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 9)
+ggsave("CollectionViolinplots_Leisure_All.pdf", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 9)
+ggsave("CollectionViolinplots_Leisure_All.png", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 9)
 
 
 ## ECDF 
