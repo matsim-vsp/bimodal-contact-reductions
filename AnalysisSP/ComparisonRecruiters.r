@@ -79,7 +79,7 @@ ggplot(aes(gender, percent)) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
-  ylab("Share [Percentage]") +
+  ylab("Share (Percentage)") +
   xlab("Gender") +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
@@ -153,7 +153,7 @@ ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-
     theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
   ylab("") +
-  #ylab("Share [Percentage]") +
+  #ylab("Share (Percentage)") +
   xlab("Age Bracket (2023)") +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
@@ -213,8 +213,8 @@ HouseholdPlot <- HouseholdData %>% filter(!is.na(ref))  %>% group_by(ref) %>% fi
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
   #ylab("") +
-  ylab("Share [Percentage]") +
-  xlab("Household size [# Members]") +
+  ylab("Share (Percentage)") +
+  xlab("Household size (# Members)") +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
@@ -282,7 +282,7 @@ ggplot(aes(total_hsld_size_persons_under_14, percent)) +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
   ylab("") +
-  #ylab("Share [Percentage]") +
+  #ylab("Share (Percentage)") +
   xlab("Children Under 14") +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
@@ -348,7 +348,7 @@ ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Educatio
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
   #ylab("") +
-  ylab("Share [Percentage]") +
+  ylab("Share (Percentage)") +
   xlab("Education") +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
