@@ -231,7 +231,7 @@ vaccinationData <- vaccinationData %>% mutate(Impfserie = case_when(name == "c19
                                                                     name == "c19_vaccination_details_vaccine_dose_3" ~ "3",
                                                                     name == "c19_vaccination_details_vaccine_dose_4" ~ "4"))
 vaccinationData$Impfserie <- factor(vaccinationData$Impfserie, levels = c("1", "2", "3", "4"))
-vaccinationData <- vaccinationData %>% mutate(Source = "Survey")
+vaccinationData <- vaccinationData %>% mutate(Source = "External Survey (cutoff date: 08/30/23)")
 vaccinationData<- vaccinationData %>% select(Impfserie, value_eng, Source)
 
 # Compare to RKI vaccination data
@@ -393,28 +393,32 @@ vaccinationData$dose_4_received<- factor(vaccinationData$dose_4_received, levels
 
 vaccinationData <- vaccinationData %>% pivot_longer(cols=c(dose_1_received, dose_2_received, dose_3_received, dose_4_received)) %>%
                                       filter(value %in% c("Yes", "Not Vaccinated")) %>% 
-                                      mutate(Source = "Survey") %>%
+                                      mutate(Source = "External Survey \n(cutoff date: 08/30/23)") %>%
                                       mutate(name = case_when(name == "dose_1_received" ~ "Received 1 dose",
                                                               name == "dose_2_received" ~ "Received 2 doses",
                                                               name == "dose_3_received" ~ "Received 3 doses",
-                                                              name == "dose_4_received" ~ "Received 4 doses")) %>% count(name) %>% mutate(Source = "Survey") 
+                                                              name == "dose_4_received" ~ "Received 4 doses")) %>% count(name) %>% mutate(Source = "External Survey \n(cutoff date: 08/30/23)") 
 NotVacc <- data.frame(matrix(nrow = 0, ncol = 3))
 colnames(NotVacc) <- c("name", "n", "Source")
-NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 10 , "Survey")
+NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 10 , "External Survey \n(cutoff date: 08/30/23)")
 NotVacc$n <- as.double(NotVacc$n)                                                              
 
 vaccinationData <- rbind(vaccinationData, NotVacc)
 vaccinationData <- vaccinationData %>% mutate(percent = n/sum(n)) %>% select(name, percent, Source)
 
+
+Rki <- read_csv("https://raw.githubusercontent.com/robert-koch-institut/COVID-19-Impfungen_in_Deutschland/refs/heads/main/Archiv/2023-09-12_Deutschland_Impfquoten_COVID-19.csv") %>%
+       filter(Bundesland == "Deutschland")
 #RKI data: https://impfdashboard.de/ 
 RkiVacc <- data.frame(matrix(nrow = 0, ncol = 3))
 colnames(RkiVacc) <- c("name", "percent", "Source")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 0 doses", 13.5,"RKI")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 1 dose", 1.8,"RKI")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 2 doses", 12.5,"RKI")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 3 doses", 54.8,"RKI")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 4 doses", 18.2,"RKI")
-RkiVacc$percent <- as.double(RkiVacc$percent)/100
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 0 doses", 100-Rki$Impfquote_gesamt_min1,"RKI \n(cutoff date: 09/11/23)")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 1 dose", Rki$Impfquote_gesamt_min1-Rki$Impfquote_gesamt_gi,"RKI \n(cutoff date: 09/11/23)")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 2 doses", Rki$Impfquote_gesamt_gi-Rki$Impfquote_gesamt_boost1,"RKI \n(cutoff date: 09/11/23)")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 3 doses", Rki$Impfquote_gesamt_boost1-Rki$Impfquote_gesamt_boost2,"RKI \n(cutoff date: 09/11/23)")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 4 doses", Rki$Impfquote_gesamt_boost2,"RKI \n(cutoff date: 09/11/23)")
+RkiVacc$percent <- as.double(RkiVacc$percent)
+RkiVacc$percent <- RkiVacc$percent/100
 
 vaccinationData <- rbind(vaccinationData, RkiVacc)
 
@@ -453,7 +457,7 @@ MuSPADVacc <- MuSPADVacc %>% mutate(percent = n/sum(n)) %>% select(name, percent
 MuSPADVacc$percent <- as.double(MuSPADVacc$percent)
 vaccinationData <- rbind(vaccinationData, MuSPADVacc)
 
-vaccinationData$Source <- factor(vaccinationData$Source, levels = c("Survey", "MuSPAD", "RKI"))
+vaccinationData$Source <- factor(vaccinationData$Source, levels = c("External Survey \n(cutoff date: 08/30/23)", "MuSPAD", "RKI \n(cutoff date: 09/11/23)"))
 
 palette <- function() {
   c("#ECA400", "#52b7de", "#1d94c2", "#006992", "#27476E")
@@ -468,10 +472,13 @@ ggplot(vaccinationData, aes(x = Source,  y = percent, fill = name)) +
   xlab("") +
   ylab("Share (Percentage)") +
   scale_y_continuous(labels = scales::percent) +
-  guides(fill = guide_legend(nrow = 3))
+  guides(fill = guide_legend(nrow = 3)) + 
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt"))
 
-ggsave("NoVaccinations_Comparison.pdf", dpi = 500,  w = 9.5, h = 6)
-ggsave("NoVaccinations_Comparison.png", dpi = 500,  w = 9.5, h = 6)
+ggsave("NoVaccinations_Comparison.pdf", dpi = 500,  w = 12, h = 9)
+ggsave("NoVaccinations_Comparison.png", dpi = 500,  w = 12, h = 9)
 
 # Household Size ----------------------------------------------------
 
