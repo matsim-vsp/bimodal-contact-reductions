@@ -71,7 +71,7 @@ palette2 <- function() {
 my_comparisons <- list(c("18-30", "30-40"), c("18-30", "40-50"), c("18-30", "50-60"), c("18-30", "60-70"), c("18-30", "70+"))
 
 ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
-filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Leisure")) %>%
+filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Work")) %>%
     filter(value > -150) %>% filter(value < 100)  %>%
     filter(!is.na(TypeOfContact)), aes(age_bracket, value)) +
   geom_violin(aes(fill = age_bracket, color = age_bracket), scale = "area", trim = TRUE) + 
@@ -84,18 +84,21 @@ filter(!is.na(age_bracket)) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfC
   facet_wrap(~time) +
   theme_minimal() +
   scale_color_manual(values = palette2()) +
-  ylab("Change of No. of \n Contacts [in percent]") +
+  ylab("Change of No. of \n Contacts (in percent)") +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Leisure") +
+  ggtitle("Work") +
   theme(text = element_text(size = 30)) +
   theme(panel.spacing.y = unit(3, "lines")) +
   theme(panel.spacing.x = unit(3, "lines")) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
-  guides(fill=guide_legend(nrow=1,byrow=TRUE))
+  guides(fill=guide_legend(nrow=1,byrow=TRUE)) +
+      theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
+                   axis.ticks.length = unit(20, "pt"))
  
-ggsave("CollectionViolinplots_Leisure_AgeGroups.pdf", dpi = 500, w = 18, h = 9)
-ggsave("CollectionViolinplots_Leisure_AgeGroups.png", dpi = 500, w = 18, h = 9)
+ggsave("CollectionViolinplots_Work_AgeGroups.pdf", dpi = 500, w = 18, h = 9)
+ggsave("CollectionViolinplots_Work_AgeGroups.png", dpi = 500, w = 18, h = 9)
 
 data <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(data) <- c("age_bracket", "num_c19_infs_eng", "n", "percent")
@@ -104,11 +107,11 @@ data[nrow(data)+1,] <- c("70+", "3+", 0,0)
 data$n <- as.integer(data$n)
 data$percent <- as.integer(data$percent)
 
-p3 <- print(data_reduced %>% group_by(age_bracket)  %>%
+p3 <- data_reduced %>% group_by(age_bracket)  %>%
   count(num_c19_infs_eng) %>% 
   filter(!is.na(age_bracket)) %>% 
   filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
-  mutate(percent = 100 * n / sum(n)), n = 40) %>%
+  mutate(percent = 100 * n / sum(n)) %>%
   mutate(lci = case_when(age_bracket == "18-30" ~ 30*(n/30 - 1.96*(((n/30*(1-n/30))/30)^0.5)),
                           age_bracket == "30-40" ~ 125*(n/125 - 1.96*(((n/125*(1-n/125))/125)^0.5)),
                           age_bracket == "40-50" ~ 291*(n/291 - 1.96*(((n/291*(1-n/291))/291)^0.5)),
@@ -139,13 +142,16 @@ p3 <- print(data_reduced %>% group_by(age_bracket)  %>%
   scale_x_discrete(limits = c("0", "1", "2", "3+")) +
   geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = age_bracket), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
-  ylab("Share [in percent]") +
+  ylab("Share (in percent)") +
+  xlab("Number of Infections") +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
-  xlab("") +
   theme(text = element_text(size = 30)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   scale_fill_manual(values = palette()) +
-  scale_color_manual(values = palette2())
+  scale_color_manual(values = palette2()) +
+      theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
+                   axis.ticks.length = unit(20, "pt"))
 
 ggsave("NoInfections_AgeBrackets.pdf", p3, dpi = 500, w = 9, h = 9)
 ggsave("NoInfections_AgeBrackets.png", p3, dpi = 500, w = 9, h = 9)
@@ -159,7 +165,10 @@ coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01")), ylim=c(0, 
 theme(text = element_text(size = 30)) +
 theme(legend.position = "bottom", legend.title = element_blank()) +
 guides(color = guide_legend(nrow = 2)) +
-scale_color_manual(values = palette())
+scale_color_manual(values = palette()) +
+    theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
+                   axis.ticks.length = unit(20, "pt"))
 
 ggsave("ECDF_AgeBrackets.pdf", p2, dpi = 500, w = 9, h = 9)
 ggsave("ECDF_AgeBrackets.png", p2, dpi = 500, w = 9, h = 9)

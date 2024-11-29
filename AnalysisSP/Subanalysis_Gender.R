@@ -56,11 +56,14 @@ p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>%
   theme_minimal() +
   xlab("Point In Time") +
   theme(panel.spacing = unit(4, "lines")) +
-  ylab("Change of No. of \n Contacts [in percent]") +
+  ylab("Change of No. of \n Contacts (in percent)") +
   theme(text = element_text(size = 30)) +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
-  theme(panel.spacing.x = unit(c(rep(0,2),5, 0,0), "lines"))
+  theme(panel.spacing.x = unit(c(rep(0,2),5, 0,0), "lines")) +
+      theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
+                   axis.ticks.length = unit(20, "pt"))
 ggsave("CollectionViolinplots_Gender.pdf", p1, dpi = 500, w = 22, h = 9)
 ggsave("CollectionViolinplots_Gender.png", p1, dpi = 500, w = 22, h = 9)
 
@@ -96,7 +99,7 @@ p3 <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   geom_bar(stat = "identity", position = "dodge", width = 0.8) +
   geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = gender), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
-  ylab("Share [in percent]") +
+  ylab("Share (in percent)") +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
   xlab("Number of Infections") +
   theme(text = element_text(size = 30)) +
@@ -104,7 +107,10 @@ p3 <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   #labs(fill="Behavioral Group") +
   #theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
   scale_fill_manual(values = palette()) +
-  scale_color_manual(values = palette2()) 
+  scale_color_manual(values = palette2()) +
+      theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
+                   axis.ticks.length = unit(20, "pt"))
 
 ggsave("NoInfections_Gender.pdf", p3, dpi = 500, w = 9, h = 9)
 ggsave("NoInfections_Gender.png", p3, dpi = 500, w = 9, h = 9)
@@ -120,11 +126,14 @@ p2 <- ggplot(data_reduced %>% filter(gender %in% c("female", "male")), aes(date_
 stat_ecdf(geom="smooth", size = 2) +
 theme_minimal() +
 ylab("Empirical Cumulative \n Distribution Function") +
-xlab("Date of 1st Infection") +
+xlab("Date of 1st Infection") + 
 coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
 theme(text = element_text(size = 30)) +
 scale_color_manual(values = palette()) +
-theme(legend.title = element_blank(), legend.position = "bottom") 
+theme(legend.title = element_blank(), legend.position = "bottom")  +
+    theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
+                   axis.ticks.length = unit(20, "pt"))
 
 ggsave("ECDF_Gender.pdf", p2, dpi = 500, w = 9, h = 9)
 ggsave("ECDF_Gender.png", p2, dpi = 500, w = 9, h = 9)
