@@ -55,9 +55,9 @@ InfectionsMuspad <- InfectionsMuspad %>% filter(!is.na(w22_positive_test))
 
 InfectionsDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataMuspad) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("0", (InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n/sum(InfectionsMuspad$n), "MuSPAD", sum(InfectionsMuspad$n))
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("1",	(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n/sum(InfectionsMuspad$n), "MuSPAD", sum(InfectionsMuspad$n))
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("2+", (InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n, 100*((InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n)/sum(InfectionsMuspad$n), "MuSPAD", sum(InfectionsMuspad$n))
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("0", (InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n/sum(InfectionsMuspad$n), "MuSPAD\n(data acquisition:\nYY/MM/DD - YY/MM/DD)", sum(InfectionsMuspad$n))
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("1",	(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n/sum(InfectionsMuspad$n), "MuSPAD\n(data acquisition:\nYY/MM/DD - YY/MM/DD)", sum(InfectionsMuspad$n))
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("2+", (InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n, 100*((InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n)/sum(InfectionsMuspad$n), "MuSPAD\n(data acquisition:\nYY/MM/DD - YY/MM/DD)", sum(InfectionsMuspad$n))
 InfectionsDataMuspad$num_c19_infs_eng <- factor(InfectionsDataMuspad$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataMuspad$n <- as.integer(InfectionsDataMuspad$n)
 InfectionsDataMuspad$percent <- as.double(InfectionsDataMuspad$percent)
@@ -65,9 +65,9 @@ InfectionsDataMuspad$sum <- as.double(InfectionsDataMuspad$sum)
 
 InfectionsDataTwitter <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataTwitter) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1191, 28.25, "Twitter \n(cutoff date: 07/26/23)", 1191+2310+716)
-InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1",	2310, 54.77, "Twitter \n(cutoff date: 07/26/23)", 1191+2310+716)
-InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 716, 16.98, "Twitter \n(cutoff date: 07/26/23)", 1191+2310+716)
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1191, 28.25, "Twitter\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1191+2310+716)
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1",	2310, 54.77, "Twitter\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1191+2310+716)
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 716, 16.98, "Twitter\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1191+2310+716)
 InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataTwitter$n <- as.integer(InfectionsDataTwitter$n)
 InfectionsDataTwitter$percent <- as.double(InfectionsDataTwitter$percent)
@@ -75,9 +75,9 @@ InfectionsDataTwitter$sum <- as.double(InfectionsDataTwitter$sum)
 
 InfectionsDataMastodon <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataMastodon) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("0", 1802*0.37, 100*1802*0.37/(1802*0.37+1802*0.49+1802*0.12), "Mastodon \n(cutoff date: 07/26/23)", 1802*0.37+1802*0.49+1802*0.12)
-InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("1",	1802*0.49, 100*1802*0.49/(1802*0.37+1802*0.49+1802*0.12), "Mastodon \n(cutoff date: 07/26/23)", 1802*0.37+1802*0.49+1802*0.12)
-InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("2+", 1802*0.12, 100*1802*0.12/(1802*0.37+1802*0.49+1802*0.12), "Mastodon \n(cutoff date: 07/26/23)", 1802*0.37+1802*0.49+1802*0.12)
+InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("0", 1802*0.37, 100*1802*0.37/(1802*0.37+1802*0.49+1802*0.12), "Mastodon\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1802*0.37+1802*0.49+1802*0.12)
+InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("1",	1802*0.49, 100*1802*0.49/(1802*0.37+1802*0.49+1802*0.12), "Mastodon\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1802*0.37+1802*0.49+1802*0.12)
+InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("2+", 1802*0.12, 100*1802*0.12/(1802*0.37+1802*0.49+1802*0.12), "Mastodon\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1802*0.37+1802*0.49+1802*0.12)
 InfectionsDataMastodon$num_c19_infs_eng <- factor(InfectionsDataMastodon$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataMastodon$n <- as.integer(InfectionsDataMastodon$n)
 InfectionsDataMastodon$percent <- as.double(InfectionsDataMastodon$percent)
@@ -86,9 +86,9 @@ InfectionsDataMastodon$sum <- as.double(InfectionsDataMastodon$sum)
 # Data comes from https://projekte.uni-erfurt.de/cosmo2020/files/COSMO_W70.pdf --> DEC 2022!
 InfectionsDataCOSMO <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataCOSMO) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("0", 1003*0.5, 50, "COSMO \n(cutoff date: 11/30/22)", 1003)
-InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("1",	1003*0.42, 42, "COSMO \n(cutoff date: 11/30/22)", 1003)
-InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("2+", 1003*0.08, 8, "COSMO \n(cutoff date: 11/30/22)", 1003)
+InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("0", 1003*0.5, 50, "COSMO\n(data acquisition:\n2022/11/29-2022/11/30)", 1003)
+InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("1",	1003*0.42, 42, "COSMO\n(data acquisition:\n2022/11/29-2022/11/30)", 1003)
+InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("2+", 1003*0.08, 8, "COSMO\n(data acquisition:\n2022/11/29-2022/11/30)", 1003)
 InfectionsDataCOSMO$num_c19_infs_eng <- factor(InfectionsDataCOSMO$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataCOSMO$n <- as.integer(InfectionsDataCOSMO$n)
 InfectionsDataCOSMO$percent <- as.double(InfectionsDataCOSMO$percent)
@@ -98,7 +98,7 @@ InfectionsDataCOSMO$sum <- as.double(InfectionsDataCOSMO$sum)
 data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   count(num_c19_infs_eng) %>%
   mutate(percent = 100 * n / sum(n)) %>%
-  mutate(Source = "External Survey \n(cutoff date: 08/30/23)") %>%
+  mutate(Source = "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)") %>%
   mutate(sum = sum(n)) %>%
   rbind(InfectionsDataTwitter) %>%
   rbind(InfectionsDataMuspad) %>%
@@ -108,7 +108,7 @@ data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   mutate(lci = 100/sum*lci) %>%
   mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
   mutate(uci = 100/sum*uci) %>%
-  mutate(Source = factor(Source, levels = c("Mastodon \n(cutoff date: 07/26/23)", "Twitter \n(cutoff date: 07/26/23)", "External Survey \n(cutoff date: 08/30/23)", "MuSPAD", "COSMO \n(cutoff date: 11/30/22)"))) %>%
+  mutate(Source = factor(Source, levels = c("Mastodon\n(data acquisition:\n2023/07/19 - 2023/07/26)", "Twitter\n(data acquisition:\n2023/07/19 - 2023/07/26)", "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "MuSPAD\n(data acquisition:\nYY/MM/DD - YY/MM/DD)", "COSMO\n(data acquisition:\n2022/11/29-2022/11/30)"))) %>%
   ggplot(aes(num_c19_infs_eng, percent)) +
   geom_bar(aes(fill=Source), stat = "identity", position = "dodge", width = 0.95) +
   geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, colour = Source), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
@@ -119,7 +119,7 @@ data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 0.5), breaks = c(0,12.5,25,37.5, 50,75,100)) +
-  theme(text = element_text(size = 37)) +
+  theme(text = element_text(size = 34)) +
   theme(legend.position = "none", legend.title = element_blank()) +
    guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
       theme(axis.ticks.x = element_line(size = 1), 
@@ -965,7 +965,7 @@ OccupationMuSPAD <- MuSPAD_s22 %>% count(employment) %>% filter(employment != ""
 OccupationDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Other", (OccupationMuSPAD %>% filter(employment == "Other"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Other"))$n/sum(OccupationMuSPAD$n), "MuSPAD", sum(OccupationMuSPAD$n))
 OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Teaching Sector", (OccupationMuSPAD %>% filter(employment == "Teaching Sector"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Teaching Sector"))$n/sum(OccupationMuSPAD$n), "MuSPAD", sum(OccupationMuSPAD$n))
-OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Medical Sector", (OccupationMuSPAD %>% filter(employment == "Medical Sector"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Medical Sector"))$n/sum(OccupationMuSPAD$n), "MuSPAD", sum(OccupationMuSPAD$n)
+OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Medical Sector", (OccupationMuSPAD %>% filter(employment == "Medical Sector"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Medical Sector"))$n/sum(OccupationMuSPAD$n), "MuSPAD", sum(OccupationMuSPAD$n))
 OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Unemployed", (OccupationMuSPAD %>% filter(employment == "Unemployed"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Unemployed"))$n/sum(OccupationMuSPAD$n), "MuSPAD", sum(OccupationMuSPAD$n))
 OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Student", (OccupationMuSPAD %>% filter(employment == "Student"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Student"))$n/sum(OccupationMuSPAD$n), "MuSPAD", sum(OccupationMuSPAD$n))
 OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Retired", (OccupationMuSPAD %>% filter(employment == "Retired"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Retired"))$n/sum(OccupationMuSPAD$n), "MuSPAD", sum(OccupationMuSPAD$n))
