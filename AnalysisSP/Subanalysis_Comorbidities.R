@@ -104,16 +104,19 @@ for (com in comorbidities){
     theme_minimal() +
     scale_fill_manual(values = palette()) +
     scale_color_manual(values = palette2()) +
-    ylab("Change of No. of \n Contacts [in percent]") +
+    ylab("Change of No. of \n Contacts (in percent)") +
     scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-50, 0,50, 100)) +
     theme(text = element_text(size = 30)) +
     theme(panel.spacing.y = unit(3, "lines")) +
     theme(panel.spacing.x = unit(3, "lines")) +
     theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
     theme(legend.position = "bottom", legend.title = element_blank()) +
-    theme(panel.spacing.x = unit(c(rep(0,2),5, 0,0), "lines"))
+    theme(panel.spacing.x = unit(c(rep(0,2),5, 0,0), "lines")) +
     #labs(color ="Comorbidity") +
-    theme(panel.spacing = unit(0.8, "cm", data = NULL))
+    theme(panel.spacing = unit(0.8, "cm", data = NULL)) +
+        theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
+                   axis.ticks.length = unit(20, "pt"))
 
     ggsave(paste0("CollectionViolinplots_", com, ".pdf"), p1,  dpi = 500, w = 22, h = 9)
     ggsave(paste0("CollectionViolinplots_", com, ".png"), p1, dpi = 500, w = 22, h = 9)
@@ -128,7 +131,10 @@ for (com in comorbidities){
     theme(legend.position = "bottom", legend.title = element_blank()) +
     #labs(color = "Comorbidity") +
     #guides(color = guide_legend(nrow = 2)) +
-    scale_color_manual(values = palette())
+    scale_color_manual(values = palette()) +
+        theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
+                   axis.ticks.length = unit(20, "pt"))
 
      ggsave(paste0("TimingOfInfection_", com, ".pdf"), p2, dpi = 500, w = 9, h = 9)
      ggsave(paste0("TimingOfInfection_", com, ".png"), p2, dpi = 500, w = 9, h = 9)
@@ -230,14 +236,17 @@ for (com in comorbidities){
     scale_x_discrete(limits = c("0", "1", "2", "3+")) +
     geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = !!sym(com)), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
     theme_minimal() +
-    ylab("Share [Percentage]") +
+    ylab("Share (Percentage)") +
     scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
     xlab("Number of Infections") +
     theme(text = element_text(size = 30)) +
     theme(legend.position = "bottom", legend.title = element_blank()) +
     #labs(fill="Comorbidity") +
     scale_fill_manual(values = palette()) +
-    scale_color_manual(values = palette2())
+    scale_color_manual(values = palette2()) +
+        theme(axis.ticks.x = element_line(size = 1), 
+                   axis.ticks.y = element_line(size = 1),
+                   axis.ticks.length = unit(20, "pt"))
 
     ggsave(paste0("NumberOfInfection_", com, ".pdf"), p3, dpi = 500, w = 9, h = 9)
     ggsave(paste0("NumberOfInfection_", com,".png"), p3, dpi = 500, w = 9, h = 9)
