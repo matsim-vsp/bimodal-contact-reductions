@@ -14,62 +14,70 @@ library(RColorBrewer)
 
 InfectionTimingTwitter <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(InfectionTimingTwitter) <- c("TimeFrame", "Share", "OverallNoParticipants", "Recruiter")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.227, 1131, "Viola")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.228, 1131, "Viola")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.192, 1131, "Viola")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.352, 1131, "Viola")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.13, 23, "Andre")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.174, 23, "Andre")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.261, 23, "Andre")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.435, 23, "Andre")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.231, 39, "Thomas")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.333, 39, "Thomas")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.051, 39, "Thomas")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.385, 39, "Thomas")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.355, 172, "Franziska")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.151, 172, "Franziska")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.076, 172, "Franziska")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.419, 172, "Franziska")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.196, 764, "Rudi")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.204, 764, "Rudi")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.147, 764, "Rudi")
-InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.453, 764, "Rudi")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.227, 1131, "Recruiter 1 (Twitter)")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.228, 1131, "Recruiter 1 (Twitter)")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.192, 1131, "Recruiter 1 (Twitter)")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.352, 1131, "Recruiter 1 (Twitter)")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.14, 738, "Recruiter 1 (Mastodon)")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.18, 738, "Recruiter 1 (Mastodon)")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.15, 738, "Recruiter 1 (Mastodon)")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.54, 738, "Recruiter 1 (Mastodon)")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.13, 23, "Recruiter 5")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.174, 23, "Recruiter 5")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.261, 23, "Recruiter 5")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.435, 23, "Recruiter 5")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.231, 39, "Recruiter 4")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.333, 39, "Recruiter 4")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.051, 39, "Recruiter 4")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.385, 39, "Recruiter 4")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.355, 172, "Recruiter 3")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.151, 172, "Recruiter 3")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.076, 172, "Recruiter 3")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.419, 172, "Recruiter 3")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Jan - Apr", 0.196, 764, "Recruiter 2")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("May - Aug", 0.204, 764, "Recruiter 2")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Sep - Dec", 0.147, 764, "Recruiter 2")
+InfectionTimingTwitter[nrow(InfectionTimingTwitter) + 1, ] <- c("Show Me The Answer", 0.453, 764, "Recruiter 2")
 InfectionTimingTwitter$Share <- as.double(InfectionTimingTwitter$Share)
 InfectionTimingTwitter$OverallNoParticipants <- as.double(InfectionTimingTwitter$OverallNoParticipants)
 InfectionTimingTwitter <- InfectionTimingTwitter %>% mutate(NoVoted = Share * OverallNoParticipants)
 
 palette <- function() {
-  c("#FFD269", "#ECA400", "#006992", "#27476E")
+  c("#ffe6ab", "#FFD269", "#fac548", "#ECA400", "#ad8500", "#006992")
 }
-
 palette2 <- function() {
-  c("#ECA400", "#ab7700","#27476E", "#0b2442")
+  c("#FFD269", "#fac548", "#ECA400", "#ad8500", "#6b5200", "#27476E")
 }
-
 
 InfectionTimingTwitter %>% filter(TimeFrame != "Show Me The Answer")  %>%
-                            group_by(TimeFrame) %>% summarise(n = sum(NoVoted)) %>%
+                            group_by(TimeFrame, Recruiter) %>% summarise(n = sum(NoVoted)) %>%
                             mutate(percent = 100 * n / sum(n)) %>%
                             mutate(lci = sum(n)*(n/sum(n) - 1.96*(((n/sum(n)*(1-n/sum(n)))/sum(n))^0.5))) %>%
                             mutate(lci = 100/sum(n)*lci) %>%
+                            mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
                             mutate(uci = sum(n)*(n/sum(n) + 1.96*(((n/sum(n)*(1-n/sum(n)))/sum(n))^0.5))) %>%
-                            mutate(uci = 100/sum(n)*uci) %>% mutate(Source = "Twitter") %>%
+                            mutate(uci = 100/sum(n)*uci) %>%
+                            mutate(Recruiter = factor(Recruiter, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)"))) %>%
 ggplot(aes(x = TimeFrame, y = percent)) +
-geom_bar(stat = "identity", aes(fill = Source)) +
-geom_errorbar(aes(x=TimeFrame, ymin=lci, ymax=uci, color = Source), width = 0.3, alpha=0.9, size=1.3) +
+geom_bar(aes(fill=Recruiter), stat = "identity", position = "dodge", width = 0.95) +
+geom_errorbar(aes(x=TimeFrame, ymin=lci, ymax=uci, colour = Recruiter), position = position_dodge(0.95), width = 0.3, alpha=0.9, size=1.3) +
 theme_minimal() +
 scale_fill_manual(values = palette()) +
 scale_color_manual(values = palette2()) +
 scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,10,20,30,40,50)) +
-ylab("Share [Percentage]") +
+ylab("Share (Percentage)") +
 xlab("Timing of Infection (2022)") +
-theme(text = element_text(size = 30)) +
+theme(text = element_text(size = 33)) +
 theme(legend.position = "bottom", legend.title = element_blank()) +
 theme(panel.spacing = unit(0.8, "cm", data = NULL)) +
-guides(fill=guide_legend(nrow=2,byrow=TRUE))
+guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt")) +
+  guides(fill=guide_legend(nrow=3,byrow=TRUE))
 
-ggsave("TimingOfInfections_Twitter.pdf", dpi = 500, w = 7, h = 6)
-ggsave("TimingOfInfections_Twitter.png", dpi = 500,  w = 7, h = 6)
+ggsave("TimingOfInfections_Twitter.pdf", dpi = 500, w = 10, h = 7.5)
+ggsave("TimingOfInfections_Twitter.png", dpi = 500, w = 10, h = 7.5)
 
 # 2nd Part ----------------------------------------------------------------
 
