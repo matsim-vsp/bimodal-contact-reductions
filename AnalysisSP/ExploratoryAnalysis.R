@@ -2,6 +2,7 @@ library(tidyverse)
 library(RColorBrewer)
 library(cowplot)
 library(ggpubr)
+library(readxl)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -231,7 +232,7 @@ vaccinationData <- vaccinationData %>% mutate(Impfserie = case_when(name == "c19
                                                                     name == "c19_vaccination_details_vaccine_dose_3" ~ "3",
                                                                     name == "c19_vaccination_details_vaccine_dose_4" ~ "4"))
 vaccinationData$Impfserie <- factor(vaccinationData$Impfserie, levels = c("1", "2", "3", "4"))
-vaccinationData <- vaccinationData %>% mutate(Source = "External Survey (cutoff date: 08/30/23)")
+vaccinationData <- vaccinationData %>% mutate(Source = "External Survey (data acquisition: 2023/07/18-2023/08/30)")
 vaccinationData<- vaccinationData %>% select(Impfserie, value_eng, Source)
 
 # Compare to RKI vaccination data
@@ -321,7 +322,7 @@ vaccinationData %>% filter(value_eng != "Does Not Apply") %>% filter(value_eng !
                     mutate(percent = 100 * n / sum(n)) %>% mutate(percent = round(percent, digits = 2)) %>%
                     rbind(VaccinationSupplierDataMuspad) %>%
 ggplot(aes(value_eng, percent)) +
-  geom_bar(aes(fill = factor(Source, levels = c("Survey", "MuSPAD", "RKI"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill = factor(Source, levels = c("External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "MuSPAD", "RKI"))), stat = "identity", position = "dodge", width = 0.8) +
   theme_minimal() +
   facet_wrap(~vaccineNo, nrow=2) +
   ylab("Share (Percentage)") +
@@ -340,9 +341,12 @@ ggsave("ShareVaccinationSupplier.png", dpi = 500, w = 21, h = 15)
 
 # Vaccination -------------------------------------------------------------
 
-vaccinationData <- raw_data %>% select(c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
+vaccinationData <- data_reduced %>% select(year_of_birth, c19_vaccination_status, c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
 
-vaccinationData <- vaccinationData %>% mutate(dose_1_received = case_when(c19_vaccination_details_vaccine_dose_1 == "BioNTech" ~ "Yes",
+vaccinationData <- vaccinationData %>%  mutate(agegroup = case_when(2023-year_of_birth >= 60 ~ "60+",
+                                                                    2023-year_of_birth >= 18 ~ "18-59"
+                                                                    )) %>%
+                                        mutate(dose_1_received = case_when(c19_vaccination_details_vaccine_dose_1 == "BioNTech" ~ "Yes",
                                                                           c19_vaccination_details_vaccine_dose_1 == "Moderna" ~ "Yes",
                                                                           c19_vaccination_details_vaccine_dose_1 == "Janssen/ Johnson & Johnson" ~ "Yes",
                                                                           c19_vaccination_details_vaccine_dose_1 == "AstraZeneca" ~ "Yes",
@@ -391,40 +395,46 @@ vaccinationData$dose_2_received <- factor(vaccinationData$dose_2_received, level
 vaccinationData$dose_3_received <- factor(vaccinationData$dose_3_received, levels = c("Yes", "No", NA, "I Don't Want To Answer"))
 vaccinationData$dose_4_received<- factor(vaccinationData$dose_4_received, levels = c("Yes", "No", NA, "I Don't Want To Answer"))
 
-vaccinationData <- vaccinationData %>% pivot_longer(cols=c(dose_1_received, dose_2_received, dose_3_received, dose_4_received)) %>%
+vaccinationData <- vaccinationData %>% group_by(agegroup) %>% pivot_longer(cols=c(dose_1_received, dose_2_received, dose_3_received, dose_4_received)) %>%
                                       filter(value %in% c("Yes", "Not Vaccinated")) %>% 
-                                      mutate(Source = "External Survey \n(cutoff date: 08/30/23)") %>%
+                                      mutate(Source = "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)") %>%
                                       mutate(name = case_when(name == "dose_1_received" ~ "Received 1 dose",
                                                               name == "dose_2_received" ~ "Received 2 doses",
                                                               name == "dose_3_received" ~ "Received 3 doses",
-                                                              name == "dose_4_received" ~ "Received 4 doses")) %>% count(name) %>% mutate(Source = "External Survey \n(cutoff date: 08/30/23)") 
-NotVacc <- data.frame(matrix(nrow = 0, ncol = 3))
-colnames(NotVacc) <- c("name", "n", "Source")
-NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 10 , "External Survey \n(cutoff date: 08/30/23)")
+                                                              name == "dose_4_received" ~ "Received 4 doses")) %>% count(name) %>% mutate(Source = "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)") 
+NotVacc <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(NotVacc) <- c("name", "n", "Source", "agegroup")
+NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 9 , "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "18-59")
+NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 1 , "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "60+") ##Use c19_vaccination_status to find unvaccinated
 NotVacc$n <- as.double(NotVacc$n)                                                              
 
 vaccinationData <- rbind(vaccinationData, NotVacc)
-vaccinationData <- vaccinationData %>% mutate(percent = n/sum(n)) %>% select(name, percent, Source)
+vaccinationData <- vaccinationData %>% mutate(percent = n/sum(n)) %>% select(name, percent, Source, agegroup)
 
 
 Rki <- read_csv("https://raw.githubusercontent.com/robert-koch-institut/COVID-19-Impfungen_in_Deutschland/refs/heads/main/Archiv/2023-09-12_Deutschland_Impfquoten_COVID-19.csv") %>%
        filter(Bundesland == "Deutschland")
 #RKI data: https://impfdashboard.de/ 
-RkiVacc <- data.frame(matrix(nrow = 0, ncol = 3))
-colnames(RkiVacc) <- c("name", "percent", "Source")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 0 doses", 100-Rki$Impfquote_gesamt_min1,"RKI \n(cutoff date: 09/11/23)")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 1 dose", Rki$Impfquote_gesamt_min1-Rki$Impfquote_gesamt_gi,"RKI \n(cutoff date: 09/11/23)")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 2 doses", Rki$Impfquote_gesamt_gi-Rki$Impfquote_gesamt_boost1,"RKI \n(cutoff date: 09/11/23)")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 3 doses", Rki$Impfquote_gesamt_boost1-Rki$Impfquote_gesamt_boost2,"RKI \n(cutoff date: 09/11/23)")
-RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 4 doses", Rki$Impfquote_gesamt_boost2,"RKI \n(cutoff date: 09/11/23)")
+RkiVacc <- data.frame(matrix(nrow = 0, ncol = 4))
+colnames(RkiVacc) <- c("name", "percent", "Source", "agegroup")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 0 doses", 100-Rki$Impfquote_18bis59_min1,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "18-59")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 1 dose", Rki$Impfquote_18bis59_min1-Rki$Impfquote_18bis59_gi,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "18-59")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 2 doses", Rki$Impfquote_18bis59_gi-Rki$Impfquote_18bis59_boost1,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "18-59")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 3 doses", Rki$Impfquote_18bis59_boost1-Rki$Impfquote_18bis59_boost2,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "18-59")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 4 doses", Rki$Impfquote_18bis59_boost2,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "18-59")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 0 doses", 100-Rki$Impfquote_60plus_min1,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "60+")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 1 dose", Rki$Impfquote_60plus_min1-Rki$Impfquote_60plus_gi,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "60+")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 2 doses", Rki$Impfquote_60plus_gi-Rki$Impfquote_60plus_boost1,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "60+")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 3 doses", Rki$Impfquote_60plus_boost1-Rki$Impfquote_60plus_boost2,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "60+")
+RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 4 doses", Rki$Impfquote_60plus_boost2,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "60+")
 RkiVacc$percent <- as.double(RkiVacc$percent)
 RkiVacc$percent <- RkiVacc$percent/100
 
-vaccinationData <- rbind(vaccinationData, RkiVacc)
+#vaccinationData <- rbind(vaccinationData, RkiVacc)
 
 #Muspad vacc data
 
-MuSPADVacc <- MuSPADnewplusold %>% select(c(w22_vacc, w22_vacc_type_1, w22_vacc_type_2, w22_vacc_type_3, w22_vacc_type_4))
+MuSPADVacc <- MuSPADnewplusold %>% select(c(s22_birth_date_yyyy, w22_vacc, w22_vacc_type_1, w22_vacc_type_2, w22_vacc_type_3, w22_vacc_type_4))
 MuSPADVacc <- MuSPADVacc %>% mutate(w22_vacc_type_1 = case_when(w22_vacc_type_1 %in% c("Moderna", "BioNTech", "AstraZeneca", "Janssen/ Johnson & Johnson", "Novavax") ~ "Yes",
                                                                 w22_vacc_type_1 == NA ~ NA,
                                                                 w22_vacc_type_1 == "keine (weitere) Impfung erhalten" ~ "No")) %>%
@@ -436,9 +446,12 @@ MuSPADVacc <- MuSPADVacc %>% mutate(w22_vacc_type_1 = case_when(w22_vacc_type_1 
                                                                 w22_vacc_type_3 == "keine (weitere) Impfung erhalten" ~ "No")) %>%
                             mutate(w22_vacc_type_4 = case_when(w22_vacc_type_4 %in% c("Moderna", "BioNTech", "AstraZeneca", "Janssen/ Johnson & Johnson", "Novavax") ~ "Yes",
                                                                 w22_vacc_type_4 == NA ~ NA,
-                                                                w22_vacc_type_4 == "keine (weitere) Impfung erhalten" ~ "No"))
+                                                                w22_vacc_type_4 == "keine (weitere) Impfung erhalten" ~ "No")) %>%
+                            mutate(agegroup = case_when(2023-s22_birth_date_yyyy >= 60 ~ "60+",
+                                                                    2023-s22_birth_date_yyyy >= 18 ~ "18-59"
+                                                                    ))                            
 MuSPADVacc <- MuSPADVacc %>% pivot_longer(cols = c(w22_vacc, w22_vacc_type_1, w22_vacc_type_2, w22_vacc_type_3, w22_vacc_type_4)) %>% 
-                              group_by(name, value) %>% 
+                              group_by(name, value, agegroup) %>% 
                               count() %>% 
                               filter(value %in% c("Yes", "Nein")) %>%
                               mutate(name = case_when(name == "w22_vacc" ~ "Received 0 doses",
@@ -446,39 +459,48 @@ MuSPADVacc <- MuSPADVacc %>% pivot_longer(cols = c(w22_vacc, w22_vacc_type_1, w2
                               name == "w22_vacc_type_2" ~ "Received 2 doses",
                               name == "w22_vacc_type_3" ~ "Received 3 doses",
                               name == "w22_vacc_type_4" ~ "Received 4 doses")) %>%
-                              mutate(Source = "MuSPAD")
+                              mutate(Source = "MuSPAD\n(data acquisition:\nYY/MM/DD-YY/MM/DD)")
 
-MuSPADVacc[which(MuSPADVacc$name == "Received 1 dose"), 3] <- MuSPADVacc[which(MuSPADVacc$name == "Received 1 dose"), 3] - MuSPADVacc[which(MuSPADVacc$name == "Received 2 doses"), 3]
-MuSPADVacc[which(MuSPADVacc$name == "Received 2 doses"), 3] <- MuSPADVacc[which(MuSPADVacc$name == "Received 2 doses"), 3] - MuSPADVacc[which(MuSPADVacc$name == "Received 3 doses"), 3]
-MuSPADVacc[which(MuSPADVacc$name == "Received 3 doses"), 3] <- MuSPADVacc[which(MuSPADVacc$name == "Received 3 doses"), 3] - MuSPADVacc[which(MuSPADVacc$name == "Received 4 doses"), 3]
 
-MuSPADVacc <- MuSPADVacc %>% ungroup()
+MuSPADVacc[which(MuSPADVacc$name == "Received 1 dose" & MuSPADVacc$agegroup == "60+"), 4] <- MuSPADVacc[which(MuSPADVacc$name == "Received 1 dose"& MuSPADVacc$agegroup == "60+"), 4] - MuSPADVacc[which(MuSPADVacc$name == "Received 2 doses"& MuSPADVacc$agegroup == "60+"), 4]
+MuSPADVacc[which(MuSPADVacc$name == "Received 2 doses" & MuSPADVacc$agegroup == "60+"), 4] <- MuSPADVacc[which(MuSPADVacc$name == "Received 2 doses"& MuSPADVacc$agegroup == "60+"), 4] - MuSPADVacc[which(MuSPADVacc$name == "Received 3 doses"& MuSPADVacc$agegroup == "60+"), 4]
+MuSPADVacc[which(MuSPADVacc$name == "Received 3 doses" & MuSPADVacc$agegroup == "60+"), 4] <- MuSPADVacc[which(MuSPADVacc$name == "Received 3 doses"& MuSPADVacc$agegroup == "60+"), 4] - MuSPADVacc[which(MuSPADVacc$name == "Received 4 doses"& MuSPADVacc$agegroup == "60+"), 4]
+MuSPADVacc[which(MuSPADVacc$name == "Received 1 dose" & MuSPADVacc$agegroup == "18-59"), 4] <- MuSPADVacc[which(MuSPADVacc$name == "Received 1 dose"& MuSPADVacc$agegroup == "18-59"), 4] - MuSPADVacc[which(MuSPADVacc$name == "Received 2 doses"& MuSPADVacc$agegroup == "18-59"), 4]
+MuSPADVacc[which(MuSPADVacc$name == "Received 2 doses" & MuSPADVacc$agegroup == "18-59"), 4] <- MuSPADVacc[which(MuSPADVacc$name == "Received 2 doses"& MuSPADVacc$agegroup == "18-59"), 4] - MuSPADVacc[which(MuSPADVacc$name == "Received 3 doses"& MuSPADVacc$agegroup == "18-59+"), 4]
+MuSPADVacc[which(MuSPADVacc$name == "Received 3 doses" & MuSPADVacc$agegroup == "18-59"), 4] <- MuSPADVacc[which(MuSPADVacc$name == "Received 3 doses"& MuSPADVacc$agegroup == "18-59"), 4] - MuSPADVacc[which(MuSPADVacc$name == "Received 4 doses"& MuSPADVacc$agegroup == "18-59"), 4]
+
+
+MuSPADVacc <- MuSPADVacc %>% group_by(agegroup)
 MuSPADVacc <- MuSPADVacc %>% mutate(percent = n/sum(n)) %>% select(name, percent, Source)
 MuSPADVacc$percent <- as.double(MuSPADVacc$percent)
-vaccinationData <- rbind(vaccinationData, MuSPADVacc)
-
-vaccinationData$Source <- factor(vaccinationData$Source, levels = c("External Survey \n(cutoff date: 08/30/23)", "MuSPAD", "RKI \n(cutoff date: 09/11/23)"))
+#vaccinationData <- rbind(vaccinationData, MuSPADVacc)
 
 palette <- function() {
   c("#ECA400", "#52b7de", "#1d94c2", "#006992", "#27476E")
 }
 
-ggplot(vaccinationData, aes(x = Source,  y = percent, fill = name)) +
+ggplot(vaccinationData %>%
+rbind(RkiVacc) %>%
+rbind(MuSPADVacc) %>% 
+filter(agegroup == "18-59") %>%
+mutate(Source = factor(Source, levels = c("External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "MuSPAD\n(data acquisition:\nYY/MM/DD-YY/MM/DD)", "RKI\n(data acquisition:\n2020/12/27-2023/09/11)"))), aes(x = Source,  y = percent, fill = name)) +
   geom_bar(stat = "identity", position="fill") +
   theme_minimal() +
-  theme(text = element_text(size = 37)) +
+  theme(text = element_text(size = 33)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   scale_fill_manual(values = palette()) +
   xlab("") +
+  #ggtitle("Number of Vaccine Doses (60+)") +
   ylab("Share (Percentage)") +
   scale_y_continuous(labels = scales::percent) +
-  guides(fill = guide_legend(nrow = 3)) + 
+  guides(fill = guide_legend(nrow = 2)) + 
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
-        axis.ticks.length = unit(5, "pt"))
+        axis.ticks.length = unit(5, "pt")) +
+        theme(plot.title = element_text(hjust = 0.5))
 
-ggsave("NoVaccinations_Comparison.pdf", dpi = 500,  w = 12, h = 9)
-ggsave("NoVaccinations_Comparison.png", dpi = 500,  w = 12, h = 9)
+ggsave("NoVaccinations_Comparison1859.pdf", dpi = 500,  w = 15, h = 9)
+ggsave("NoVaccinations_Comparison1859.png", dpi = 500,  w = 15, h = 9)
 
 # Household Size ----------------------------------------------------
 
@@ -974,10 +996,34 @@ OccupationDataMuspad$n <- as.integer(OccupationDataMuspad$n)
 OccupationDataMuspad$sum <- as.integer(OccupationDataMuspad$sum)
 OccupationDataMuspad$percent <- as.double(OccupationDataMuspad$percent)
 
+#Data stems from https://de.statista.com/statistik/daten/studie/1099494/umfrage/beschaeftigte-in-deutschland-nach-berufsgruppen/
+FedEmploymentAgency <- read_xlsx("/Users/sydney/Downloads/statistic_id1099494_beschaeftigte-in-deutschland-nach-berufsgruppen-2023.xlsx", sheet = 2)
+colnames(FedEmploymentAgency) <- c("occupation", "n")
+OccupationDataFedEmploymentAgency <- data.frame(matrix(nrow = 0, ncol = 3))
+other <- c("Berufe in Unternehmensführung, -organisation (Büro)", "Verkaufsberufe", "Verkehr, Logistik (außer Fahrzeugführung)", "Erziehung, soz., hauswirt. Berufe, Theologie", 
+"Maschinen- und Fahrzeugtechnikberufe", "Reinigungsberufe", "Tourismus-, Hotel- und Gaststättenberufe", "FührerInnen von Fahrzeug- und Transportgeräten",
+"Berufe in Finanzdienstleistungen, Rechnungswesen und Steuerberatung", "Berufe in Recht und Verwaltung", "Metallerzeugung, -bearbeitung, Metallbau", 
+"Technische Forschungs-, Entwicklungs-, Konstruktions- und Produktionssteuerungsberufe", "Einkaufs-, Vertriebs- und Handelsberufe", "Mechatronik-, Energie- und Elektroberufe",                                             
+"Informatik- und andere IKT-Berufe", "Lebensmittelherstellung und -verarbeitung", "Nichtmed. Gesundheits-, Körperpflege-/ Wellnessberufe, Medizintechnik", "Gebäude- und versorgungstechnische Berufe",    
+"Hoch- und Tiefbauberufe", "Werbung, Marketing, kaufmännische und redaktionelle Medienberufe", "Kunststoff- und Holz- herstellung, -verarbeitung", "Schutz-, Sicherheits-, Überwachungsberufe",                                            
+"(Innen-) Ausbauberufe", "Mathematik-, Biologie-, Chemie-, Physikberufe", "Keine Zuordnung möglich" , "Land-, Tier-, Forstwirtschaftsberufe", "Gartenbauberufe, Floristik",                                                           
+"Bauplanung, Architektur, Vermessungsberufe","Papier-, Druckberufe, tech. Mediengestaltung" , "Darstellende, unterhaltende Berufe", "Sprach-/ Literatur-/ Geistes-/ Gesellschafts-/ Wirtschaftswissenschaften",         
+"Textil- und Lederberufe","Rohstoffgewinnung, Glas-, Keramikverarbeitung","Produktdesign, Kunsthandwerk", "Geologie-, Geografie-, Umweltschutzberufe")
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Other", sum((FedEmploymentAgency %>% filter(occupation %in% other))$n)*1000, "Federal Employment Agency")
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Teaching Sector", (FedEmploymentAgency %>% filter(occupation == "Lehrende und ausbildende Berufe"))$n*1000, "Federal Employment Agency")
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Medical Sector", (FedEmploymentAgency %>% filter(occupation == "Medizinische Gesundheitsberufe"))$n*1000, "Federal Employment Agency")
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Unemployed", 2554982, "Federal Employment Agency") #https://statistik.arbeitsagentur.de/Statistikdaten/Detail/Aktuell/iiia4/zr-alo-bl/zr-alo-bl-dwolr-0-xlsx.xlsx?__blob=publicationFile
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Student", 2868300 + 1220000, "Federal Employment Agency") #https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Hochschulen/_inhalt.html https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Berufliche-Bildung/_inhalt.html
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Retired", 21229000, "Federal Employment Agency") #https://www.deutsche-rentenversicherung.de/DRV/DE/Experten/Zahlen-und-Fakten/Statistiken-und-Berichte/statistiken-und-berichte_node.html
+colnames(OccupationDataFedEmploymentAgency) <- c("current_occupation", "n", "source")
+OccupationDataFedEmploymentAgency$n <- as.double(OccupationDataFedEmploymentAgency$n)
+OccupationDataFedEmploymentAgency <- OccupationDataFedEmploymentAgency %>% mutate(sum = sum(n), percent = n/sum*100)
+
 OccupationPlot <- currentOccupation %>% filter(!is.na(current_occupation)) %>% 
             count(current_occupation) %>% 
             mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% 
             mutate(source = "External Survey") %>%
+            rbind(OccupationDataFedEmploymentAgency) %>%
             rbind(OccupationDataMuspad) %>%
             mutate(lci = sum*(n/sum - 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                     mutate(lci = 100/sum*lci) %>%
@@ -985,8 +1031,8 @@ OccupationPlot <- currentOccupation %>% filter(!is.na(current_occupation)) %>%
                     mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                     mutate(uci = 100/sum*uci) %>%
 ggplot(aes(current_occupation, percent)) +
-  geom_bar(aes(fill=factor(source, levels = c("External Survey", "MuSPAD"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=current_occupation, ymin=lci, ymax=uci, colour = factor(source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2023)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(source, levels = c("External Survey", "MuSPAD", "Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=current_occupation, ymin=lci, ymax=uci, colour = factor(source, levels = c("External Survey", "MuSPAD", "Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   scale_color_manual(values = palette2()) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
