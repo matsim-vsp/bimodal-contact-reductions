@@ -3,23 +3,20 @@ library(RColorBrewer)
 library(cowplot)
 library(ggpubr)
 
-data_reduced <- read_csv(file = "/Users/sydney/Desktop/TwitterLimeSurvey/twitter_data.csv")
+#raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds") 
+
+setwd("./AnalysisSP") # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
+source("DataCleaningPrepForContactAnalysis.R")
+
 
 scenario <- "Twitter" #Alternative: "Twitter/Mastodon"
 
 if(scenario == "Twitter"){
 palette <- function() {
-  c("#ffe6ab", "#FFD269", "#fac548", "#ECA400", "#ad8500")
+  c("#ffe6ab", "#FFD269", "#fac548", "#ECA400", "#ad8500", "#006992", "#27476E")
 }
 palette2 <- function() {
-  c("#FFD269", "#fac548", "#ECA400", "#ad8500", "#6b5200")
-}
-}else if(scenario == "Twitter/Mastodon"){
-palette <- function() {
-  c("#FFD269", "#006992")
-}
-palette2 <- function() {
-  c("#ECA400", "#27476E")
+  c("#FFD269", "#fac548", "#ECA400", "#ad8500", "#6b5200", "#27476E", "#091c33")
 }
 }
 
@@ -29,16 +26,12 @@ palette2 <- function() {
 if(scenario == "Twitter"){
     GenderData <- data_reduced %>% select(gender, ref, origin) %>% 
     filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-    mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref == "4a76b" ~ "Bachmann",
-                            ref == "008b5" ~ "Briest", 
-                            ref == "7b598" ~ "Franke", 
-                            ref == "6c8d7" ~ "CaleroValdez"))
-} else if (scenario == "Twitter/Mastodon"){
-    GenderData <- data_reduced %>% select(gender, ref, origin) %>% 
-    filter(ref %in% c("dec9d")) %>%
-    mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))    
+    mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
+                            ref == "4a76b" ~ "Recruiter 2",
+                            ref == "008b5" ~ "Recruiter 3", 
+                            ref == "7b598" ~ "Recruiter 4", 
+                            ref == "6c8d7" ~ "Recruiter 5", 
+                            ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))
 }
 
 GenderData <- GenderData %>% mutate(gender = case_when(gender == "Weiblich" ~ "female", 
@@ -53,10 +46,10 @@ GenderData$gender <- factor(GenderData$gender, levels = c("female", "male", "div
 GenderAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(GenderAdd) <- c("ref", "gender", "n", "percent")
     if(scenario == "Twitter"){
-    GenderAdd[nrow(GenderAdd) + 1, ] <- c("Bachmann", "diverse", 0, 0)
-    GenderAdd[nrow(GenderAdd) + 1, ] <- c("Briest", "diverse", 0, 0)
-    GenderAdd[nrow(GenderAdd) + 1, ] <- c("CaleroValdez", "diverse", 0, 0)
-    GenderAdd[nrow(GenderAdd) + 1, ] <- c("Franke", "diverse", 0, 0)
+    GenderAdd[nrow(GenderAdd) + 1, ] <- c("Recruiter 2", "diverse", 0, 0)
+    GenderAdd[nrow(GenderAdd) + 1, ] <- c("Recruiter 3", "diverse", 0, 0)
+    GenderAdd[nrow(GenderAdd) + 1, ] <- c("Recruiter 5", "diverse", 0, 0)
+    GenderAdd[nrow(GenderAdd) + 1, ] <- c("Recruiter 4", "diverse", 0, 0)
 }
 
 GenderAdd$n <- as.double(GenderAdd$n)
@@ -64,7 +57,19 @@ GenderAdd$percent <- as.double(GenderAdd$percent)
 GenderAdd$ref <- as.character(GenderAdd$ref)
 GenderAdd$gender <- as.character(GenderAdd$gender)
 
+#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/deutsche-nichtdeutsche-bevoelkerung-nach-geschlecht-deutschland.html
+GenderDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
+colnames(GenderDataStatBundesamt) <- c("gender", "n", "percent", "ref", "sum")
+GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("female",42885791, 100*42885791/84669326, "Federal Statistical Office, Federal Employment Agency", 84669326)
+GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("male",	41783535, 100*41783535/84669326, "Federal Statistical Office, Federal Employment Agency", 84669326)
+GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("diverse",	0, 0, "Federal Statistical Office, Federal Employment Agency", 84669326)
+GenderDataStatBundesamt$gender <- factor(GenderDataStatBundesamt$gender, levels = c("female", "male", "diverse"))
+GenderDataStatBundesamt$n <- as.integer(GenderDataStatBundesamt$n)
+GenderDataStatBundesamt$sum <- as.integer(GenderDataStatBundesamt$sum)
+GenderDataStatBundesamt$percent <- as.double(GenderDataStatBundesamt$percent)
+
 GenderPlot <- GenderData %>% group_by(ref) %>% filter(!is.na(ref)) %>% count(gender) %>% mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% 
+rbind(GenderDataStatBundesamt) %>%
 rbind(GenderAdd) %>%
   mutate(lci = sum*(n/sum - 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
   mutate(lci = 100/sum*lci) %>%
@@ -74,8 +79,8 @@ rbind(GenderAdd) %>%
   mutate(uci = 100/sum*uci) %>%
   mutate(gender = factor(gender, levels = c("female", "male", "diverse"))) %>%
 ggplot(aes(gender, percent)) +
-  geom_bar(aes(fill=factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=gender, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=gender, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -84,7 +89,7 @@ ggplot(aes(gender, percent)) +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 30)) +
+  theme(text = element_text(size = 37)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -100,37 +105,27 @@ if(scenario == "Twitter"){
                                             age < 80 ~ "60-79",
                                             age < 100 ~ "80-99"))  %>%
                 filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref ==  "6c8d7" ~ "CaleroValdez", 
-                            ref == "7b598" ~ "Franke", 
-                            ref == "008b5" ~ "Briest", 
-                            ref == "4a76b" ~ "Bachmann"))
-}else if(scenario == "Twitter/Mastodon"){
-    AgeData <- data_reduced %>% select(year_of_birth, ref, origin) %>% mutate(age = 2023-year_of_birth) %>%
-            mutate(age_bracket = case_when(age < 20 ~ "Below 20 (*)",
-                                            age < 40 ~ "20-39",
-                                            age < 60 ~ "40-59",
-                                            age < 80 ~ "60-79",
-                                            age < 100 ~ "80-99"))  %>%
-                filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
+                            ref ==  "6c8d7" ~ "Recruiter 5", 
+                            ref == "7b598" ~ "Recruiter 4", 
+                            ref == "008b5" ~ "Recruiter 3", 
+                            ref == "4a76b" ~ "Recruiter 2",
+                            ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))
 }
 
 AgeAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeAdd) <- c("ref", "age_bracket", "n", "percent")
 if(scenario == "Twitter"){
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Briest", "Below 20 (*)", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Briest", "80-99", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("CaleroValdez", "Below 20 (*)", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("CaleroValdez", "60-79", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("CaleroValdez", "80-99", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Franke", "Below 20 (*)", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Franke", "60-79", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Franke", "80-99", 0, 0)
-}else if(scenario == "Twitter/Mastodon"){
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Priesemann (Mastodon)", "Below 20 (*)", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Priesemann (Mastodon)", "80-99", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 3", "Below 20 (*)", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 3", "80-99", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "Below 20 (*)", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "60-79", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "80-99", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "Below 20 (*)", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "60-79", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "80-99", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 1 (Mastodon)", "Below 20 (*)", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 1 (Mastodon)", "80-99", 0, 0)
 }
 
 AgeAdd$n <- as.double(AgeAdd$n)
@@ -138,8 +133,22 @@ AgeAdd$percent <- as.double(AgeAdd$percent)
 AgeAdd$ref <- as.character(AgeAdd$ref)
 AgeAdd$age_bracket <- as.character(AgeAdd$age_bracket)
  
+# Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html
+AgeDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
+colnames(AgeDataStatBundesamt) <- c("age_bracket", "n", "percent", "ref", "sum")
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("Below 20 (*)", 84669326*0.188, 18.8, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("20-39", 84669326*0.245, 24.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("40-59", 84669326*0.268, 26.8, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("60-79", 84669326*0.226, 22.6, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("80-99", 84669326*0.072, 7.2, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt$n <- as.integer(AgeDataStatBundesamt$n)
+AgeDataStatBundesamt$sum <- as.integer(AgeDataStatBundesamt$sum)
+AgeDataStatBundesamt$percent <- as.double(AgeDataStatBundesamt$percent)
+AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99"))
+
 AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% filter(!is.na(ref)) %>% group_by(ref) %>% count(age_bracket) %>% 
             mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% rbind(AgeAdd) %>%
+            rbind(AgeDataStatBundesamt) %>%
               mutate(lci = sum*(n/sum - 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                 mutate(lci = 100/sum*lci) %>%
                 mutate(lci = case_when(lci < 0 ~ 0,
@@ -147,8 +156,8 @@ AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% filter(!is.na(ref)) %>% g
                 mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                 mutate(uci = 100/sum*uci) %>%
 ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99")), percent)) +
-  geom_bar(aes(fill=factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=age_bracket, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=age_bracket, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
     theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -158,8 +167,9 @@ ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 30)) +
+  theme(text = element_text(size = 37)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
+  guides(fill=guide_legend(nrow=3,byrow=TRUE)) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
@@ -169,46 +179,55 @@ ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-
 # The following section compares the household sizes for the survey, MuSPAD and the Federal Statistical Office
 
 if(scenario == "Twitter"){
-    HouseholdData <- data_reduced %>% select(ref, hsld_size_01_2023_, origin) %>%
+    HouseholdData <- data_reduced %>% select(ref, respondent_hsld_size_01_2023, origin) %>%
                 filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref ==  "6c8d7" ~ "CaleroValdez", 
-                            ref == "7b598" ~ "Franke", 
-                            ref == "008b5" ~ "Briest", 
-                            ref == "4a76b" ~ "Bachmann"))
-}else if(scenario == "Twitter/Mastodon"){
-    HouseholdData <- data_reduced %>% select(ref, hsld_size_01_2023_, origin) %>%
-                filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
+                            ref ==  "6c8d7" ~ "Recruiter 5", 
+                            ref == "7b598" ~ "Recruiter 4", 
+                            ref == "008b5" ~ "Recruiter 3", 
+                            ref == "4a76b" ~ "Recruiter 2",
+                            ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))
 }
 
-HouseholdData <- HouseholdData %>% mutate(hsld_size_01_2023_ = case_when(hsld_size_01_2023_ == 1 ~ "1", hsld_size_01_2023_ == 2 ~ "2", hsld_size_01_2023_ == 3 ~ "3", hsld_size_01_2023_ == 4 ~ "4", hsld_size_01_2023_ >= 5 ~ "5+"))
+HouseholdData <- HouseholdData %>% mutate(respondent_hsld_size_01_2023 = case_when(respondent_hsld_size_01_2023 == 1 ~ "1", respondent_hsld_size_01_2023 == 2 ~ "2", respondent_hsld_size_01_2023 == 3 ~ "3", respondent_hsld_size_01_2023 == 4 ~ "4", respondent_hsld_size_01_2023 >= 5 ~ "5+"))
 
 HouseholdAdd <- data.frame(matrix(nrow = 0, ncol = 4))
-colnames(HouseholdAdd) <- c("ref", "hsld_size_01_2023_", "n", "percent")
+colnames(HouseholdAdd) <- c("ref", "respondent_hsld_size_01_2023", "n", "percent")
 if(scenario == "Twitter"){
-    HouseholdAdd[nrow(HouseholdAdd) + 1, ] <- c("CaleroValdez", "3", 0, 0)
-    HouseholdAdd[nrow(HouseholdAdd) + 1, ] <- c("CaleroValdez", "4", 0, 0)
-    HouseholdAdd[nrow(HouseholdAdd) + 1, ] <- c("Franke", "5+", 0, 0)
+    HouseholdAdd[nrow(HouseholdAdd) + 1, ] <- c("Recruiter 5", "3", 0, 0)
+    HouseholdAdd[nrow(HouseholdAdd) + 1, ] <- c("Recruiter 5", "4", 0, 0)
+    HouseholdAdd[nrow(HouseholdAdd) + 1, ] <- c("Recruiter 4", "5+", 0, 0)
 }
 
 HouseholdAdd$ref <- as.character(HouseholdAdd$ref)
-HouseholdAdd$hsld_size_01_2023_ <- as.character(HouseholdAdd$hsld_size_01_2023_)
+HouseholdAdd$respondent_hsld_size_01_2023 <- as.character(HouseholdAdd$respondent_hsld_size_01_2023)
 HouseholdAdd$n <- as.double(HouseholdAdd$n)
 HouseholdAdd$percent <- as.double(HouseholdAdd$percent)
 
-HouseholdPlot <- HouseholdData %>% filter(!is.na(ref))  %>% group_by(ref) %>% filter(!is.na(hsld_size_01_2023_ )) %>% 
-                  count(hsld_size_01_2023_ ) %>% mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% rbind(HouseholdAdd) %>%
+#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Haushalte-Familien/Tabellen/1-1-privathaushalte-haushaltsmitglieder.html
+HouseholdDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
+colnames(HouseholdDataStatBundesamt) <- c("respondent_hsld_size_01_2023", "n", "percent", "ref", "sum")
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("1", 84669326*0.411, 41.1, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("2", 84669326*0.335, 33.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("3", 84669326*0.119, 11.9, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("4", 84669326*0.095, 9.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("5+", 84669326*0.039, 3.9, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt$n <- as.integer(HouseholdDataStatBundesamt$n)
+HouseholdDataStatBundesamt$sum <- as.integer(HouseholdDataStatBundesamt$sum)
+HouseholdDataStatBundesamt$percent <- as.double(HouseholdDataStatBundesamt$percent)
+
+HouseholdPlot <- HouseholdData %>% filter(!is.na(ref))  %>% group_by(ref) %>% filter(!is.na(respondent_hsld_size_01_2023)) %>% 
+                  count(respondent_hsld_size_01_2023) %>% mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% rbind(HouseholdAdd) %>%
+                  rbind(HouseholdDataStatBundesamt)  %>%
                     mutate(lci = sum*(n/sum - 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                     mutate(lci = 100/sum*lci) %>%
                     mutate(lci = case_when(lci < 0 ~ 0,
                                     .default = lci)) %>%
                     mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                     mutate(uci = 100/sum*uci) %>%
- ggplot(aes(hsld_size_01_2023_ , percent)) +
-  geom_bar(aes(fill=factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=hsld_size_01_2023_, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+ ggplot(aes(respondent_hsld_size_01_2023 , percent)) +
+  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=respondent_hsld_size_01_2023, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -218,7 +237,7 @@ HouseholdPlot <- HouseholdData %>% filter(!is.na(ref))  %>% group_by(ref) %>% fi
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 30)) +
+  theme(text = element_text(size = 37)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -227,47 +246,38 @@ HouseholdPlot <- HouseholdData %>% filter(!is.na(ref))  %>% group_by(ref) %>% fi
 # Children under 14 ------------------------------------------------------------------
 
 if(scenario == "Twitter"){
-Children <- data_reduced  %>% select(ref, total_hsld_size_persons_under_14, origin) %>%
+Children <- data_reduced  %>% select(ref, respondent_hsld_size_persons_under_14, origin) %>%
                         filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                        ref ==  "6c8d7" ~ "CaleroValdez", 
-                        ref == "7b598" ~ "Franke", 
-                        ref == "008b5" ~ "Briest", 
-                        ref == "4a76b" ~ "Bachmann")) %>%
-                            mutate(total_hsld_size_persons_under_14 = case_when(total_hsld_size_persons_under_14  == 0 ~ "0",
-                            total_hsld_size_persons_under_14  == 1 ~ "1",
-                            total_hsld_size_persons_under_14  == 2 ~ "2",
-                            total_hsld_size_persons_under_14  == 3 ~ "3+",
-                            total_hsld_size_persons_under_14  == 4 ~ "3+"))
-}else if(scenario == "Twitter/Mastodon"){
-Children <- data_reduced %>% select(ref, total_hsld_size_persons_under_14, origin) %>%
-                        filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                        ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)")) %>%
-                            mutate(total_hsld_size_persons_under_14 = case_when(total_hsld_size_persons_under_14  == 0 ~ "0",
-                            total_hsld_size_persons_under_14  == 1 ~ "1",
-                            total_hsld_size_persons_under_14  == 2 ~ "2",
-                            total_hsld_size_persons_under_14  == 3 ~ "3+",
-                            total_hsld_size_persons_under_14  == 4 ~ "3+"))    
+                mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
+                        ref ==  "6c8d7" ~ "Recruiter 5", 
+                        ref == "7b598" ~ "Recruiter 4", 
+                        ref == "008b5" ~ "Recruiter 3", 
+                        ref == "4a76b" ~ "Recruiter 2",
+                        ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)")) %>%
+                            mutate(respondent_hsld_size_persons_under_14 = case_when(respondent_hsld_size_persons_under_14  == 0 ~ "0",
+                            respondent_hsld_size_persons_under_14  == 1 ~ "1",
+                            respondent_hsld_size_persons_under_14  == 2 ~ "2",
+                            respondent_hsld_size_persons_under_14  == 3 ~ "3+",
+                            respondent_hsld_size_persons_under_14  == 4 ~ "3+"))
 }
 
 ChildrenAdd <- data.frame(matrix(nrow = 0, ncol = 4))
-colnames(ChildrenAdd) <- c("ref", "total_hsld_size_persons_under_14", "n", "percent")
+colnames(ChildrenAdd) <- c("ref", "respondent_hsld_size_persons_under_14", "n", "percent")
 if(scenario == "Twitter"){
-    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("Briest", "3+", 0, 0)
-    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("CaleroValdez", "1", 0, 0)
-    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("CaleroValdez", "2", 0, 0)
-    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("CaleroValdez", "3+", 0, 0)
-    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("Franke", "3+", 0, 0)
+    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("Recruiter 3", "3+", 0, 0)
+    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("Recruiter 5", "1", 0, 0)
+    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("Recruiter 5", "2", 0, 0)
+    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("Recruiter 5", "3+", 0, 0)
+    ChildrenAdd[nrow(ChildrenAdd) + 1, ] <- c("Recruiter 4", "3+", 0, 0)
 }
 
 ChildrenAdd$ref <- as.character(ChildrenAdd$ref)
-ChildrenAdd$total_hsld_size_persons_under_14 <- as.character(ChildrenAdd$total_hsld_size_persons_under_14)
+ChildrenAdd$respondent_hsld_size_persons_under_14 <- as.character(ChildrenAdd$respondent_hsld_size_persons_under_14)
 ChildrenAdd$n <- as.double(ChildrenAdd$n)
 ChildrenAdd$percent <- as.double(ChildrenAdd$percent)
 
-ChildrenPlot <- Children %>% filter(!is.na(ref))  %>% group_by(ref) %>% filter(!is.na(total_hsld_size_persons_under_14)) %>% 
-                  count(total_hsld_size_persons_under_14) %>% filter(!is.na(total_hsld_size_persons_under_14)) %>%
+ChildrenPlot <- Children %>% filter(!is.na(ref))  %>% group_by(ref) %>% filter(!is.na(respondent_hsld_size_persons_under_14)) %>% 
+                  count(respondent_hsld_size_persons_under_14) %>% filter(!is.na(respondent_hsld_size_persons_under_14)) %>%
                   mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% rbind(ChildrenAdd) %>%
                     mutate(lci = sum*(n/sum - 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                     mutate(lci = 100/sum*lci) %>%
@@ -275,9 +285,9 @@ ChildrenPlot <- Children %>% filter(!is.na(ref))  %>% group_by(ref) %>% filter(!
                 .default = lci)) %>%
                  mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                  mutate(uci = 100/sum*uci) %>%
-ggplot(aes(total_hsld_size_persons_under_14, percent)) +
-  geom_bar(aes(fill=factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=total_hsld_size_persons_under_14, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+ggplot(aes(respondent_hsld_size_persons_under_14, percent)) +
+  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=respondent_hsld_size_persons_under_14, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -287,7 +297,7 @@ ggplot(aes(total_hsld_size_persons_under_14, percent)) +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 30)) +
+  theme(text = element_text(size = 37)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -300,16 +310,12 @@ ggplot(aes(total_hsld_size_persons_under_14, percent)) +
 if(scenario == "Twitter"){
     educationLevel <- data_reduced %>% filter(!is.na(ref))  %>% select(highest_educational_qualification, ref, origin) %>%
                             filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref ==  "6c8d7" ~ "CaleroValdez", 
-                            ref == "7b598" ~ "Franke", 
-                            ref == "008b5" ~ "Briest", 
-                            ref == "4a76b" ~ "Bachmann"))
-} else if(scenario == "Twitter/Mastodon"){
-    educationLevel <- data_reduced %>% select(highest_educational_qualification, ref, origin) %>%
-                            filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))    
+                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
+                            ref ==  "6c8d7" ~ "Recruiter 5", 
+                            ref == "7b598" ~ "Recruiter 4", 
+                            ref == "008b5" ~ "Recruiter 3", 
+                            ref == "4a76b" ~ "Recruiter 2",
+                            ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))    
 }
 
 educationLevel <- educationLevel %>% mutate(highest_educational_qualification = case_when(highest_educational_qualification == "Haupt-/ Volksschulabschluss" ~ "Certification\nafter 9 years",
@@ -320,17 +326,30 @@ educationLevel <- educationLevel %>% mutate(highest_educational_qualification = 
 EducationAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(EducationAdd) <- c("ref", "highest_educational_qualification", "n", "percent")
 if(scenario == "Twitter"){
-    EducationAdd[nrow(EducationAdd) + 1, ] <- c("Bachmann", "Certification\nafter 9 years", 0, 0)
-    EducationAdd[nrow(EducationAdd) + 1, ] <- c("Briest", "Certification\nafter 9 years", 0, 0)
-    EducationAdd[nrow(EducationAdd) + 1, ] <- c("CaleroValdez", "Certification\nafter 10 years", 0, 0)
-    EducationAdd[nrow(EducationAdd) + 1, ] <- c("CaleroValdez", "Certification\nafter 9 years", 0, 0)
-    EducationAdd[nrow(EducationAdd) + 1, ] <- c("Franke", "Certification\nafter 9 years", 0, 0)
+    EducationAdd[nrow(EducationAdd) + 1, ] <- c("Recruiter 2", "Certification\nafter 9 years", 0, 0)
+    EducationAdd[nrow(EducationAdd) + 1, ] <- c("Recruiter 3", "Certification\nafter 9 years", 0, 0)
+    EducationAdd[nrow(EducationAdd) + 1, ] <- c("Recruiter 5", "Certification\nafter 10 years", 0, 0)
+    EducationAdd[nrow(EducationAdd) + 1, ] <- c("Recruiter 5", "Certification\nafter 9 years", 0, 0)
+    EducationAdd[nrow(EducationAdd) + 1, ] <- c("Recruiter 4", "Certification\nafter 9 years", 0, 0)
 }
 
 EducationAdd$ref <- as.character(EducationAdd$ref)
 EducationAdd$highest_educational_qualification <- as.character(EducationAdd$highest_educational_qualification)
 EducationAdd$n <- as.double(EducationAdd$n)
 EducationAdd$percent <- as.double(EducationAdd$percent)
+
+#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Bildungsstand/Tabellen/bildungsabschluss.html
+EducationDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
+colnames(EducationDataStatBundesamt ) <- c("highest_educational_qualification", "n", "percent", "ref", "sum")
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Higher Education", 83166711*0.335*100, 33.5, "Federal Statistical Office (2019)", 83166711)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 10 years", 83166711*0.3*100, 23.5+6.5, "Federal Statistical Office (2019)", 83166711)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 9 years", 83166711*0.286*100, 28.6, "Federal Statistical Office (2019)", 83166711)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Other/None", 83166711*0.077*100, 3.5+0.2+4.0, "Federal Statistical Office (2019)", 83166711)
+EducationDataStatBundesamt$n <- as.double(EducationDataStatBundesamt $n)
+EducationDataStatBundesamt$sum  <- as.integer(EducationDataStatBundesamt$sum)
+EducationDataStatBundesamt$percent <- as.double(EducationDataStatBundesamt $percent)
+EducationDataStatBundesamt$highest_educational_qualification <- factor(EducationDataStatBundesamt $highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other/None"))
+
 
 EducationPlot <- educationLevel %>% filter(!is.na(ref))  %>% group_by(ref) %>% filter(!is.na(highest_educational_qualification)) %>% 
             count(highest_educational_qualification) %>% 
@@ -340,10 +359,11 @@ EducationPlot <- educationLevel %>% filter(!is.na(ref))  %>% group_by(ref) %>% f
             mutate(lci = case_when(lci < 0 ~ 0,
                 .default = lci)) %>%
             mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
-            mutate(uci = 100/sum*uci) %>%
+            mutate(uci = 100/sum*uci) %>% 
+            rbind(EducationDataStatBundesamt) %>%
 ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other/None")), percent)) +
-  geom_bar(aes(fill=factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=highest_educational_qualification, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office (2019)"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=highest_educational_qualification, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office (2019)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -353,7 +373,7 @@ ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Educatio
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 30)) +
+  theme(text = element_text(size = 37)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -367,16 +387,12 @@ ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Educatio
 if(scenario == "Twitter"){
     currentOccupation <- data_reduced %>% filter(!is.na(ref))  %>% select(ref, current_occupation, origin) %>%
                             filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref ==  "6c8d7" ~ "CaleroValdez", 
-                            ref == "7b598" ~ "Franke", 
-                            ref == "008b5" ~ "Briest", 
-                            ref == "4a76b" ~ "Bachmann"))
-}else if(scenario == "Twitter/Mastodon"){
-    currentOccupation <- data_reduced %>% select(ref, current_occupation, origin) %>%
-                            filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
-                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Priesemann",
-                            ref == "dec9d" & origin == "6080d" ~ "Priesemann (Mastodon)"))
+                        mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
+                            ref ==  "6c8d7" ~ "Recruiter 5", 
+                            ref == "7b598" ~ "Recruiter 4", 
+                            ref == "008b5" ~ "Recruiter 3", 
+                            ref == "4a76b" ~ "Recruiter 2",
+                            ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))
 }
 
 currentOccupation <- currentOccupation %>% mutate(current_occupation = case_when(current_occupation == "Ich bin in einem anderen Beruf tätig." ~ "Other",
@@ -393,15 +409,15 @@ currentOccupation <- currentOccupation %>% mutate(current_occupation = case_when
 OccupationAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(OccupationAdd) <- c("ref", "current_occupation", "n", "percent")
 if(scenario == "Twitter"){
-    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Briest", "Unemployed", 0, 0)
-    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("CaleroValdez", "Medical Sector", 0, 0)
-    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("CaleroValdez", "Retired", 0, 0)
-    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("CaleroValdez", "Student", 0, 0)
-    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("CaleroValdez", "Teaching Sector", 0, 0)
-    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("CaleroValdez", "Unemployed", 0, 0)
-    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Franke", "Medical Sector", 0, 0)
-    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Franke", "Student", 0, 0)
-    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Franke", "Unemployed", 0, 0)
+    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Recruiter 3", "Unemployed", 0, 0)
+    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Recruiter 5", "Medical Sector", 0, 0)
+    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Recruiter 5", "Retired", 0, 0)
+    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Recruiter 5", "Student", 0, 0)
+    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Recruiter 5", "Teaching Sector", 0, 0)
+    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Recruiter 5", "Unemployed", 0, 0)
+    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Recruiter 4", "Medical Sector", 0, 0)
+    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Recruiter 4", "Student", 0, 0)
+    OccupationAdd[nrow(OccupationAdd) + 1, ] <- c("Recruiter 4", "Unemployed", 0, 0)
 }
 
 OccupationAdd$ref <- as.character(OccupationAdd$ref)
@@ -421,8 +437,8 @@ OccupationPlot <- currentOccupation %>% filter(!is.na(ref))  %>% group_by(ref) %
             mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
             mutate(uci = 100/sum*uci) %>%
 ggplot(aes(current_occupation, percent)) +
-  geom_bar(aes(fill=factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=current_occupation, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Priesemann", "Bachmann", "Briest", "Franke", "CaleroValdez", "Priesemann (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=current_occupation, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -431,7 +447,7 @@ ggplot(aes(current_occupation, percent)) +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 30)) +
+  theme(text = element_text(size = 37)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -442,15 +458,17 @@ ggplot(aes(current_occupation, percent)) +
 ## All plots together
 #plot_grid(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = "AUTO", nrow = 3, label_size = 24, rel_heights = c(1,1,1.25))
 
-ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2,font.label = list(size = 30), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
+ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
 if(scenario == "Twitter"){
-    ggsave("DemographicComparison_TwitterRecruiter.pdf", dpi = 500, w = 21, h = 24)
-    ggsave("DemographicComparison_TwitterRecruiter.png", dpi = 500, w = 21, h = 24)
+    ggsave("DemographicComparison_TwitterRecruiter.pdf", dpi = 500, w = 24, h = 27)
+    ggsave("DemographicComparison_TwitterRecruiter.png", dpi = 500, w = 24, h = 27)
 }else if(scenario == "Twitter/Mastodon"){
-    ggsave("DemographicComparison_TwvsMastRecruiter.pdf", dpi = 500, w = 21, h = 24)
-    ggsave("DemographicComparison_TwvsMastRecruiter.png", dpi = 500, w = 21, h = 24)
+    ggsave("DemographicComparison_TwvsMastRecruiter.pdf", dpi = 500, w = 24, h = 27)
+    ggsave("DemographicComparison_TwvsMastRecruiter.png", dpi = 500, w = 24, h = 27)
 }
+
+
 
 
 
