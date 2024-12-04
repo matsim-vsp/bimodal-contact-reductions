@@ -50,7 +50,7 @@ palette2 <- function() {
 }
 
 InfectionTimingTwitter %>% filter(TimeFrame != "Show Me The Answer")  %>%
-                            group_by(TimeFrame, Recruiter) %>% summarise(n = sum(NoVoted)) %>%
+                            group_by(TimeFrame, Recruiter) %>% summarise(n = sum(NoVoted)) %>% group_by(Recruiter) %>%
                             mutate(percent = 100 * n / sum(n)) %>%
                             mutate(lci = sum(n)*(n/sum(n) - 1.96*(((n/sum(n)*(1-n/sum(n)))/sum(n))^0.5))) %>%
                             mutate(lci = 100/sum(n)*lci) %>%
@@ -78,6 +78,50 @@ guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
 
 ggsave("TimingOfInfections_Twitter.pdf", dpi = 500, w = 10, h = 7.5)
 ggsave("TimingOfInfections_Twitter.png", dpi = 500, w = 10, h = 7.5)
+
+MuSPAD <- MuSPADnewplusold %>% 
+mutate(firstinfection = make_date(MuSPADnewplusold$s22_positive_PCR_year_1, MuSPADnewplusold$s22_positive_PCR_month_1, MuSPADnewplusold$s22_positive_PCR_day_1)) %>%
+mutate(secondinfection = make_date(MuSPADnewplusold$s22_positive_PCR_year_2, MuSPADnewplusold$s22_positive_PCR_month_2, MuSPADnewplusold$s22_positive_PCR_day_2)) %>%
+mutate(thirdinfection = make_date(MuSPADnewplusold$s22_positive_PCR_year_3, MuSPADnewplusold$s22_positive_PCR_month_3, MuSPADnewplusold$s22_positive_PCR_day_3)) %>%
+select(firstinfection, secondinfection, thirdinfection)
+
+no_time_infections <- MuSPAD %>% pivot_longer(cols=c("firstinfection", "secondinfection", "thirdinfection"))
+no_time_infections <- no_time_infections %>%
+filter(!is.na(value)) %>%
+filter(value > as.Date("2021/12/31")) %>%
+filter(value < as.Date("2023/01/01")) %>%
+mutate(Timing = case_when(value <  as.Date("2022/04/01") ~ "Jan - Apr",
+                          value < as.Date("2022/09/01") ~ "May - Aug",
+                          .default = "Sep - Dec"))
+colnames(no_time_infections)[1] <- "CounterInfection"
+colnames(no_time_infections)[2] <- "DateInfection"
+
+no_time_infections %>% count(Timing) %>% mutate(percent = 100*n/(sum(n))) %>%
+                            mutate(lci = sum(n)*(n/sum(n) - 1.96*(((n/sum(n)*(1-n/sum(n)))/sum(n))^0.5))) %>%
+                            mutate(lci = 100/sum(n)*lci) %>%
+                            mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+                            mutate(uci = sum(n)*(n/sum(n) + 1.96*(((n/sum(n)*(1-n/sum(n)))/sum(n))^0.5))) %>%
+                            mutate(uci = 100/sum(n)*uci) %>%
+ggplot(aes(x = Timing, y = percent)) +
+geom_bar(stat = "identity", position = "dodge", fill = "#006992", width = 0.95) +
+geom_errorbar(aes(x=Timing, ymin=lci, ymax=uci), color = "#27476E",  position = position_dodge(0.95), width = 0.3, alpha=0.9, size=1.3) +
+theme_minimal() +
+scale_fill_manual(values = palette()) +
+scale_color_manual(values = palette2()) +
+scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,10,20,30,40,50)) +
+ylab("Share (Percentage)") +
+xlab("Timing of Infection (2022)") +
+theme(text = element_text(size = 33)) +
+theme(legend.position = "bottom", legend.title = element_blank()) +
+theme(panel.spacing = unit(0.8, "cm", data = NULL)) +
+guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
+  theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(5, "pt")) +
+  guides(fill=guide_legend(nrow=3,byrow=TRUE))
+
+ggsave("TimingOfInfections_MuSPAD.pdf", dpi = 500, w = 10, h = 7.5)
+ggsave("TimingOfInfections_MuSPAD.png", dpi = 500, w = 10, h = 7.5)
 
 # 2nd Part ----------------------------------------------------------------
 
@@ -142,7 +186,7 @@ colnames(rkidata) <- c("Date", "Incidence100000")
 rkidata <- rkidata %>% mutate(lci = Incidence100000, uci = Incidence100000, DataSet = "RKI")
 count_no_infections <- count_no_infections %>% 
                         select(Date, Incidence100000, lci, uci) %>%
-                        mutate(DataSet = "Survey")
+                        mutate(DataSet = "External Survey")
 count_no_infections <- rbind(count_no_infections, rkidata)
 
 #No of infections MuSPAD
@@ -194,18 +238,22 @@ for(date in dates){
 }
 
 MuSPAD_time_inf$Date <- as.Date(MuSPAD_time_inf$Date)
-MuSPAD_time_inf <- MuSPAD_time_inf %>% mutate(DataSet = "MuSPAD")
+MuSPAD_time_inf <- MuSPAD_time_inf %>% mutate(DataSet = "MuSPAD") %>% filter(Date <= "2022-12-13")
 count_no_infections <- rbind(count_no_infections, MuSPAD_time_inf)
 
 palette <- function() {
-  c("#27476E", "#ECA400", "#006992")
+  c("#ECA400", "#006992", "#27476E")
 }
 
 palette2 <- function() {
-  c("#006992", "#FFD269", "#009cd9")
+  c("#FFD269", "#009cd9", "#006992")
 }
 
-count_no_infections$DataSet <- factor(count_no_infections$DataSet, levels = c("RKI", "Survey", "MuSPAD"))
+count_no_infections$DataSet <- factor(count_no_infections$DataSet, levels = c("External Survey", "MuSPAD", "RKI"))
+
+StopMusPadData <- data.frame(date=as.Date(c("2022-12-13")), 
+                              event=c("Last Infection\nreported to MuSPAD"))
+
 
 ggplot(data = count_no_infections %>% filter(Date < "2024-01-01")) +
     geom_point (aes(x = Date, y = Incidence100000, color = DataSet), size = 2) +
@@ -215,13 +263,19 @@ ggplot(data = count_no_infections %>% filter(Date < "2024-01-01")) +
     xlab("Date") +
     scale_color_manual(values = palette()) +
     scale_fill_manual(values = palette()) +
+    geom_vline(data=StopMusPadData, mapping=aes(xintercept=date), color="#666666", size = 1.5) +
+    geom_text(data=StopMusPadData, mapping=aes(x=date, y=0.04, label=event), size=10, angle=90, nudge_y = 2600, hjust = 0.5) +
     ylab("7-Day-Incidence \n per 100,000") +
-    theme(text = element_text(size = 30)) +
-    #scale_y_log10(breaks=c(1,10,100,1000)) +
-    theme(legend.position = "bottom", legend.title = element_blank())
+    theme(text = element_text(size = 45)) +
+    scale_y_continuous(breaks = c (0,500,1000,1500,2000,2500,3000)) +
+    scale_x_date(date_breaks = "6 months", date_labels = "%Y/%m")+
+    theme(legend.position = "bottom", legend.title = element_blank()) +
+      theme(axis.ticks.x = element_line(),
+        axis.ticks.y = element_line(),
+        axis.ticks.length = unit(12, "pt"))
 
-ggsave("VizComparisonIncidenceSurveyRKI.pdf", dpi = 500, w = 15, h = 7.5)
-ggsave("VizComparisonIncidenceSurveyRKI.png", dpi = 500, w = 15, h = 7.5)
+ggsave("VizComparisonIncidenceSurveyRKI.pdf", dpi = 500, w = 23, h = 10)
+ggsave("VizComparisonIncidenceSurveyRKI.png", dpi = 500, w = 23, h = 10)
 
 ggplot() +
     geom_point(data = count_no_infections, aes(x = Date, y = Incidence100000, color = DataSet), size = 1.5) +
