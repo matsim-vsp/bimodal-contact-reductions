@@ -89,7 +89,7 @@ ggplot(aes(gender, percent)) +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 37)) +
+  theme(text = element_text(size = 40)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -99,7 +99,7 @@ ggplot(aes(gender, percent)) +
 
 if(scenario == "Twitter"){
     AgeData <- data_reduced %>% select(year_of_birth, ref, origin) %>% mutate(age = 2023-year_of_birth) %>%
-            mutate(age_bracket = case_when(age < 20 ~ "Below 20 (*)",
+            mutate(age_bracket = case_when(age < 20 ~ "Below 20(*)",
                                             age < 40 ~ "20-39",
                                             age < 60 ~ "40-59",
                                             age < 80 ~ "60-79",
@@ -116,15 +116,15 @@ if(scenario == "Twitter"){
 AgeAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeAdd) <- c("ref", "age_bracket", "n", "percent")
 if(scenario == "Twitter"){
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 3", "Below 20 (*)", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 3", "Below 20(*)", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 3", "80-99", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "Below 20 (*)", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "Below 20(*)", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "60-79", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "80-99", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "Below 20 (*)", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "Below 20(*)", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "60-79", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "80-99", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 1 (Mastodon)", "Below 20 (*)", 0, 0)
+    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 1 (Mastodon)", "Below 20(*)", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 1 (Mastodon)", "80-99", 0, 0)
 }
 
@@ -136,7 +136,7 @@ AgeAdd$age_bracket <- as.character(AgeAdd$age_bracket)
 # Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html
 AgeDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(AgeDataStatBundesamt) <- c("age_bracket", "n", "percent", "ref", "sum")
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("Below 20 (*)", 84669326*0.188, 18.8, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("Below 20(*)", 84669326*0.188, 18.8, "Federal Statistical Office, Federal Employment Agency", 84669326)
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("20-39", 84669326*0.245, 24.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("40-59", 84669326*0.268, 26.8, "Federal Statistical Office, Federal Employment Agency", 84669326)
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("60-79", 84669326*0.226, 22.6, "Federal Statistical Office, Federal Employment Agency", 84669326)
@@ -144,7 +144,7 @@ AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("80-99", 84669326*0.
 AgeDataStatBundesamt$n <- as.integer(AgeDataStatBundesamt$n)
 AgeDataStatBundesamt$sum <- as.integer(AgeDataStatBundesamt$sum)
 AgeDataStatBundesamt$percent <- as.double(AgeDataStatBundesamt$percent)
-AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99"))
+AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("Below 20(*)", "20-39", "40-59", "60-79", "80-99"))
 
 AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% filter(!is.na(ref)) %>% group_by(ref) %>% count(age_bracket) %>% 
             mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% rbind(AgeAdd) %>%
@@ -155,7 +155,7 @@ AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% filter(!is.na(ref)) %>% g
                                 .default = lci)) %>%
                 mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                 mutate(uci = 100/sum*uci) %>%
-ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-79", "80-99")), percent)) +
+ggplot(aes(factor(age_bracket, levels = c("Below 20(*)", "20-39", "40-59", "60-79", "80-99")), percent)) +
   geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
   geom_errorbar(aes(x=age_bracket, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
@@ -167,7 +167,7 @@ ggplot(aes(factor(age_bracket, levels = c("Below 20 (*)", "20-39", "40-59", "60-
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 37)) +
+  theme(text = element_text(size = 40)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   guides(fill=guide_legend(nrow=3,byrow=TRUE)) +
   theme(axis.ticks.x = element_line(),
@@ -237,7 +237,7 @@ HouseholdPlot <- HouseholdData %>% filter(!is.na(ref))  %>% group_by(ref) %>% fi
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 37)) +
+  theme(text = element_text(size = 40)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -297,7 +297,7 @@ ggplot(aes(respondent_hsld_size_persons_under_14, percent)) +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 37)) +
+  theme(text = element_text(size = 40)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -373,7 +373,7 @@ ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Educatio
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 37)) +
+  theme(text = element_text(size = 40)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -425,10 +425,35 @@ OccupationAdd$current_occupation <- as.character(OccupationAdd$current_occupatio
 OccupationAdd$n <- as.double(OccupationAdd$n)
 OccupationAdd$percent <- as.double(OccupationAdd$percent)
 
+#Data stems from https://de.statista.com/statistik/daten/studie/1099494/umfrage/beschaeftigte-in-deutschland-nach-berufsgruppen/
+FedEmploymentAgency <- read_xlsx("/Users/sydney/Downloads/statistic_id1099494_beschaeftigte-in-deutschland-nach-berufsgruppen-2023.xlsx", sheet = 2)
+colnames(FedEmploymentAgency) <- c("occupation", "n")
+OccupationDataFedEmploymentAgency <- data.frame(matrix(nrow = 0, ncol = 3))
+other <- c("Berufe in Unternehmensführung, -organisation (Büro)", "Verkaufsberufe", "Verkehr, Logistik (außer Fahrzeugführung)", "Erziehung, soz., hauswirt. Berufe, Theologie", 
+"Maschinen- und Fahrzeugtechnikberufe", "Reinigungsberufe", "Tourismus-, Hotel- und Gaststättenberufe", "FührerInnen von Fahrzeug- und Transportgeräten",
+"Berufe in Finanzdienstleistungen, Rechnungswesen und Steuerberatung", "Berufe in Recht und Verwaltung", "Metallerzeugung, -bearbeitung, Metallbau", 
+"Technische Forschungs-, Entwicklungs-, Konstruktions- und Produktionssteuerungsberufe", "Einkaufs-, Vertriebs- und Handelsberufe", "Mechatronik-, Energie- und Elektroberufe",                                             
+"Informatik- und andere IKT-Berufe", "Lebensmittelherstellung und -verarbeitung", "Nichtmed. Gesundheits-, Körperpflege-/ Wellnessberufe, Medizintechnik", "Gebäude- und versorgungstechnische Berufe",    
+"Hoch- und Tiefbauberufe", "Werbung, Marketing, kaufmännische und redaktionelle Medienberufe", "Kunststoff- und Holz- herstellung, -verarbeitung", "Schutz-, Sicherheits-, Überwachungsberufe",                                            
+"(Innen-) Ausbauberufe", "Mathematik-, Biologie-, Chemie-, Physikberufe", "Keine Zuordnung möglich" , "Land-, Tier-, Forstwirtschaftsberufe", "Gartenbauberufe, Floristik",                                                           
+"Bauplanung, Architektur, Vermessungsberufe","Papier-, Druckberufe, tech. Mediengestaltung" , "Darstellende, unterhaltende Berufe", "Sprach-/ Literatur-/ Geistes-/ Gesellschafts-/ Wirtschaftswissenschaften",         
+"Textil- und Lederberufe","Rohstoffgewinnung, Glas-, Keramikverarbeitung","Produktdesign, Kunsthandwerk", "Geologie-, Geografie-, Umweltschutzberufe")
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Other", sum((FedEmploymentAgency %>% filter(occupation %in% other))$n)*1000, "Federal Employment Agency")
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Teaching Sector", (FedEmploymentAgency %>% filter(occupation == "Lehrende und ausbildende Berufe"))$n*1000, "Federal Employment Agency")
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Medical Sector", (FedEmploymentAgency %>% filter(occupation == "Medizinische Gesundheitsberufe"))$n*1000, "Federal Employment Agency")
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Unemployed", 2554982, "Federal Employment Agency") #https://statistik.arbeitsagentur.de/Statistikdaten/Detail/Aktuell/iiia4/zr-alo-bl/zr-alo-bl-dwolr-0-xlsx.xlsx?__blob=publicationFile
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Student", 2868300 + 1220000, "Federal Employment Agency") #https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Hochschulen/_inhalt.html https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Berufliche-Bildung/_inhalt.html
+OccupationDataFedEmploymentAgency[nrow(OccupationDataFedEmploymentAgency) + 1, ] <- c("Retired", 21229000, "Federal Employment Agency") #https://www.deutsche-rentenversicherung.de/DRV/DE/Experten/Zahlen-und-Fakten/Statistiken-und-Berichte/statistiken-und-berichte_node.html
+colnames(OccupationDataFedEmploymentAgency) <- c("current_occupation", "n", "ref")
+OccupationDataFedEmploymentAgency$n <- as.double(OccupationDataFedEmploymentAgency$n)
+OccupationDataFedEmploymentAgency <- OccupationDataFedEmploymentAgency %>% mutate(sum = sum(n), percent = n/sum*100)
+
+
 OccupationPlot <- currentOccupation %>% filter(!is.na(ref))  %>% group_by(ref) %>% filter(!is.na(current_occupation)) %>% 
             count(current_occupation) %>% filter(!is.na(current_occupation)) %>%
             mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% 
             rbind(OccupationAdd) %>%
+            rbind(OccupationDataFedEmploymentAgency) %>%
               mutate(lci = sum*(n/sum - 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
             mutate(lci = 100/sum*lci) %>%
             mutate(lci = case_when(lci <= 0 ~ 0,
@@ -437,8 +462,8 @@ OccupationPlot <- currentOccupation %>% filter(!is.na(ref))  %>% group_by(ref) %
             mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
             mutate(uci = 100/sum*uci) %>%
 ggplot(aes(current_occupation, percent)) +
-  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=current_occupation, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=current_occupation, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -447,7 +472,7 @@ ggplot(aes(current_occupation, percent)) +
   scale_fill_manual(values = palette()) +
   scale_colour_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
-  theme(text = element_text(size = 37)) +
+  theme(text = element_text(size = 40)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
@@ -458,7 +483,7 @@ ggplot(aes(current_occupation, percent)) +
 ## All plots together
 #plot_grid(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = "AUTO", nrow = 3, label_size = 24, rel_heights = c(1,1,1.25))
 
-ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
+ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2, font.label = list(size = 45), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
 if(scenario == "Twitter"){
     ggsave("DemographicComparison_TwitterRecruiter.pdf", dpi = 500, w = 24, h = 27)

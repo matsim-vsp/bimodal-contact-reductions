@@ -56,9 +56,9 @@ InfectionsMuspad <- InfectionsMuspad %>% filter(!is.na(w22_positive_test))
 
 InfectionsDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataMuspad) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("0", (InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n/sum(InfectionsMuspad$n), "MuSPAD\n(data acquisition:\nYY/MM/DD - YY/MM/DD)", sum(InfectionsMuspad$n))
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("1",	(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n/sum(InfectionsMuspad$n), "MuSPAD\n(data acquisition:\nYY/MM/DD - YY/MM/DD)", sum(InfectionsMuspad$n))
-InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("2+", (InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n, 100*((InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n)/sum(InfectionsMuspad$n), "MuSPAD\n(data acquisition:\nYY/MM/DD - YY/MM/DD)", sum(InfectionsMuspad$n))
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("0", (InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Nie"))$n/sum(InfectionsMuspad$n), "MuSPAD\n(data acquisition:\nYY/MM/DD\nuntil\nYY/MM/DD)", sum(InfectionsMuspad$n))
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("1",	(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n, 100*(InfectionsMuspad %>% filter(w22_positive_test=="Einmal"))$n/sum(InfectionsMuspad$n), "MuSPAD\n(data acquisition:\nYY/MM/DD\nuntil\nYY/MM/DD)", sum(InfectionsMuspad$n))
+InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("2+", (InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n, 100*((InfectionsMuspad %>% filter(w22_positive_test=="Zweimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="Dreimal"))$n+(InfectionsMuspad %>% filter(w22_positive_test=="mehr als dreimal"))$n)/sum(InfectionsMuspad$n), "MuSPAD\n(data acquisition:\nYY/MM/DD\nuntil\nYY/MM/DD)", sum(InfectionsMuspad$n))
 InfectionsDataMuspad$num_c19_infs_eng <- factor(InfectionsDataMuspad$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataMuspad$n <- as.integer(InfectionsDataMuspad$n)
 InfectionsDataMuspad$percent <- as.double(InfectionsDataMuspad$percent)
@@ -66,9 +66,9 @@ InfectionsDataMuspad$sum <- as.double(InfectionsDataMuspad$sum)
 
 InfectionsDataTwitter <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataTwitter) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1191, 28.25, "Twitter\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1191+2310+716)
-InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1",	2310, 54.77, "Twitter\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1191+2310+716)
-InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 716, 16.98, "Twitter\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1191+2310+716)
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1191, 28.25, "Twitter\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", 1191+2310+716)
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1",	2310, 54.77, "Twitter\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", 1191+2310+716)
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 716, 16.98, "Twitter\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", 1191+2310+716)
 InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataTwitter$n <- as.integer(InfectionsDataTwitter$n)
 InfectionsDataTwitter$percent <- as.double(InfectionsDataTwitter$percent)
@@ -76,9 +76,9 @@ InfectionsDataTwitter$sum <- as.double(InfectionsDataTwitter$sum)
 
 InfectionsDataMastodon <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataMastodon) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("0", 1802*0.37, 100*1802*0.37/(1802*0.37+1802*0.49+1802*0.12), "Mastodon\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1802*0.37+1802*0.49+1802*0.12)
-InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("1",	1802*0.49, 100*1802*0.49/(1802*0.37+1802*0.49+1802*0.12), "Mastodon\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1802*0.37+1802*0.49+1802*0.12)
-InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("2+", 1802*0.12, 100*1802*0.12/(1802*0.37+1802*0.49+1802*0.12), "Mastodon\n(data acquisition:\n2023/07/19 - 2023/07/26)", 1802*0.37+1802*0.49+1802*0.12)
+InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("0", 1802*0.37, 100*1802*0.37/(1802*0.37+1802*0.49+1802*0.12), "Mastodon\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", 1802*0.37+1802*0.49+1802*0.12)
+InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("1",	1802*0.49, 100*1802*0.49/(1802*0.37+1802*0.49+1802*0.12), "Mastodon\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", 1802*0.37+1802*0.49+1802*0.12)
+InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("2+", 1802*0.12, 100*1802*0.12/(1802*0.37+1802*0.49+1802*0.12), "Mastodon\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", 1802*0.37+1802*0.49+1802*0.12)
 InfectionsDataMastodon$num_c19_infs_eng <- factor(InfectionsDataMastodon$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataMastodon$n <- as.integer(InfectionsDataMastodon$n)
 InfectionsDataMastodon$percent <- as.double(InfectionsDataMastodon$percent)
@@ -87,9 +87,9 @@ InfectionsDataMastodon$sum <- as.double(InfectionsDataMastodon$sum)
 # Data comes from https://projekte.uni-erfurt.de/cosmo2020/files/COSMO_W70.pdf --> DEC 2022!
 InfectionsDataCOSMO <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataCOSMO) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("0", 1003*0.5, 50, "COSMO\n(data acquisition:\n2022/11/29-2022/11/30)", 1003)
-InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("1",	1003*0.42, 42, "COSMO\n(data acquisition:\n2022/11/29-2022/11/30)", 1003)
-InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("2+", 1003*0.08, 8, "COSMO\n(data acquisition:\n2022/11/29-2022/11/30)", 1003)
+InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("0", 1003*0.5, 50, "COSMO\n(data acquisition:\n2022/11/29\nuntil\n2022/11/30)", 1003)
+InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("1",	1003*0.42, 42, "COSMO\n(data acquisition:\n2022/11/29\nuntil\n2022/11/30)", 1003)
+InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("2+", 1003*0.08, 8, "COSMO\n(data acquisition:\n2022/11/29\nuntil\n2022/11/30)", 1003)
 InfectionsDataCOSMO$num_c19_infs_eng <- factor(InfectionsDataCOSMO$num_c19_infs_eng, levels = c("0", "1", "2+"))
 InfectionsDataCOSMO$n <- as.integer(InfectionsDataCOSMO$n)
 InfectionsDataCOSMO$percent <- as.double(InfectionsDataCOSMO$percent)
@@ -99,7 +99,7 @@ InfectionsDataCOSMO$sum <- as.double(InfectionsDataCOSMO$sum)
 data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   count(num_c19_infs_eng) %>%
   mutate(percent = 100 * n / sum(n)) %>%
-  mutate(Source = "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)") %>%
+  mutate(Source = "External Survey\n(data acquisition:\n2023/07/18\nuntil\n2023/08/30)") %>%
   mutate(sum = sum(n)) %>%
   rbind(InfectionsDataTwitter) %>%
   rbind(InfectionsDataMuspad) %>%
@@ -109,7 +109,7 @@ data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   mutate(lci = 100/sum*lci) %>%
   mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
   mutate(uci = 100/sum*uci) %>%
-  mutate(Source = factor(Source, levels = c("Mastodon\n(data acquisition:\n2023/07/19 - 2023/07/26)", "Twitter\n(data acquisition:\n2023/07/19 - 2023/07/26)", "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "MuSPAD\n(data acquisition:\nYY/MM/DD - YY/MM/DD)", "COSMO\n(data acquisition:\n2022/11/29-2022/11/30)"))) %>%
+  mutate(Source = factor(Source, levels = c("Mastodon\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", "Twitter\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", "External Survey\n(data acquisition:\n2023/07/18\nuntil\n2023/08/30)", "MuSPAD\n(data acquisition:\nYY/MM/DD\nuntil\nYY/MM/DD)", "COSMO\n(data acquisition:\n2022/11/29\nuntil\n2022/11/30)"))) %>%
   ggplot(aes(num_c19_infs_eng, percent)) +
   geom_bar(aes(fill=Source), stat = "identity", position = "dodge", width = 0.95) +
   geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, colour = Source), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
@@ -120,7 +120,7 @@ data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 0.5), breaks = c(0,12.5,25,37.5, 50,75,100)) +
-  theme(text = element_text(size = 34)) +
+  theme(text = element_text(size = 42)) +
   theme(legend.position = "none", legend.title = element_blank()) +
    guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
       theme(axis.ticks.x = element_line(size = 1), 
@@ -214,7 +214,7 @@ ggsave("NoInfections_Comparison_Recruiter.png", dpi = 500,  w = 10, h = 7.5)
 
 # The following section creates bar plots which show the share of the different vaccination suppliers for the different doses
 
-vaccinationData <- data_reduced %>% select(c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
+vaccinationData <- data_reduced %>% select(year_of_birth, c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
 vaccinationData <- na.omit(vaccinationData)
 vaccinationData <- vaccinationData %>% pivot_longer(cols = c("c19_vaccination_details_vaccine_dose_1", "c19_vaccination_details_vaccine_dose_2", "c19_vaccination_details_vaccine_dose_3", "c19_vaccination_details_vaccine_dose_4"))
 vaccinationData$value <- factor(vaccinationData$value, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/ Johnson & Johnson", "Gamaleya Sputnik V", "Andere", "Ich möchte nicht antworten", "Nicht zutreffend"))
@@ -232,7 +232,7 @@ vaccinationData <- vaccinationData %>% mutate(Impfserie = case_when(name == "c19
                                                                     name == "c19_vaccination_details_vaccine_dose_3" ~ "3",
                                                                     name == "c19_vaccination_details_vaccine_dose_4" ~ "4"))
 vaccinationData$Impfserie <- factor(vaccinationData$Impfserie, levels = c("1", "2", "3", "4"))
-vaccinationData <- vaccinationData %>% mutate(Source = "External Survey (data acquisition: 2023/07/18-2023/08/30)")
+vaccinationData <- vaccinationData %>% mutate(Source = "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)")
 vaccinationData<- vaccinationData %>% select(Impfserie, value_eng, Source)
 
 # Compare to RKI vaccination data
@@ -252,17 +252,19 @@ rkiVaccinations <- rkiVaccinations %>% mutate(value_eng = case_when(Impfstoff ==
                                                                     Impfstoff == "Spikevax bivalent Original/Omicron BA.4-5" ~ "Moderna",
                                                                     Impfstoff == "Valneva" ~ "Other",
                                                                     Impfstoff == "VidPrevtyn Beta" ~ "Other"))
-rkiVaccinations <- rkiVaccinations %>% mutate(Source = "RKI") %>% filter(Impfserie %in% c(1,2,3,4))
+
+rkiVaccinations <- rkiVaccinations %>% filter(Impfdatum < "2023-09-01") %>%
+                  mutate(Source = "RKI\n(data acquisition:\n2020/12/27-2023/08/30)") %>% filter(Impfserie %in% c(1,2,3,4))
 rkiVaccinations <- rkiVaccinations %>% uncount(Anzahl)
 
 rkiVaccinations <- rkiVaccinations %>% select(Impfserie, value_eng, Source)
 
 vaccinationData <- rbind(vaccinationData, rkiVaccinations)
 
-vaccinationData <- vaccinationData %>% mutate(vaccineNo = case_when(Impfserie == "1" ~ "1st COVID-19 Vaccination",
-                                                                    Impfserie == "2" ~ "2nd COVID-19 Vaccination",
-                                                                    Impfserie == "3" ~ "3rd COVID-19 Vaccination",
-                                                                    Impfserie == "4" ~ "4th COVID-19 Vaccination"
+vaccinationData <- vaccinationData %>% mutate(vaccineNo = case_when(Impfserie == "1" ~ "1st COVID-19 Vaccination Dosis",
+                                                                    Impfserie == "2" ~ "2nd COVID-19 Vaccination Dosis",
+                                                                    Impfserie == "3" ~ "3rd COVID-19 Vaccination Dosis",
+                                                                    Impfserie == "4" ~ "4th COVID-19 Vaccination Dosis"
                                                                     ))
 
 #Compare to MuSPAD data
@@ -270,44 +272,42 @@ vaccinationData <- vaccinationData %>% mutate(vaccineNo = case_when(Impfserie ==
 VaccinationSupplierMuspad <- MuSPAD %>% select(w22_vacc_type_1, w22_vacc_type_2, w22_vacc_type_3, w22_vacc_type_4)
 VaccinationSupplierMuspad1 <- VaccinationSupplierMuspad %>% count(w22_vacc_type_1) %>% filter(!is.na(w22_vacc_type_1)) %>%
                                                             mutate(w22_vacc_type_1 = case_when(w22_vacc_type_1 %in% c("Andere", "Novavax", "Gamaleya Sputnik V") ~ "Other", 
-                                                            .default = w22_vacc_type_1))
+                                                            .default = w22_vacc_type_1))  %>% filter(w22_vacc_type_1 != "keine (weitere) Impfung erhalten")
 VaccinationSupplierMuspad2 <- VaccinationSupplierMuspad %>% count(w22_vacc_type_2) %>% filter(!is.na(w22_vacc_type_2)) %>%
                                                             mutate(w22_vacc_type_2 = case_when(w22_vacc_type_2 %in% c("Andere", "Novavax", "Gamaleya Sputnik V") ~ "Other", 
-                                                            .default = w22_vacc_type_2))
+                                                            .default = w22_vacc_type_2))  %>% filter(w22_vacc_type_2 != "keine (weitere) Impfung erhalten")
 VaccinationSupplierMuspad3 <- VaccinationSupplierMuspad %>% count(w22_vacc_type_3) %>% filter(!is.na(w22_vacc_type_3)) %>%
                                                             mutate(w22_vacc_type_3 = case_when(w22_vacc_type_3 %in% c("Andere", "Novavax", "Gamaleya Sputnik V") ~ "Other", 
-                                                            .default = w22_vacc_type_3))
+                                                            .default = w22_vacc_type_3))  %>% filter(w22_vacc_type_3 != "keine (weitere) Impfung erhalten")
 VaccinationSupplierMuspad4 <- VaccinationSupplierMuspad %>% count(w22_vacc_type_4) %>% filter(!is.na(w22_vacc_type_4)) %>%
                                                             mutate(w22_vacc_type_4 = case_when(w22_vacc_type_4 %in% c("Andere", "Novavax", "Gamaleya Sputnik V") ~ "Other", 
-                                                            .default = w22_vacc_type_4))
+                                                            .default = w22_vacc_type_4)) %>% filter(w22_vacc_type_4 != "keine (weitere) Impfung erhalten")
 
 
 VaccinationSupplierDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(VaccinationSupplierDataMuspad) <- c("vaccineNo", "Source", "value_eng", "n", "percent")
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "BioNTech"))$n/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "Moderna", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Moderna"))$n,100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Moderna"))$n/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination", "MuSPAD", "Other", sum((VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Other"))$n), 100*sum((VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Other"))$n)/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "BioNTech"))$n/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Moderna"))$n, 100* (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Moderna"))$n/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination", "MuSPAD", "Other", sum((VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Other"))$n), 100*sum((VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Other"))$n)/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "BioNTech"))$n/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Moderna"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Moderna"))$n/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination", "MuSPAD", "Other", sum((VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Other"))$n), 100*sum((VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Other"))$n)/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "BioNTech"))$n/sum(VaccinationSupplierMuspad4$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Moderna"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Moderna"))$n/sum(VaccinationSupplierMuspad4$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad4$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad4$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination", "MuSPAD", "Other", sum((VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Other"))$n), 100*sum((VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Other"))$n)/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "BioNTech"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "Moderna", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Moderna"))$n,100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Moderna"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "Other", sum((VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Other"))$n), 100*sum((VaccinationSupplierMuspad1 %>% filter(w22_vacc_type_1 == "Other"))$n)/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "BioNTech"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Moderna"))$n, 100* (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Moderna"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "Other", sum((VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Other"))$n), 100*sum((VaccinationSupplierMuspad2 %>% filter(w22_vacc_type_2 == "Other"))$n)/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "BioNTech"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Moderna"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Moderna"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "Other", sum((VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Other"))$n), 100*sum((VaccinationSupplierMuspad3 %>% filter(w22_vacc_type_3 == "Other"))$n)/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "BioNTech"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Moderna"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Moderna"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "Janssen/Johnson & Johnson", (VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "Other", sum((VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Other"))$n), 100*sum((VaccinationSupplierMuspad4 %>% filter(w22_vacc_type_4 == "Other"))$n)/sum(VaccinationSupplierMuspad4$n))
 VaccinationSupplierDataMuspad$n <- as.integer(VaccinationSupplierDataMuspad$n)
 VaccinationSupplierDataMuspad$percent <- as.double(VaccinationSupplierDataMuspad$percent)
-VaccinationSupplierDataMuspad$value_eng <- factor(VaccinationSupplierDataMuspad$value_eng, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/Johnson & Johnson", "Gamaleya Sputnik V", "Other", "I Don't Want To Answer", "Does Not Apply"))
-
 
 palette <- function() {
   c("#ECA400", "#006992", "#27476E")
@@ -320,15 +320,24 @@ palette2 <- function() {
 
 vaccinationData %>% filter(value_eng != "Does Not Apply") %>% filter(value_eng != "I Don't Want To Answer") %>% group_by(vaccineNo, Source) %>% count(value_eng) %>%
                     mutate(percent = 100 * n / sum(n)) %>% mutate(percent = round(percent, digits = 2)) %>%
-                    rbind(VaccinationSupplierDataMuspad) %>%
+                    rbind(VaccinationSupplierDataMuspad) %>% group_by(vaccineNo, Source) %>% 
+                    mutate(value_eng = factor(value_eng, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/Johnson & Johnson", "Gamaleya Sputnik V", "Other", "I Don't Want To Answer", "Does Not Apply"))) %>%
+                    mutate(lci = sum(n)*(n/sum(n) - 1.96*(((n/sum(n)*(1-n/sum(n)))/sum(n))^0.5))) %>%
+                    mutate(lci = 100/sum(n)*lci) %>%
+                    mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+                    mutate(uci = sum(n)*(n/sum(n) + 1.96*(((n/sum(n)*(1-n/sum(n)))/sum(n))^0.5))) %>%
+                    mutate(uci = 100/sum(n)*uci) %>%
+                    mutate(Source = factor(Source, levels = c("External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "MuSPAD", "RKI\n(data acquisition:\n2020/12/27-2023/08/30)"))) %>%
 ggplot(aes(value_eng, percent)) +
-  geom_bar(aes(fill = factor(Source, levels = c("External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "MuSPAD", "RKI"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_bar(aes(fill = Source), stat = "identity", position = "dodge", width = 0.95) +
+  geom_errorbar(aes(x=value_eng, ymin=lci, ymax=uci, colour = Source), position = position_dodge(0.95), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   facet_wrap(~vaccineNo, nrow=2) +
   ylab("Share (Percentage)") +
   scale_y_continuous(limits=c(0,110), labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   xlab("Vaccination Supplier") +
   scale_fill_manual(values = palette()) +
+  scale_color_manual(values = palette2()) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   theme(text = element_text(size = 37)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
@@ -336,8 +345,8 @@ ggplot(aes(value_eng, percent)) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("ShareVaccinationSupplier.pdf", dpi = 500, w = 21, h = 15)
-ggsave("ShareVaccinationSupplier.png", dpi = 500, w = 21, h = 15)
+ggsave("ShareVaccinationSupplier.pdf", dpi = 500, w = 21, h = 21)
+ggsave("ShareVaccinationSupplier.png", dpi = 500, w = 21, h = 21)
 
 # Vaccination -------------------------------------------------------------
 
@@ -522,26 +531,26 @@ HouseholdData$name <- factor(HouseholdData$name, levels = c("Household size 2019
 #https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Haushalte-Familien/Tabellen/1-1-privathaushalte-haushaltsmitglieder.html
 HouseholdDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 6))
 colnames(HouseholdDataStatBundesamt) <- c("name", "value", "n", "percent", "Source", "sum")
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "1", 84669326*0.411, 41.1, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "1", 84669326*0.411, 41.1, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "1", 84669326*0.411, 41.1, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "1", 84669326*0.411, 41.1, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "2", 84669326*0.335, 33.5, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "2", 84669326*0.335, 33.5, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "2", 84669326*0.335, 33.5, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "2", 84669326*0.335, 33.5, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "3", 84669326*0.119, 11.9, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "3", 84669326*0.119, 11.9, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "3", 84669326*0.119, 11.9, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "3", 84669326*0.119, 11.9, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "4", 84669326*0.095, 9.5, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "4", 84669326*0.095, 9.5, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "4", 84669326*0.095, 9.5, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "4", 84669326*0.095, 9.5, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "5+", 84669326*0.039, 3.9, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "5+", 84669326*0.039, 3.9, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "5+", 84669326*0.039, 3.9, "Federal Statistical Office (2023)", 84669326)
-HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "5+", 84669326*0.039, 3.9, "Federal Statistical Office (2023)",84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "1", 84669326*0.411, 41.1, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "1", 84669326*0.411, 41.1, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "1", 84669326*0.411, 41.1, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "1", 84669326*0.411, 41.1, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "2", 84669326*0.335, 33.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "2", 84669326*0.335, 33.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "2", 84669326*0.335, 33.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "2", 84669326*0.335, 33.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "3", 84669326*0.119, 11.9, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "3", 84669326*0.119, 11.9, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "3", 84669326*0.119, 11.9, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "3", 84669326*0.119, 11.9, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "4", 84669326*0.095, 9.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "4", 84669326*0.095, 9.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "4", 84669326*0.095, 9.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "4", 84669326*0.095, 9.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 2019", "5+", 84669326*0.039, 3.9, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 3/20", "5+", 84669326*0.039, 3.9, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size Summer/21", "5+", 84669326*0.039, 3.9, "Federal Statistical Office, Federal Employment Agency", 84669326)
+HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("Household size 1/23", "5+", 84669326*0.039, 3.9, "Federal Statistical Office, Federal Employment Agency",84669326)
 HouseholdDataStatBundesamt$n <- as.integer(HouseholdDataStatBundesamt$n)
 HouseholdDataStatBundesamt$sum <- as.integer(HouseholdDataStatBundesamt$sum)
 HouseholdDataStatBundesamt$percent <- as.double(HouseholdDataStatBundesamt$percent)
@@ -606,8 +615,8 @@ HouseholdPlot <- HouseholdData %>% filter(name != "Children < 14 in household") 
                     mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                     mutate(uci = 100/sum*uci) %>%
  ggplot(aes(value, percent)) +
-  geom_bar(aes(fill=factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2023)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=value, ymin=lci, ymax=uci, colour = factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2023)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=value, ymin=lci, ymax=uci, colour = factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -682,7 +691,7 @@ ChildrenPlot <- Children %>% filter(!is.na(respondent_hsld_size_persons_under_14
                     mutate(uci = 100/sum*uci) %>%
 ggplot(aes(respondent_hsld_size_persons_under_14, percent)) +
   geom_bar(aes(fill=factor(Source, levels = c("External Survey", "MuSPAD"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=respondent_hsld_size_persons_under_14, ymin=lci, ymax=uci, colour = factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2023)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_errorbar(aes(x=respondent_hsld_size_persons_under_14, ymin=lci, ymax=uci, colour = factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -725,9 +734,9 @@ GenderData$gender <- factor(GenderData$gender, levels = c("female", "male", "div
 #https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/deutsche-nichtdeutsche-bevoelkerung-nach-geschlecht-deutschland.html
 GenderDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(GenderDataStatBundesamt) <- c("gender", "n", "percent", "Source", "sum")
-GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("female",42885791, 100*42885791/84669326, "Federal Statistical Office (2023)", 84669326)
-GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("male",	41783535, 100*41783535/84669326, "Federal Statistical Office (2023)", 84669326)
-GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("diverse",	0, 0, "Federal Statistical Office (2023)", 84669326)
+GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("female",42885791, 100*42885791/84669326, "Federal Statistical Office, Federal Employment Agency", 84669326)
+GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("male",	41783535, 100*41783535/84669326, "Federal Statistical Office, Federal Employment Agency", 84669326)
+GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("diverse",	0, 0, "Federal Statistical Office, Federal Employment Agency", 84669326)
 GenderDataStatBundesamt$gender <- factor(GenderDataStatBundesamt$gender, levels = c("female", "male", "diverse"))
 GenderDataStatBundesamt$n <- as.integer(GenderDataStatBundesamt$n)
 GenderDataStatBundesamt$sum <- as.integer(GenderDataStatBundesamt$sum)
@@ -755,8 +764,8 @@ GenderPlot <- GenderData %>% count(gender) %>% mutate(percent = 100 * n / sum(n)
                     mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                     mutate(uci = 100/sum*uci) %>%
 ggplot(aes(gender, percent)) +
-  geom_bar(aes(fill=factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2023)"))), stat = "identity", position = "dodge", width = 0.8) +
-    geom_errorbar(aes(x=gender, ymin=lci, ymax=uci, colour = factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2023)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+    geom_errorbar(aes(x=gender, ymin=lci, ymax=uci, colour = factor(Source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -795,11 +804,11 @@ AgeData$age_bracket <- factor(AgeData$age_bracket, levels = c("Below 20 (*)", "2
 # Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html
 AgeDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(AgeDataStatBundesamt) <- c("age_bracket", "n", "percent", "source", "sum")
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("Below 20 (*)", 84669326*0.188, 18.8, "Federal Statistical Office (2023)", 84669326)
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("20-39", 84669326*0.245, 24.5, "Federal Statistical Office (2023)", 84669326)
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("40-59", 84669326*0.268, 26.8, "Federal Statistical Office (2023)", 84669326)
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("60-79", 84669326*0.226, 22.6, "Federal Statistical Office (2023)", 84669326)
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("80-99", 84669326*0.072, 7.2, "Federal Statistical Office (2023)", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("Below 20 (*)", 84669326*0.188, 18.8, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("20-39", 84669326*0.245, 24.5, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("40-59", 84669326*0.268, 26.8, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("60-79", 84669326*0.226, 22.6, "Federal Statistical Office, Federal Employment Agency", 84669326)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("80-99", 84669326*0.072, 7.2, "Federal Statistical Office, Federal Employment Agency", 84669326)
 AgeDataStatBundesamt$n <- as.integer(AgeDataStatBundesamt$n)
 AgeDataStatBundesamt$sum <- as.integer(AgeDataStatBundesamt$sum)
 AgeDataStatBundesamt$percent <- as.double(AgeDataStatBundesamt$percent)
@@ -836,8 +845,8 @@ AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% count(age_bracket) %>%
                     mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                     mutate(uci = 100/sum*uci) %>%
 ggplot(aes(age_bracket, percent)) +
-  geom_bar(aes(fill=factor(source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2023)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=age_bracket, ymin=lci, ymax=uci, colour = factor(source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2023)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=age_bracket, ymin=lci, ymax=uci, colour = factor(source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   scale_color_manual(values = palette2())+
   theme_minimal() +
     theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
@@ -880,10 +889,10 @@ educationLevel$highest_educational_qualification <- factor(educationLevel$highes
 #https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Bildungsstand/Tabellen/bildungsabschluss.html
 EducationDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(EducationDataStatBundesamt ) <- c("highest_educational_qualification", "n", "percent", "source", "sum")
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Higher Education", 82000000*0.335*100, 33.5, "Federal Statistical Office (2019)", )
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 10 years", 82000000*0.3*100, 23.5+6.5, "Federal Statistical Office (2019)")
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 9 years", 82000000*0.286*100, 28.6, "Federal Statistical Office (2019)")
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Other/None", 82000000*0.077*100, 3.5+0.2+4.0, "Federal Statistical Office (2019)")
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Higher Education", 82000000*0.335, 33.5, "Federal Statistical Office, Federal Employment Agency", 82000000)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 10 years", 82000000*0.3, 23.5+6.5, "Federal Statistical Office, Federal Employment Agency", 82000000)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 9 years", 82000000*0.286, 28.6, "Federal Statistical Office, Federal Employment Agency", 82000000)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Other/None", 82000000*0.077, 3.5+0.2+4.0, "Federal Statistical Office, Federal Employment Agency", 82000000)
 EducationDataStatBundesamt$n <- as.integer(EducationDataStatBundesamt $n)
 EducationDataStatBundesamt$sum  <- as.integer(EducationDataStatBundesamt$sum)
 EducationDataStatBundesamt $percent <- as.double(EducationDataStatBundesamt $percent)
@@ -927,8 +936,8 @@ EducationPlot <- educationLevel %>% filter(!is.na(highest_educational_qualificat
                     mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                     mutate(uci = 100/sum*uci) %>%
 ggplot(aes(highest_educational_qualification, percent)) +
-  geom_bar(aes(fill=factor(source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2019)"))), stat = "identity", position = "dodge", width = 0.8) +
-      geom_errorbar(aes(x=highest_educational_qualification, ymin=lci, ymax=uci, colour = factor(source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office (2023)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+      geom_errorbar(aes(x=highest_educational_qualification, ymin=lci, ymax=uci, colour = factor(source, levels = c("External Survey", "MuSPAD", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
