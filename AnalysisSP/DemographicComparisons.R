@@ -29,6 +29,13 @@ count_na_s22w22 <- function(row) {
 MuSPAD_s22 <- readRDS("/Users/sydney/Downloads/9921_dataset/muspad_22-Nov-2022.rds")
 MuSPADnewplusold <- left_join(MuSPAD_s22 %>% mutate(user_id = gsub("_", "-", user_id)) %>% select(user_id), MuSPAD, by = join_by(user_id == merge_id))
 
+palette_surveyfedmuspad_bars <- function() {
+  c("#9900CC", "#151515", "#990000")
+}
+
+palette_surveyfedmuspad_errorbars <- function() {
+   c("#640085", "#000000", "#5c0000")
+}
 
 # Gender ------------------------------------------------------------------
 
@@ -97,46 +104,44 @@ ggsave("Gender_Comparison.png", GenderPlot, dpi = 500, w = 9.5, h = 6)
 # Age ---------------------------------------------------------------------
 
 AgeData <- data_reduced %>% select(year_of_birth) %>% mutate(age = 2023-year_of_birth) %>%
-          mutate(age_bracket = case_when(age < 20 ~ "18-20",
-                                        age < 40 ~ "20-39",
+          mutate(age_bracket = case_when(age < 20 ~ "18-39",
+                                        age < 40 ~ "18-39",
                                         age < 60 ~ "40-59",
                                         age < 80 ~ "60-79",
                                         age < 100 ~ "80-99")) 
-AgeData$age_bracket <- factor(AgeData$age_bracket, levels = c("18-20", "20-39", "40-59", "60-79", "80-99"))
+AgeData$age_bracket <- factor(AgeData$age_bracket, levels = c("18-39", "40-59", "60-79", "80-99"))
 
 # Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html
 # https://de.statista.com/statistik/daten/studie/1174053/umfrage/minderjaehrige-in-deutschland-nach-altersgruppen/#:~:text=Kinder%20und%20Jugendliche%20in%20Deutschland%20nach%20Altersgruppen%202023&text=Zum%2031.,sechs%20bis%20einschlie%C3%9Flich%2014%20Jahren.
 AgeDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeDataStatBundesamt) <- c("age_bracket", "n", "source", "sum")
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("18-20", 84669326*0.188-14300000, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("20-39", 84669326*0.245, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("18-39", 84669326*0.188-14300000+84669326*0.245, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("40-59", 84669326*0.268, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("60-79", 84669326*0.226, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("80-99", 84669326*0.072, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
 AgeDataStatBundesamt$n <- as.integer(AgeDataStatBundesamt$n)
 AgeDataStatBundesamt$sum <- as.integer(AgeDataStatBundesamt$sum)
 AgeDataStatBundesamt <- AgeDataStatBundesamt %>% mutate(percent = 100*n/sum)
-AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("18-20", "20-39", "40-59", "60-79", "80-99"))
+AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("18-39", "40-59", "60-79", "80-99"))
 
 AgeMuspad <- MuSPAD_s22 %>% select(birth_date_yyyy, age, age_floor, age_group) %>% 
                         filter(age_floor != 17) %>% filter(!is.na(age_floor)) %>% filter(is.finite(age_floor)) %>%
                         mutate(age_bracket = case_when(age_floor >= 80 ~ "80-99",
                                                                 age_floor >= 60 ~ "60-79",
                                                                 age_floor >= 40 ~ "40-59",
-                                                                age_floor >= 20 ~ "20-39",
-                                                                age_floor < 20 ~ "18-20")) %>% count(age_bracket)
+                                                                age_floor >= 20 ~ "18-39",
+                                                                age_floor < 20 ~ "18-39")) %>% count(age_bracket)
 
 AgeDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(AgeDataMuspad) <- c("age_bracket", "n", "percent", "source", "sum")
-AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("18-20", (AgeMuspad %>% filter(age_bracket=="18-20"))$n, 100*(AgeMuspad %>% filter(age_bracket=="18-20"))$n/sum(AgeMuspad$n), "MuSPAD", sum(AgeMuspad$n))
-AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("20-39", (AgeMuspad %>% filter(age_bracket=="20-39"))$n, 100*(AgeMuspad %>% filter(age_bracket=="20-39"))$n/sum(AgeMuspad$n), "MuSPAD", sum(AgeMuspad$n))
+AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("18-39", (AgeMuspad %>% filter(age_bracket=="18-39"))$n, 100*(AgeMuspad %>% filter(age_bracket=="18-39"))$n/sum(AgeMuspad$n), "MuSPAD", sum(AgeMuspad$n))
 AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("40-59", (AgeMuspad %>% filter(age_bracket=="40-59"))$n, 100*(AgeMuspad %>% filter(age_bracket=="40-59"))$n/sum(AgeMuspad$n), "MuSPAD", sum(AgeMuspad$n))
 AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("60-79", (AgeMuspad %>% filter(age_bracket=="60-79"))$n, 100*(AgeMuspad %>% filter(age_bracket=="60-79"))$n/sum(AgeMuspad$n), "MuSPAD", sum(AgeMuspad$n))
 AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("80-99", (AgeMuspad %>% filter(age_bracket=="80-99"))$n, 100*(AgeMuspad %>% filter(age_bracket=="80-99"))$n/sum(AgeMuspad$n), "MuSPAD", sum(AgeMuspad$n))
 AgeDataMuspad$n <- as.integer(AgeDataMuspad$n)
 AgeDataMuspad$sum <- as.integer(AgeDataMuspad$sum)
 AgeDataMuspad$percent <- as.double(AgeDataMuspad$percent)
-AgeDataMuspad$age_bracket <- factor(AgeDataMuspad$age_bracket, levels = c("18-20", "20-39", "40-59", "60-79", "80-99"))
+AgeDataMuspad$age_bracket <- factor(AgeDataMuspad$age_bracket, levels = c("18-39", "40-59", "60-79", "80-99"))
 
 AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% count(age_bracket) %>% 
             mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% 
@@ -157,7 +162,7 @@ ggplot(aes(age_bracket, percent)) +
   #facet_wrap(~name, nrow=2) +
   #ylab("") +
   ylab("Share (Percentage)") +
-  xlab("Age Bracket (2023)") +
+  xlab("Age Bracket") +
   scale_fill_manual(values = palette_surveyfedmuspad_bars()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   theme(text = element_text(size = 50)) +
@@ -252,14 +257,6 @@ HouseholdDataMuspad$sum <- as.integer(HouseholdDataMuspad$sum)
 HouseholdDataMuspad$percent <- as.double(HouseholdDataMuspad$percent)
 HouseholdDataMuspad$Source <- as.character(HouseholdDataMuspad$Source)
 HouseholdDataMuspad$name <- factor(HouseholdDataMuspad$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
-
-palette_surveyfedmuspad_bars <- function() {
-  c("#9900CC", "#636564", "#990000")
-}
-
-palette_surveyfedmuspad_errorbars <- function() {
-   c("#640085", "#353636", "#5c0000")
-}
 
 
 HouseholdPlot <- HouseholdData %>% filter(name != "Children < 14 in household") %>%

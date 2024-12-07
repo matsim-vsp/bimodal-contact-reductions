@@ -13,10 +13,10 @@ scenario <- "Twitter" #Alternative: "Twitter/Mastodon"
 
 if(scenario == "Twitter"){
 palette_recruiters_bars <- function(){
-  c("#253494", "#ffffcc", "#7fcdbb", "#2c7fb8", "#c7e9b4", "#660099", "#636564")
+  c("#253494", "#ffffcc", "#7fcdbb", "#2c7fb8", "#c7e9b4", "#660099", "#151515")
 }
 palette_recruiters_errorbars <- function(){
-  c("#1a2569", "#c9c99f", "#5e978a", "#1d577d", "#8ba37d", "#370052", "#353636")
+  c("#1a2569", "#c9c99f", "#5e978a", "#1d577d", "#8ba37d", "#370052", "#000000")
 }
 }
 
@@ -99,8 +99,8 @@ ggplot(aes(gender, percent)) +
 
 if(scenario == "Twitter"){
     AgeData <- data_reduced %>% select(year_of_birth, ref, origin) %>% mutate(age = 2023-year_of_birth) %>%
-            mutate(age_bracket = case_when(age < 20 ~ "18-20",
-                                            age < 40 ~ "20-39",
+            mutate(age_bracket = case_when(age < 20 ~ "18-39",
+                                            age < 40 ~ "18-39",
                                             age < 60 ~ "40-59",
                                             age < 80 ~ "60-79",
                                             age < 100 ~ "80-99"))  %>%
@@ -116,15 +116,11 @@ if(scenario == "Twitter"){
 AgeAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeAdd) <- c("ref", "age_bracket", "n", "percent")
 if(scenario == "Twitter"){
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 3", "18-20", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 3", "80-99", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "18-20", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "60-79", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 5", "80-99", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "18-20", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "60-79", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 4", "80-99", 0, 0)
-    AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 1 (Mastodon)", "18-20", 0, 0)
     AgeAdd[nrow(AgeAdd) + 1, ] <- c("Recruiter 1 (Mastodon)", "80-99", 0, 0)
 }
 
@@ -136,16 +132,15 @@ AgeAdd$age_bracket <- as.character(AgeAdd$age_bracket)
 # Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html
 # https://de.statista.com/statistik/daten/studie/1174053/umfrage/minderjaehrige-in-deutschland-nach-altersgruppen/#:~:text=Kinder%20und%20Jugendliche%20in%20Deutschland%20nach%20Altersgruppen%202023&text=Zum%2031.,sechs%20bis%20einschlie%C3%9Flich%2014%20Jahren.
 AgeDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 4))
-colnames(AgeDataStatBundesamt) <- c("age_bracket", "n", "source", "sum")
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("18-20", 84669326*0.188-14300000, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
-AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("20-39", 84669326*0.245, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
+colnames(AgeDataStatBundesamt) <- c("age_bracket", "n", "ref", "sum")
+AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("18-39", 84669326*0.188-14300000+84669326*0.245, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("40-59", 84669326*0.268, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("60-79", 84669326*0.226, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("80-99", 84669326*0.072, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
 AgeDataStatBundesamt$n <- as.integer(AgeDataStatBundesamt$n)
 AgeDataStatBundesamt$sum <- as.integer(AgeDataStatBundesamt$sum)
 AgeDataStatBundesamt <- AgeDataStatBundesamt %>% mutate(percent = 100*n/sum)
-AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("18-20", "20-39", "40-59", "60-79", "80-99"))
+AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("18-39", "40-59", "60-79", "80-99"))
 
 AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% filter(!is.na(ref)) %>% group_by(ref) %>% count(age_bracket) %>% 
             mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% rbind(AgeAdd) %>%
@@ -156,13 +151,13 @@ AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% filter(!is.na(ref)) %>% g
                                 .default = lci)) %>%
                 mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
                 mutate(uci = 100/sum*uci) %>%
-ggplot(aes(factor(age_bracket, levels = c("18-20", "20-39", "40-59", "60-79", "80-99")), percent)) +
-  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=age_bracket, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+                mutate(ref = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))) %>%
+ggplot(aes(factor(age_bracket, levels = c("18-39", "40-59", "60-79", "80-99")), percent)) +
+  geom_bar(aes(fill=ref), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=age_bracket, ymin=lci, ymax=uci, colour = ref), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
-    theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
-  #facet_wrap(~name, nrow=2) +
-  #ylab("") +
+  theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
+  ylab("") +
   ylab("Share (Percentage)") +
   xlab("Age Bracket (2023)") +
   scale_fill_manual(values = palette_recruiters_bars()) +
@@ -484,15 +479,25 @@ ggplot(aes(current_occupation, percent)) +
 ## All plots together
 #plot_grid(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = "AUTO", nrow = 3, label_size = 24, rel_heights = c(1,1,1.25))
 
-ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2, font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
+ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, labels = c("A", "B", "C", "D"), nrow = 4, ncol = 1, font.label = list(size = 37), common.legend = TRUE, legend = "bottom")
 
-if(scenario == "Twitter"){
-    ggsave("DemographicComparison_TwitterRecruiter.pdf", dpi = 500, w = 24, h = 33)
-    ggsave("DemographicComparison_TwitterRecruiter.png", dpi = 500, w = 24, h = 33)
-}else if(scenario == "Twitter/Mastodon"){
-    ggsave("DemographicComparison_TwvsMastRecruiter.pdf", dpi = 500, w = 24, h = 33)
-    ggsave("DemographicComparison_TwvsMastRecruiter.png", dpi = 500, w = 24, h = 33)
-}
+ggsave("DemographicComparison_TwitterRecruiter_FirstFour.pdf", dpi = 500, w = 24, h = 37)
+ggsave("DemographicComparison_TwitterRecruiter_FirstFour.png", dpi = 500, w = 24, h = 37)
+
+ggarrange(EducationPlot, OccupationPlot, labels = c("A", "B"), nrow = 2, ncol = 1, font.label = list(size = 37), common.legend = TRUE, legend = "bottom")
+
+ggsave("DemographicComparison_TwitterRecruiter_FinalTwo.pdf", dpi = 500, w = 24, h = 24)
+ggsave("DemographicComparison_TwitterRecruiter_FinalTwo.png", dpi = 500, w = 24, h = 24)
+
+
+ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 6, ncol = 1, font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
+
+
+
+    ggsave("DemographicComparison_TwitterRecruiter_FirstFour.pdf", dpi = 500, w = 24, h = 37)
+    ggsave("DemographicComparison_TwitterRecruiter_FirstFour.png", dpi = 500, w = 24, h = 37)
+
+
 
 
 
