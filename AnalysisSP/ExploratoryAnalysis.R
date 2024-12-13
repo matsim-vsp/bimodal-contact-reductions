@@ -133,7 +133,7 @@ left_panel <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answe
   scale_fill_manual(values = palette_twittermastodonsurvey_bars()) +
   scale_color_manual(values = palette_twittermastodonsurvey_errorbars()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 0.5), breaks = c(0,12.5,25,37.5, 50,75,100)) +
-  theme(text = element_text(size = 55)) +
+  theme(text = element_text(size = 50)) +
   theme(legend.position = "none", legend.title = element_blank()) +
    #guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
       theme(axis.ticks.x = element_line(size = 0.9), 

@@ -13,10 +13,10 @@ scenario <- "Twitter" #Alternative: "Twitter/Mastodon"
 
 if(scenario == "Twitter"){
 palette_recruiters_bars <- function(){
-  c("#253494", "#ffffcc", "#7fcdbb", "#2c7fb8", "#c7e9b4", "#660099", "#151515")
+  c("#253494", "#ffffcc", "#7fcdbb", "#2c7fb8", "#c7e9b4", "#663300", "#151515")
 }
 palette_recruiters_errorbars <- function(){
-  c("#1a2569", "#c9c99f", "#5e978a", "#1d577d", "#8ba37d", "#370052", "#000000")
+  c("#1a2569", "#c9c99f", "#5e978a", "#1d577d", "#8ba37d", "#261300", "#000000")
 }
 }
 
@@ -283,7 +283,7 @@ ChildrenPlot <- Children %>% filter(!is.na(ref))  %>% group_by(ref) %>% filter(!
                  mutate(uci = 100/sum*uci) %>%
 ggplot(aes(respondent_hsld_size_persons_under_14, percent)) +
   geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=respondent_hsld_size_persons_under_14, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_errorbar(aes(x=respondent_hsld_size_persons_under_14, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -337,10 +337,10 @@ EducationAdd$percent <- as.double(EducationAdd$percent)
 #https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Bildungsstand/Tabellen/bildungsabschluss.html
 EducationDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(EducationDataStatBundesamt ) <- c("highest_educational_qualification", "n", "percent", "ref", "sum")
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Higher Education", 83166711*0.335*100, 33.5, "Federal Statistical Office (2019)", 83166711)
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 10 years", 83166711*0.3*100, 23.5+6.5, "Federal Statistical Office (2019)", 83166711)
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 9 years", 83166711*0.286*100, 28.6, "Federal Statistical Office (2019)", 83166711)
-EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Other/None", 83166711*0.077*100, 3.5+0.2+4.0, "Federal Statistical Office (2019)", 83166711)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Higher Education", 83166711*0.335*100, 33.5, "Federal Statistical Office, Federal Employment Agency", 83166711)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 10 years", 83166711*0.3*100, 23.5+6.5,"Federal Statistical Office, Federal Employment Agency", 83166711)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Certification\nafter 9 years", 83166711*0.286*100, 28.6, "Federal Statistical Office, Federal Employment Agency", 83166711)
+EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Other/None", 83166711*0.077*100, 3.5+0.2+4.0, "Federal Statistical Office, Federal Employment Agency", 83166711)
 EducationDataStatBundesamt$n <- as.double(EducationDataStatBundesamt $n)
 EducationDataStatBundesamt$sum  <- as.integer(EducationDataStatBundesamt$sum)
 EducationDataStatBundesamt$percent <- as.double(EducationDataStatBundesamt $percent)
@@ -357,8 +357,8 @@ EducationPlot <- educationLevel %>% filter(!is.na(ref))  %>% group_by(ref) %>% f
             mutate(uci = 100/sum*uci) %>% 
             rbind(EducationDataStatBundesamt) %>%
 ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other/None")), percent)) +
-  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office (2019)"))), stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=highest_educational_qualification, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office (2019)"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_bar(aes(fill=factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), stat = "identity", position = "dodge", width = 0.8) +
+  geom_errorbar(aes(x=highest_educational_qualification, ymin=lci, ymax=uci, colour = factor(ref, levels = c("Recruiter 1 (Twitter)", "Recruiter 2", "Recruiter 3", "Recruiter 4", "Recruiter 5", "Recruiter 1 (Mastodon)", "Federal Statistical Office, Federal Employment Agency"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
   #facet_wrap(~name, nrow=2) +
@@ -373,7 +373,8 @@ ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Educatio
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(10, "pt")) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.75, hjust=0.7))
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.75, hjust=0.7)) +
+  guides(fill=guide_legend(nrow=4), color=guide_legend(nrow=4))
 
 #Occupation
 
@@ -479,15 +480,15 @@ ggplot(aes(current_occupation, percent)) +
 ## All plots together
 #plot_grid(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = "AUTO", nrow = 3, label_size = 24, rel_heights = c(1,1,1.25))
 
-ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, labels = c("A", "B", "C", "D"), nrow = 4, ncol = 1, font.label = list(size = 37), common.legend = TRUE, legend = "bottom")
+ggarrange(GenderPlot, AgePlot, HouseholdPlot, labels = c("A", "B", "C"), nrow = 3, ncol = 1, font.label = list(size = 37), common.legend = TRUE, legend = "bottom")
 
 ggsave("DemographicComparison_TwitterRecruiter_FirstFour.pdf", dpi = 500, w = 24, h = 37)
 ggsave("DemographicComparison_TwitterRecruiter_FirstFour.png", dpi = 500, w = 24, h = 37)
 
-ggarrange(EducationPlot, OccupationPlot, labels = c("A", "B"), nrow = 2, ncol = 1, font.label = list(size = 37), common.legend = TRUE, legend = "bottom")
+ggarrange(EducationPlot, OccupationPlot, ChildrenPlot, labels = c("A", "B", "C"), nrow = 3, ncol = 1, font.label = list(size = 37), common.legend = TRUE, legend = "bottom", heights = c(1,1,0.75))
 
-ggsave("DemographicComparison_TwitterRecruiter_FinalTwo.pdf", dpi = 500, w = 24, h = 24)
-ggsave("DemographicComparison_TwitterRecruiter_FinalTwo.png", dpi = 500, w = 24, h = 24)
+ggsave("DemographicComparison_TwitterRecruiter_FinalTwo.pdf", dpi = 500, w = 24, h = 37)
+ggsave("DemographicComparison_TwitterRecruiter_FinalTwo.png", dpi = 500, w = 24, h = 37)
 
 
 ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 6, ncol = 1, font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
