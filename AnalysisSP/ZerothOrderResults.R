@@ -4,6 +4,7 @@ library(gridExtra)
 library(ggiraphExtra)
 library(Hmisc)
 library(ggpubr)
+library(smplot2)
 
 # 0th order Results -------------------------------------------------------
 
@@ -73,32 +74,36 @@ palette2 <- function() {
   c("#542788", "#542788", "#542788")
 }
 
+median_cl <- function(y, conf.level=0.95, na.rm=TRUE) quantile_cl(y, q=0.5, conf.level=conf.level, na.rm=na.rm)
+
 p1_zeroth_order_percred <- ggplot(data_reduced_tidy_rel %>%  filter((TypeOfContact %in% c("Work", "Leisure"))) %>% 
     filter(WhoseContacts == "Respondent") %>% filter(!is.na(value)) %>%
    filter(value > -150) %>% filter(value < 100) %>%  
-    filter(!is.na(TypeOfContact)), aes(time, value)) +
-  geom_violin(aes(fill = time, color = time), scale = "area", trim = TRUE) + 
-  stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.2, label.y.npc = 0)+
-  stat_summary(aes(color= time), fun.data=mean_sdl, fun.args = list(mult=1), 
-                 geom="pointrange", linewidth = 1) +
+    filter(!is.na(TypeOfContact)), aes(time, value, fill = time, color = time)) +
+  sm_raincloud(aes(stat = median_cl), boxplot.params =  list(alpha = 0.8, width = 0.2, notch = TRUE), 
+              violin.params = list(width = 1.6),
+              shape = 21, sep_level = 2)  +
+  #geom_violin(aes(fill = time, color = time), scale = "area", trim = TRUE) + 
+  #stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.2, label.y.npc = 0)+
+  #stat_summary(aes(color= time), fun.data=mean_sdl, fun.args = list(mult=1), 
+                 #geom="pointrange", linewidth = 1) +
   #geom_violin(aes(color=WhoseContacts), size = 1.3) +
-  scale_fill_manual(values = palette()) +
-  scale_color_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
+  scale_color_manual(values = palette2()) +
+  scale_fill_manual(values = palette()) +
   facet_grid(~(TypeOfContact)) +
   theme_minimal() +
   xlab("") +
-  theme(panel.spacing = unit(4, "lines")) +
+  theme(panel.spacing = unit(1, "lines")) +
   ylab("Change of No. of \n Contacts (in percent)") +
-  theme(text = element_text(size = 30)) +
-  #theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
+  theme(text = element_text(size = 25)) +
   theme(legend.position = "none", legend.title = element_blank()) +
   theme(axis.ticks.x = element_line(size = 1), 
                    axis.ticks.y = element_line(size = 1),
-                   axis.ticks.length = unit(20, "pt"))
+                   axis.ticks.length = unit(15, "pt"))
 
-ggsave("CollectionViolinplots_RemainingRespondent.pdf", p1_zeroth_order_percred, dpi = 500, w = 15, h = 9)
-ggsave("CollectionViolinplots_RemainingRespondent.png", p1_zeroth_order_percred, dpi = 500, w = 15, h = 9)
+ggsave("CollectionViolinplots_RemainingRespondent.pdf", p1_zeroth_order_percred, dpi = 500, w = 15, h = 6)
+ggsave("CollectionViolinplots_RemainingRespondent.png", p1_zeroth_order_percred, dpi = 500, w = 15, h = 6)
 
 mean <- data_reduced_tidy_rel %>%  filter((TypeOfContact %in% c("Work", "Leisure"))) %>% 
    filter(WhoseContacts == "Respondent") %>% filter(!is.na(value)) %>%
@@ -119,14 +124,17 @@ palette2 <- function() {
   c("Respondent", "Closest Contact (During-Covid)"))
 
 p1_zeroth_order_percred_all <- ggplot(data_reduced_tidy_rel %>%  
-    filter((TypeOfContact %in% c("Leisure"))) %>% 
-    filter(!is.na(value)) %>%
+    filter((TypeOfContact %in% c("Work"))) %>% 
+    filter(!is.na(value)) %>% filter(WhoseContacts != "Closest Contact (During-Covid)") %>%
        filter(value > -150) %>% filter(value < 100) %>%    
-    filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
-  geom_violin(aes(fill = WhoseContacts, color= WhoseContacts), scale = "area", trim = TRUE,  ) + 
-  stat_summary(aes(color = WhoseContacts), fun.data=mean_sdl, fun.args = list(mult=1), 
-                 geom="pointrange", linewidth = 1) +
-  stat_compare_means(comparisons = my_comparisons, test = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.2, label.y.npc = 0)+
+    filter(!is.na(TypeOfContact)), aes(WhoseContacts, value, color = WhoseContacts, fill = WhoseContacts)) +
+      sm_raincloud(aes(stat = median_cl), boxplot.params =  list(alpha = 0.8, width = 0.2, notch = TRUE), 
+              violin.params = list(width = 1.25),
+              shape = 21, sep_level = 2)  +
+  # geom_violin(aes(fill = WhoseContacts, color= WhoseContacts), scale = "area", trim = TRUE,  ) + 
+  # stat_summary(aes(color = WhoseContacts), fun.data=mean_sdl, fun.args = list(mult=1), 
+  #                geom="pointrange", linewidth = 1) +
+  # stat_compare_means(comparisons = my_comparisons, test = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.2, label.y.npc = 0)+
   #geom_violin(aes(color=WhoseContacts), size = 1.3) +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
@@ -134,8 +142,8 @@ p1_zeroth_order_percred_all <- ggplot(data_reduced_tidy_rel %>%
   facet_wrap(~time) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Leisure") +
-  ylab("Change of No. of \n Leisure Contacts (in percent)") +
+  ggtitle("Work") +
+  ylab("Change of No. of \n Work Contacts (in percent)") +
   theme(text = element_text(size = 30)) +
   theme(panel.spacing.y = unit(3, "lines")) +
   theme(panel.spacing.x = unit(3, "lines")) +
@@ -146,8 +154,8 @@ p1_zeroth_order_percred_all <- ggplot(data_reduced_tidy_rel %>%
                    axis.ticks.y = element_line(size = 1),
                    axis.ticks.length = unit(20, "pt"))
 
-ggsave("CollectionViolinplots_Leisure_All.pdf", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 9)
-ggsave("CollectionViolinplots_Leisure_All.png", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 9)
+ggsave("CollectionViolinplots_Work_All.pdf", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 9)
+ggsave("CollectionViolinplots_Work_All.png", p1_zeroth_order_percred_all, dpi = 500, w = 18, h = 9)
 
 
 ## ECDF 
