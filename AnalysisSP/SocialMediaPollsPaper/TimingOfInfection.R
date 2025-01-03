@@ -134,23 +134,23 @@ ggsave("TimingOfInfections_Twitter.png", dpi = 500, w = 12, h = 7.5)
 
 raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds")
 
-data_reduced <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf) %>% 
+data_reduced <- raw_data %>% select(num_c19_infs, date_f1_inf, f1_pcr_doc, f1_pcr_center, date_s2_inf, s2_pcr_doc, s2_pcr_center, date_t3_inf, t3_pcr_doc, t3_pcr_center) %>% 
 filter(!is.na(num_c19_infs)) %>%
-select(date_f1_inf, date_s2_inf, date_t3_inf)
+select(-num_c19_infs)
 
 no_time_infections <- data_reduced %>% pivot_longer(cols=c("date_f1_inf", "date_s2_inf", "date_t3_inf"))
+no_time_infections <- no_time_infections %>% filter((name == "date_f1_inf" & f1_pcr_doc == "Ja") | (name == "date_f1_inf" & f1_pcr_center == "Ja") | (name == "date_s2_inf" & s2_pcr_doc == "Ja") | (name == "date_s2_inf" & s2_pcr_center == "Ja") | (name == "date_t3_inf" & t3_pcr_doc == "Ja") | (name == "date_t3_inf" & t3_pcr_center == "Ja"))
 no_time_infections <- no_time_infections %>%
 filter(!is.na(value)) %>%
 filter(value > "2020-01-01")
-colnames(no_time_infections)[1] <- "CounterInfection"
-colnames(no_time_infections)[2] <- "DateInfection"
+colnames(no_time_infections)[7] <- "CounterInfection"
+colnames(no_time_infections)[8] <- "DateInfection"
 
 no_time_infections <- no_time_infections %>%
 mutate(week = isoweek(DateInfection), year = year(DateInfection)) %>%
 mutate(date = MMWRweek2Date(MMWRyear = year,
                         MMWRweek = week+1,
                         MMWRday = 1))
-
 
 count_no_infections <- no_time_infections %>% group_by(date) %>% count()
 colnames(count_no_infections) <- c("Date", "CountPer1096")
