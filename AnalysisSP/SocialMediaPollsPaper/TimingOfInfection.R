@@ -2,6 +2,7 @@ library(tidyverse)
 library(MMWRweek)
 library(see)
 library(RColorBrewer)
+library(ggpubr)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -139,17 +140,23 @@ ggsave("TimingOfInfections_Twitter.png", dpi = 500, w = 12, h = 7.5)
                                             age < 60 ~ "35-59",
                                             age < 80 ~ "60-79",
                                             age < 100 ~ "80+")) 
-    if(age_group != "00+"){
-      data_reduced <- data_reduced %>% filter(age_bracket == age_group)
-    }
     data_reduced <- data_reduced %>% filter(!is.na(num_c19_infs)) %>%
     select(-num_c19_infs)
 
 timingOfInfection <- function(bootstrapping = "no"){
-  #age_groups <- c("15-34", "35-59", "60-79", "80+", "00+")
-  age_groups <- c("00+")
+  if(bootstrapping == "no"){
+   age_groups <- c("15-34", "35-59", "60-79", "80+", "00+")
+  }
+  if()
+   age_groups <- c("00+")
   for(age_group in age_groups){
-    no_time_infections <- data_reduced %>% pivot_longer(cols=c("date_f1_inf", "date_s2_inf", "date_t3_inf"))
+    if(age_group != "00+"){
+      data_reduced_t <- data_reduced %>% filter(age_bracket == age_group)
+    }
+    if(age_group == "00+"){
+      data_reduced_t <- data_reduced
+    }
+    no_time_infections <- data_reduced_t %>% pivot_longer(cols=c("date_f1_inf", "date_s2_inf", "date_t3_inf"))
     no_time_infections <- no_time_infections %>% filter((name == "date_f1_inf" & f1_pcr_doc == "Ja") | (name == "date_f1_inf" & f1_pcr_center == "Ja") | (name == "date_s2_inf" & s2_pcr_doc == "Ja") | (name == "date_s2_inf" & s2_pcr_center == "Ja") | (name == "date_t3_inf" & t3_pcr_doc == "Ja") | (name == "date_t3_inf" & t3_pcr_center == "Ja"))
     no_time_infections <- no_time_infections %>%
     filter(!is.na(value)) %>%
@@ -198,7 +205,7 @@ timingOfInfection <- function(bootstrapping = "no"){
       colnames(count_no_infections) <- c("Date", "iteration", "CountPer1096")
       count_no_infections <- count_no_infections %>% 
                             ungroup() %>% 
-                            mutate(Incidence100000 = CountPer1096 /1000*100000)
+                            mutate(Incidence100000_it = CountPer1096/867*100000)
       DatesInfections <- unique(count_no_infections$Date)
       dates <- c()
       date <- as.Date("2020-01-05")
@@ -206,7 +213,7 @@ timingOfInfection <- function(bootstrapping = "no"){
           dates <- append(dates, date)
           date <- date + 7
       }
-      for(i in 1:200){
+      for(i in 1:length(unique(data_reduced$iteration))){
         for(date in dates){ 
             count_no_infections_reduced <- count_no_infections %>% filter(iteration == i)
             date <- as.Date(date)
@@ -217,8 +224,7 @@ timingOfInfection <- function(bootstrapping = "no"){
             }
         }
       }
-        count_no_infections <- count_no_infections %>% group_by(Date) %>% summarize(standard_dev = sd(Incidence100000), Incidence100000 = mean(Incidence100000))
-        count_no_infections <- count_no_infections %>% mutate(lci = Incidence100000 - 2*standard_dev, uci = Incidence100000 + 2*standard_dev)
+        count_no_infections <- count_no_infections %>% group_by(Date) %>% summarize(lci = quantile(Incidence100000_it, probs =0.025)[[1]], uci = quantile(Incidence100000_it, probs =0.975)[[1]],  Incidence100000 = mean(Incidence100000_it))
     } 
    
     rkidata <- read_csv("https://raw.githubusercontent.com/robert-koch-institut/COVID-19_7-Tage-Inzidenz_in_Deutschland/main/COVID-19-Faelle_7-Tage-Inzidenz_Deutschland.csv")
@@ -255,12 +261,12 @@ timingOfInfection <- function(bootstrapping = "no"){
       MuSPAD <- MuSPAD %>% filter(age_bracket == age_group)
     }
 
-    # MuSPAD <- MuSPAD %>% mutate(test = case_when(abs(as.Date(w22_positive_PCR_day_1) - as.Date(firstinfection)) < 14 ~ NA,
-    #                                                   abs(as.Date(w22_positive_PCR_day_1) - as.Date(secondinfection)) < 14 ~ NA,
-    #                                                   abs(as.Date(w22_positive_PCR_day_1) - as.Date(thirdinfection)) < 14 ~ NA,
-    #                                                   abs(as.Date(w22_positive_PCR_day_1) - as.Date(s23_test_covid_2023)) < 14 ~ NA,
-    #                                                   .default = w22_positive_PCR_day_1
-    #                                                   ))
+    MuSPAD <- MuSPAD %>% mutate(test = case_when(abs(as.Date(w22_positive_PCR_day_1) - as.Date(firstinfection)) < 14 ~ NA,
+                                                      abs(as.Date(w22_positive_PCR_day_1) - as.Date(secondinfection)) < 14 ~ NA,
+                                                      abs(as.Date(w22_positive_PCR_day_1) - as.Date(thirdinfection)) < 14 ~ NA,
+                                                      abs(as.Date(w22_positive_PCR_day_1) - as.Date(s23_test_covid_2023)) < 14 ~ NA,
+                                                      .default = w22_positive_PCR_day_1
+                                                      ))
 
     no_time_infections <- MuSPAD %>% pivot_longer(cols=c("firstinfection", "secondinfection", "thirdinfection", "w22_positive_PCR_day_1", "s23_test_covid_2023"))
     no_time_infections <- no_time_infections %>%
@@ -293,7 +299,7 @@ timingOfInfection <- function(bootstrapping = "no"){
         group_size <- 9921
       }
       if(bootstrapping == "yes"){
-        group_size <- 1000
+        group_size <- 9921
       }
     }
     if(bootstrapping == "no"){
@@ -329,7 +335,7 @@ timingOfInfection <- function(bootstrapping = "no"){
       colnames(MuSPAD_time_inf) <- c("Date", "iteration", "CountPer1096")
       MuSPAD_time_inf <- MuSPAD_time_inf %>% 
                               ungroup() %>%
-                              mutate(Incidence100000 = CountPer1096/group_size*100000) %>%
+                              mutate(Incidence100000_it = CountPer1096/group_size*100000) %>%
                               mutate(DataSet = "MuSPAD")
           DatesInfections <- unique(MuSPAD_time_inf$Date)
           dates <- c()
@@ -338,7 +344,7 @@ timingOfInfection <- function(bootstrapping = "no"){
               dates <- append(dates, date)
               date <- date + 7
           }
-          for(i in 1:200){
+          for(i in 1:length(unique(MuSPAD$iteration))){
             for(date in dates){
                 date <- as.Date(date)
                 MuSPAD_time_inf_reduced <- MuSPAD_time_inf %>% filter(iteration == i)
@@ -349,8 +355,7 @@ timingOfInfection <- function(bootstrapping = "no"){
                 }
             }
           }
-      MuSPAD_time_inf <- MuSPAD_time_inf %>% group_by(Date) %>% summarize(standard_dev = sd(Incidence100000), Incidence100000 = mean(Incidence100000))
-      MuSPAD_time_inf <- MuSPAD_time_inf %>% mutate(lci = Incidence100000 - 2*standard_dev, uci = Incidence100000 + 2*standard_dev)
+      MuSPAD_time_inf <- MuSPAD_time_inf %>% group_by(Date) %>% summarize(lci = quantile(Incidence100000, probs =0.025)[[1]], uci = quantile(Incidence100000, probs =0.975)[[1]],  Incidence100000 = mean(Incidence100000_it))
       MuSPAD_time_inf <- MuSPAD_time_inf %>% mutate(DataSet = "MuSPAD")
     }
 
@@ -383,18 +388,18 @@ timingOfInfection <- function(bootstrapping = "no"){
         xlab("Date") +
         facet_wrap(~DataSet, nrow = 3) +
         geom_vline(data = count_no_infections, mapping = aes(xintercept = as.Date("2023-05-14")), color = "#990000", size = 1.5) +
-        annotate("text", x=as.Date("2023-05-14"), y=2500, label="Last infection reported\nto MuSPAD", angle=90, size =10) +
+        annotate("text", x=as.Date("2023-05-14"), y=2100, label="Last infection reported\nto MuSPAD", angle=90, size =10) +
         geom_vline(data = count_no_infections, mapping = aes(xintercept = as.Date("2023-08-13")), color = "#9900CC", size = 1.5) +
-        annotate("text", x=as.Date("2023-08-13"), y=2400, label="Last infections reported\nto external survey", angle=90, size = 10) +
+        annotate("text", x=as.Date("2023-08-13"), y=2100, label="Last infections reported\nto external survey", angle=90, size = 10) +
         scale_color_manual(values = palette_surveyrki_bars()) +
         scale_fill_manual(values = palette_surveyrki_errorbars()) +
         ggtitle("7-Day-Incidence per 100,000") +
         #geom_vline(data=StopMusPadData, mapping=aes(xintercept=date), color="#666666", size = 1.5) +
         #geom_text(data=StopMusPadData, mapping=aes(x=date, y=0.04, label=event), size=10, angle=90, nudge_y = 2600, hjust = 0.5) +
         ylab("7-Day-Incidence per 100,000") +
-        ggtitle(age_group) +
+        #ggtitle(age_group) +
         theme(text = element_text(size = 55)) +
-        scale_y_continuous(breaks = c (0,500,1000,1500,2000,2500,3000)) +
+        scale_y_continuous(breaks = c (0,500,1000,1500,2000,2500,3000), limits=c(0,3000)) +
         #scale_x_date(date_breaks = "6 months", date_labels = "%Y/%m")+
         scale_x_date(breaks= seq(min(count_no_infections$Date), as.Date("2023-08-31"), by = "6 months"), date_labels = "%Y/%m")+
         theme(legend.position = "none", legend.title = element_blank()) +
@@ -403,7 +408,7 @@ timingOfInfection <- function(bootstrapping = "no"){
             axis.ticks.length = unit(12, "pt")) +
         theme(plot.title = element_text(hjust = 0.5)) 
 
-    #ggarrange(ComSurveyRki, ggparagraph(text="   ", face = "italic", size = 14, color = "black"), timelineplot2, labels = c("A", "", "B"), nrow = 3, ncol = 1,  align = "v", font.label = list(size = 37), heights = c(1.1,0.05,0.22))
+    ggarrange(ComSurveyRki, ggparagraph(text="   ", face = "italic", size = 14, color = "black"), timelineplot2, labels = c("A", "", "B"), nrow = 3, ncol = 1,  align = "v", font.label = list(size = 37), heights = c(1.1,0.05,0.22))
     
     ggsave(paste0("VizComparisonIncidenceSurveyRKI", age_group, "bootstrap", bootstrapping, ".pdf"), dpi = 500, w = 24, h = 30)
     ggsave(paste0("VizComparisonIncidenceSurveyRKI", age_group, "bootstrap", bootstrapping, ".png"), dpi = 500, w = 24, h = 30)
