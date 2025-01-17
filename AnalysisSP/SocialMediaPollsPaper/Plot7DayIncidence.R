@@ -4,8 +4,27 @@ library(tidyverse)
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
 setwd("./SocialMediaPollsPaper") # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
-source("TimingOfInfection.R")
 source("MuSPAD.R")
+setwd("./SocialMediaPollsPaper/functions")
+source("IncidencePlot.R")
+
+# Incidence Plot without Bootstrapping
+
+    # Data Prep
+    raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds")
+        data_reduced <- raw_data %>% select(num_c19_infs, date_f1_inf, f1_pcr_doc, f1_pcr_center, date_s2_inf, s2_pcr_doc, s2_pcr_center, date_t3_inf, t3_pcr_doc, t3_pcr_center, year_of_birth) %>% 
+                mutate(age = 2023-year_of_birth) %>%
+                mutate(age_bracket = case_when(age < 35 ~ "15-34",
+                                                age < 60 ~ "35-59",
+                                                age < 80 ~ "60-79",
+                                                age < 100 ~ "80+")) 
+        data_reduced <- data_reduced %>% filter(!is.na(num_c19_infs)) %>%
+        select(-num_c19_infs)
+    
+    # Application of function
+    IncidencePlot(bootstrapping = "no")
+
+# Incidence Plot with Bootstrapping
 
 eighteen_thirtynine <- 31.9
 fourty_fitynine <- 32.2
@@ -16,7 +35,7 @@ age_groups <- c("18-39", "40-59", "60+")
 data <- data.frame(matrix(nrow = 0, ncol = 13))
 colnames(data) <- c("date_f1_inf","f1_pcr_doc","f1_pcr_center","date_s2_inf","s2_pcr_doc","s2_pcr_center","date_t3_inf","t3_pcr_doc","t3_pcr_center","year_of_birth","age","age_bracket", "iteration")
 
-for(i in 1:200){
+for(i in 1:100){
     for(age_group in age_groups){
 
         raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds")
@@ -29,16 +48,16 @@ for(i in 1:200){
         select(-num_c19_infs) %>% filter(age_bracket == age_group) %>% mutate(iteration = i)
 
         if(age_group == "18-39"){
-        size = eighteen_thirtynine * 10
+        size = round(867*eighteen_thirtynine/100)
         }
         if(age_group == "40-59"){
-        size = fourty_fitynine * 10
+        size = round(867*fourty_fitynine/100)
         }
         if(age_group == "60+"){
-        size = sixty_seventynine * 10
+        size = round(867*sixty_seventynine/100)
         }
         if(age_group == "80+"){
-        size = eightyplus * 10
+        size = round(867*eightyplus/100)
         }
 
         slices <- slice_sample(data_reduced, n = size, replace = TRUE)
@@ -52,7 +71,8 @@ data_reduced <- data
 data <- data.frame(matrix(nrow = 0, ncol = ncol(MuSPADnewplusold)))
 colnames(data) <- colnames(MuSPADnewplusold)
 
-for(i in 1:200){
+for(i in 1:2){
+    for(age_group in age_groups){
     MuSPAD <- MuSPADnewplusold %>% 
     mutate(firstinfection = make_date(MuSPADnewplusold$s22_positive_PCR_year_1, MuSPADnewplusold$s22_positive_PCR_month_1, MuSPADnewplusold$s22_positive_PCR_day_1)) %>%
     mutate(secondinfection = make_date(MuSPADnewplusold$s22_positive_PCR_year_2, MuSPADnewplusold$s22_positive_PCR_month_2, MuSPADnewplusold$s22_positive_PCR_day_2)) %>%
@@ -64,23 +84,25 @@ for(i in 1:200){
                                              age < 100 ~ "60+")) %>% mutate(iteration = i)
 
         if(age_group == "18-39"){
-        size = eighteen_thirtynine * 10
+        size = round(9921*eighteen_thirtynine/100)
         }
         if(age_group == "40-59"){
-        size = fourty_fitynine * 10
+        size = round(9921*fourty_fitynine/100)
         }
         if(age_group == "60+"){
-        size = sixty_seventynine * 10
+        size = round(9921*sixty_seventynine/100)
         }
         if(age_group == "80+"){
-        size = eightyplus * 10
+        size = round(9921*eightyplus/100)
         }
 
         slices <- slice_sample(MuSPAD, n = size, replace = TRUE)
 
         data <- rbind(data, slices)
+    }
 }
 
 MuSPAD <- data 
 
 timingOfInfection(bootstrapping = "yes")
+timingOfInfection(bootstrapping = "no")
