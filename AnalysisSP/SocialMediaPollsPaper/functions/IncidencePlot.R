@@ -40,14 +40,14 @@ IncidencePlot <- function(bootstrapping = "no"){
       colnames(count_no_infections) <- c("Date", "CountPer1096")
       count_no_infections <- count_no_infections %>% 
                             ungroup() %>% # https://epid.blogspot.com/2012/08/how-to-calculate-confidence-interval-of.html
-                            mutate(Incidence100000 = CountPer1096 / nrow(data_reduced)*100000) %>%
-                            mutate(lci = nrow(data_reduced)*(CountPer1096/nrow(data_reduced) - 1.96*(((CountPer1096/nrow(data_reduced)*(1-CountPer1096/nrow(data_reduced)))/nrow(data_reduced))^0.5))) %>%
-                            mutate(lci = lci/nrow(data_reduced)*100000) %>%
+                            mutate(Incidence100000 = CountPer1096 / nrow(data_reduced_t)*100000) %>%
+                            mutate(lci = nrow(data_reduced_t)*(CountPer1096/nrow(data_reduced_t) - 1.96*(((CountPer1096/nrow(data_reduced_t)*(1-CountPer1096/nrow(data_reduced_t)))/nrow(data_reduced_t))^0.5))) %>%
+                            mutate(lci = lci/nrow(data_reduced_t)*100000) %>%
                             mutate(lci = case_when(lci < 0 ~ 0, 
                                                       .default = lci)) %>%
-                            mutate(uci = nrow(data_reduced)*(CountPer1096/nrow(data_reduced) + 1.96*(((CountPer1096/nrow(data_reduced)*(1-CountPer1096/nrow(data_reduced)))/nrow(data_reduced))^0.5))) %>%
-                            mutate(uci = uci/nrow(data_reduced)*100000) %>%
-                            mutate(Incidence100000 = CountPer1096 / nrow(data_reduced)*100000)
+                            mutate(uci = nrow(data_reduced_t)*(CountPer1096/nrow(data_reduced_t) + 1.96*(((CountPer1096/nrow(data_reduced_t)*(1-CountPer1096/nrow(data_reduced_t)))/nrow(data_reduced_t))^0.5))) %>%
+                            mutate(uci = uci/nrow(data_reduced_t)*100000) %>%
+                            mutate(Incidence100000 = CountPer1096 / nrow(data_reduced_t)*100000)
       DatesInfections <- unique(count_no_infections$Date)
       dates <- c()
       date <- as.Date("2020-01-05")
@@ -57,7 +57,7 @@ IncidencePlot <- function(bootstrapping = "no"){
       }
       for(date in dates){ 
             date <- as.Date(date)
-            if(date %in% unique(count_no_infections_reduced$Date)){
+            if(date %in% unique(count_no_infections$Date)){
             }else{
                 row <- c(date, 0, 0, 0, 0)
                 count_no_infections <- rbind(count_no_infections, row)
@@ -125,7 +125,7 @@ IncidencePlot <- function(bootstrapping = "no"){
       MuSPAD <- MuSPAD %>% filter(age_bracket == age_group)
     }
 
-    MuSPAD <- MuSPAD %>% mutate(test = case_when(abs(as.Date(w22_positive_PCR_day_1) - as.Date(firstinfection)) < 14 ~ NA,
+    MuSPAD <- MuSPAD %>% mutate(w22_positive_PCR_day_1 = case_when(abs(as.Date(w22_positive_PCR_day_1) - as.Date(firstinfection)) < 14 ~ NA,
                                                       abs(as.Date(w22_positive_PCR_day_1) - as.Date(secondinfection)) < 14 ~ NA,
                                                       abs(as.Date(w22_positive_PCR_day_1) - as.Date(thirdinfection)) < 14 ~ NA,
                                                       abs(as.Date(w22_positive_PCR_day_1) - as.Date(s23_test_covid_2023)) < 14 ~ NA,
@@ -174,10 +174,11 @@ IncidencePlot <- function(bootstrapping = "no"){
                               mutate(Incidence100000 = CountPer1096/group_size*100000) %>%
                               mutate(lci = group_size*(CountPer1096/group_size - 1.96*(((CountPer1096/group_size*(1-CountPer1096/group_size))/group_size)^0.5))) %>%
                               mutate(lci = lci/group_size*100000) %>%
+                              mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
                               mutate(uci = group_size*(CountPer1096/group_size + 1.96*(((CountPer1096/group_size*(1-CountPer1096/group_size))/group_size)^0.5))) %>%
                               mutate(uci = uci/group_size*100000) %>%
                               mutate(Incidence100000 = CountPer1096/group_size*100000) %>%
-                              select(Date, Incidence100000, lci, uci) %>% mutate(DataSet = "MuSPAD")
+                              select(Date, Incidence100000, lci, uci)
         DatesInfections <- unique(MuSPAD_time_inf$Date)
         dates <- c()
         date <- as.Date("2020-01-05")
@@ -189,7 +190,7 @@ IncidencePlot <- function(bootstrapping = "no"){
             date <- as.Date(date)
             if(date %in% unique(MuSPAD_time_inf$Date)){
             }else{
-                row <- c(date, 0, 0, 0, "MuSPAD")
+                row <- c(date, 0, 0, 0)
                 MuSPAD_time_inf <- rbind(MuSPAD_time_inf, row)
             }
         }
@@ -199,8 +200,7 @@ IncidencePlot <- function(bootstrapping = "no"){
       colnames(MuSPAD_time_inf) <- c("Date", "iteration", "CountPer1096")
       MuSPAD_time_inf <- MuSPAD_time_inf %>% 
                               ungroup() %>%
-                              mutate(Incidence100000_it = CountPer1096/group_size*100000) %>%
-                              mutate(DataSet = "MuSPAD")
+                              mutate(Incidence100000_it = CountPer1096/group_size*100000)
           DatesInfections <- unique(MuSPAD_time_inf$Date)
           dates <- c()
           date <- as.Date("2020-01-05")
@@ -214,21 +214,20 @@ IncidencePlot <- function(bootstrapping = "no"){
                 MuSPAD_time_inf_reduced <- MuSPAD_time_inf %>% filter(iteration == i)
                 if(date %in% unique(MuSPAD_time_inf_reduced$Date)){
                 }else{
-                    row <- c(date, i, 0, 0, 0, "MuSPAD")
+                    row <- c(date, i, 0, 0, 0)
                     MuSPAD_time_inf <- rbind(MuSPAD_time_inf, row)
                 }
             }
           }
       MuSPAD_time_inf <- MuSPAD_time_inf %>% group_by(Date) %>% summarize(lci = quantile(Incidence100000, probs =0.025)[[1]], uci = quantile(Incidence100000, probs =0.975)[[1]],  Incidence100000 = mean(Incidence100000_it))
-      MuSPAD_time_inf <- MuSPAD_time_inf %>% mutate(DataSet = "MuSPAD")
     }
 
-    MuSPAD_time_inf <- MuSPAD_time_inf %>% mutate(Incidence100000 = case_when(is.na(Incidence100000) ~ 0, .default = Incidence100000))
+    MuSPAD_time_inf <- MuSPAD_time_inf %>% mutate(DataSet = "MuSPAD")
+    #MuSPAD_time_inf <- MuSPAD_time_inf %>% mutate(Incidence100000 = case_when(is.na(Incidence100000) ~ 0, .default = Incidence100000))
 
     MuSPAD_time_inf <- MuSPAD_time_inf %>% select(Date, Incidence100000, lci, uci, DataSet)
 
     MuSPAD_time_inf$Date <- as.Date(MuSPAD_time_inf$Date)
-    MuSPAD_time_inf <- MuSPAD_time_inf %>% mutate(DataSet = "MuSPAD") # %>% filter(Date < "2023-07-01")
     count_no_infections <- rbind(count_no_infections, MuSPAD_time_inf)
 
     palette_surveyrki_bars <- function() {
@@ -250,7 +249,7 @@ IncidencePlot <- function(bootstrapping = "no"){
         #geom_line(data=count_no_infections,  aes(x = Date, y = Incidence100000, color =DataSet), alpha = 0.2, size = 1.2) +
         theme_minimal() +
         xlab("Date") +
-        facet_wrap(~DataSet, nrow = 3) +
+        facet_wrap(~DataSet, nrow = 3, strip.position = "bottom") +
         geom_vline(data = count_no_infections, mapping = aes(xintercept = as.Date("2023-05-14")), color = "#990000", size = 1.5) +
         annotate("text", x=as.Date("2023-05-14"), y=2100, label="Last infection reported\nto MuSPAD", angle=90, size =10) +
         geom_vline(data = count_no_infections, mapping = aes(xintercept = as.Date("2023-08-13")), color = "#9900CC", size = 1.5) +
@@ -260,11 +259,11 @@ IncidencePlot <- function(bootstrapping = "no"){
         ggtitle("7-Day-Incidence per 100,000") +
         #geom_vline(data=StopMusPadData, mapping=aes(xintercept=date), color="#666666", size = 1.5) +
         #geom_text(data=StopMusPadData, mapping=aes(x=date, y=0.04, label=event), size=10, angle=90, nudge_y = 2600, hjust = 0.5) +
-        ylab("7-Day-Incidence per 100,000") +
+        ylab("7-Day-Incidence\nper 100,000") +
         #ggtitle(age_group) +
         theme(text = element_text(size = 55)) +
-        scale_y_continuous(breaks = c (0,500,1000,1500,2000,2500,3000), limits=c(0,3000)) +
-        #scale_x_date(date_breaks = "6 months", date_labels = "%Y/%m")+
+        scale_y_continuous(breaks = c (0,500,1000,1500,2000,2500), limits=c(0,2750)) +
+        scale_x_date(date_breaks = "6 months", date_labels = "%Y/%m")+
         scale_x_date(breaks= seq(min(count_no_infections$Date), as.Date("2023-08-31"), by = "6 months"), date_labels = "%Y/%m")+
         theme(legend.position = "none", legend.title = element_blank()) +
           theme(axis.ticks.x = element_line(),
@@ -272,6 +271,8 @@ IncidencePlot <- function(bootstrapping = "no"){
             axis.ticks.length = unit(12, "pt")) +
         theme(plot.title = element_text(hjust = 0.5)) 
 
+
+    ggarrange(ComSurveyRki, ggparagraph(text="   ", face = "italic", size = 14, color = "black"), ComSurveyRki_bottom, labels = c("A", "B", ""), nrow=3, ncol=1, align = "v", font.label = list(size = 37), heights = c(1,0.05,1.2))
     ggarrange(ComSurveyRki, ggparagraph(text="   ", face = "italic", size = 14, color = "black"), timelineplot2, labels = c("A", "", "B"), nrow = 3, ncol = 1,  align = "v", font.label = list(size = 37), heights = c(1.1,0.05,0.22))
     
     ggsave(paste0("VizComparisonIncidenceSurveyRKI", age_group, "bootstrap", bootstrapping, ".pdf"), dpi = 500, w = 24, h = 30)
