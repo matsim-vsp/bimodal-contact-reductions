@@ -264,7 +264,7 @@ IncidencePlot <- function(bootstrapping = "no"){
         theme(text = element_text(size = 55)) +
         scale_y_continuous(breaks = c (0,500,1000,1500,2000,2500), limits=c(0,2750)) +
         scale_x_date(date_breaks = "6 months", date_labels = "%Y/%m")+
-        scale_x_date(breaks= seq(min(count_no_infections$Date), as.Date("2023-08-31"), by = "6 months"), date_labels = "%Y/%m")+
+        scale_x_date(breaks= seq(min(count_no_infections$Date), as.Date("2023-08-31"), by = "6 months"), date_labels =  )+
         theme(legend.position = "none", legend.title = element_blank()) +
           theme(axis.ticks.x = element_line(),
             axis.ticks.y = element_line(),

@@ -5,13 +5,13 @@ library(tidyverse)
 
 setwd("./SocialMediaPollsPaper") # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
 source("MuSPAD.R")
-setwd("./SocialMediaPollsPaper/functions")
+setwd("./functions")
 source("IncidencePlot.R")
 
 # Incidence Plot without Bootstrapping
 
     # Data Prep
-    raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds")
+     raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds")
         data_reduced <- raw_data %>% select(num_c19_infs, date_f1_inf, f1_pcr_doc, f1_pcr_center, date_s2_inf, s2_pcr_doc, s2_pcr_center, date_t3_inf, t3_pcr_doc, t3_pcr_center, year_of_birth) %>% 
                 mutate(age = 2023-year_of_birth) %>%
                 mutate(age_bracket = case_when(age < 35 ~ "15-34",
@@ -35,7 +35,7 @@ age_groups <- c("18-39", "40-59", "60+")
 data <- data.frame(matrix(nrow = 0, ncol = 13))
 colnames(data) <- c("date_f1_inf","f1_pcr_doc","f1_pcr_center","date_s2_inf","s2_pcr_doc","s2_pcr_center","date_t3_inf","t3_pcr_doc","t3_pcr_center","year_of_birth","age","age_bracket", "iteration")
 
-for(i in 1:100){
+for(i in 1:1000){
     for(age_group in age_groups){
 
         raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds")
@@ -71,7 +71,7 @@ data_reduced <- data
 data <- data.frame(matrix(nrow = 0, ncol = ncol(MuSPADnewplusold)))
 colnames(data) <- colnames(MuSPADnewplusold)
 
-for(i in 1:2){
+for(i in 1:1000){
     for(age_group in age_groups){
     MuSPAD <- MuSPADnewplusold %>% 
     mutate(firstinfection = make_date(MuSPADnewplusold$s22_positive_PCR_year_1, MuSPADnewplusold$s22_positive_PCR_month_1, MuSPADnewplusold$s22_positive_PCR_day_1)) %>%
@@ -104,5 +104,3 @@ for(i in 1:2){
 
 MuSPAD <- data 
 
-timingOfInfection(bootstrapping = "yes")
-timingOfInfection(bootstrapping = "no")
