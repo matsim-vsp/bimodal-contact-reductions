@@ -4,30 +4,10 @@ library(cowplot)
 library(ggpubr)
 library(readxl)
 
-# Author: S. Paltra, contact: paltra@tu-berlin.de
-
-setwd("./AnalysisSP") # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
+setwd("/Users/sydney/git/twitter-study/AnalysisSP/SecondOrderContactsPaper")
 source("DataCleaningPrepForContactAnalysis.R")
 
-MuSPAD <- read_delim("/Users/sydney/Downloads/Uni_Lübeck/MuSPAD_data_subset.csv") # Enter MuSPAD path
-count_na_w22 <- function(row) {
-  sum(grepl("^w22_", names(row)) & !is.na(row))
-}
-count_na_s22 <- function(row) {
-  sum(grepl("^s22_", names(row)) & !is.na(row))
-}
-count_na_s22w22 <- function(row) {
-  sum(grepl("^w22_", names(row)) & !is.na(row)) + sum(grepl("^s22_", names(row)) & !is.na(row))
-}
-# MuSPAD$count_na_w22 <- apply(MuSPAD, 1, count_na_w22)
-# MuSPAD$count_na_s22 <- apply(MuSPAD, 1, count_na_s22)
-# MuSPAD$count_na_s22w22 <- apply(MuSPAD, 1, count_na_s22w22)
-# MuSPAD_w22 <- MuSPAD %>% filter(count_na_w22 != 0) # We are excluding all participants who did not answer anything in the s22 survey -> Replace to match MuSPAD's procedure
-# MuSPAD_s22 <- MuSPAD %>% filter(count_na_s22 != 0) # We are excluding all participants who did not answer anything in the s22 survey -> Replace to match MuSPAD's procedure
-# MuSPAD_s22w22 <- MuSPAD %>% filter(count_na_s22w22 != 0) # We are excluding all participants who did not answer anything in the s22 survey -> Replace to match MuSPAD's procedure
-
-MuSPAD_s22 <- readRDS("/Users/sydney/Downloads/9921_dataset/muspad_22-Nov-2022.rds")
-MuSPADnewplusold <- left_join(MuSPAD_s22 %>% mutate(user_id = gsub("_", "-", user_id)) %>% select(user_id), MuSPAD, by = join_by(user_id == merge_id))
+# Author: S. Paltra, contact: paltra@tu-berlin.de
 
 # Number of infections ----------------------------------------------------
 
@@ -103,8 +83,6 @@ InfectionsDataCOSMO$num_c19_infs_eng <- factor(InfectionsDataCOSMO$num_c19_infs_
 InfectionsDataCOSMO$n <- as.integer(InfectionsDataCOSMO$n)
 InfectionsDataCOSMO$percent <- as.double(InfectionsDataCOSMO$percent)
 InfectionsDataCOSMO$sum <- as.double(InfectionsDataCOSMO$sum)
-
-
 
 #Intervals based on: http://www.stat.yale.edu/Courses/1997-98/101/catinf.htm
 left_panel <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
