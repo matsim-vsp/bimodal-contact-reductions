@@ -3,13 +3,14 @@ library(RColorBrewer)
 library(cowplot)
 library(ggpubr)
 library(readxl)
+library(here)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
-setwd("./AnalysisSP") # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
-source("DataCleaningPrepForContactAnalysis.R")
+here()
+source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R") #Todo: Update once repo has been reorganized
 
-MuSPAD <- read_delim("/Users/sydney/Downloads/Uni_Lübeck/MuSPAD_data_subset.csv") # Enter MuSPAD path
+MuSPAD <- read_delim("/Users/sydney/Downloads/Uni_Lübeck/MuSPAD_data_subset.csv") #Todo: Only works
 count_na_w22 <- function(row) {
   sum(grepl("^w22_", names(row)) & !is.na(row))
 }
@@ -19,29 +20,23 @@ count_na_s22 <- function(row) {
 count_na_s22w22 <- function(row) {
   sum(grepl("^w22_", names(row)) & !is.na(row)) + sum(grepl("^s22_", names(row)) & !is.na(row))
 }
-# MuSPAD$count_na_w22 <- apply(MuSPAD, 1, count_na_w22)
-# MuSPAD$count_na_s22 <- apply(MuSPAD, 1, count_na_s22)
-# MuSPAD$count_na_s22w22 <- apply(MuSPAD, 1, count_na_s22w22)
-# MuSPAD_w22 <- MuSPAD %>% filter(count_na_w22 != 0) # We are excluding all participants who did not answer anything in the s22 survey -> Replace to match MuSPAD's procedure
-# MuSPAD_s22 <- MuSPAD %>% filter(count_na_s22 != 0) # We are excluding all participants who did not answer anything in the s22 survey -> Replace to match MuSPAD's procedure
-# MuSPAD_s22w22 <- MuSPAD %>% filter(count_na_s22w22 != 0) # We are excluding all participants who did not answer anything in the s22 survey -> Replace to match MuSPAD's procedure
 
 MuSPAD_s22 <- readRDS("/Users/sydney/Downloads/9921_dataset/muspad_22-Nov-2022.rds")
 MuSPADnewplusold <- left_join(MuSPAD_s22 %>% mutate(user_id = gsub("_", "-", user_id)) %>% select(user_id), MuSPAD, by = join_by(user_id == merge_id))
 
+#Creation of palette for comparison of external survey, federal office of statistics, and MuSPAD
 palette_surveyfedmuspad_bars <- function() {
   c("#9900CC", "#151515", "#990000")
 }
-
 palette_surveyfedmuspad_errorbars <- function() {
    c("#640085", "#000000", "#5c0000")
 }
 
 # Gender ------------------------------------------------------------------
 
-GenderData <- data_reduced %>% select(gender)
-
-GenderData <- GenderData %>% mutate(gender = case_when(gender == "Weiblich" ~ "female", 
+# Processing of external survey data
+GenderData <- data_reduced %>% select(gender) %>%
+              mutate(gender = case_when(gender == "Weiblich" ~ "female", 
                                                         gender == "Männlich" ~ "male",
                                                         gender == "Divers" ~ "diverse",
                                                         gender == "Ich möchte nicht antworten" ~ "I Don't Want To Answer")) %>% 
@@ -49,7 +44,9 @@ GenderData <- GenderData %>% mutate(gender = case_when(gender == "Weiblich" ~ "f
 
 GenderData$gender <- factor(GenderData$gender, levels = c("female", "male", "diverse", "I Don't Want To Answer"))
 
-#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/deutsche-nichtdeutsche-bevoelkerung-nach-geschlecht-deutschland.html
+
+# Processing of federal statistical office data
+#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/deutsche-nichtdeutsche-bevoelkerung-nach-geschlecht-deutschland.html [accessed: 2025-02-10]
 GenderDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(GenderDataStatBundesamt) <- c("gender", "n", "percent", "Source", "sum")
 GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("female",42885791, 100*42885791/84669326, "Federal Statistical Office, Federal Employment Agency", 84669326)
@@ -60,10 +57,9 @@ GenderDataStatBundesamt$n <- as.integer(GenderDataStatBundesamt$n)
 GenderDataStatBundesamt$sum <- as.integer(GenderDataStatBundesamt$sum)
 GenderDataStatBundesamt$percent <- as.double(GenderDataStatBundesamt$percent)
 
+# Processing of MuSPAD data
 GenderMus <- MuSPAD_s22 %>% select(sex) %>% count(sex) %>% filter(!is.na(sex)) %>% filter(sex != "")
-
 GenderDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
-
 colnames(GenderDataMuspad) <- c("gender", "n", "percent", "Source", "sum")
 GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("female", (GenderMus %>% filter(sex == "female"))$n, 100*(GenderMus %>% filter(sex == "female"))$n/sum(GenderMus$n), "MuSPAD", (GenderMus %>% filter(sex == "female"))$n+(GenderMus %>% filter(sex == "male"))$n+(GenderMus %>% filter(sex == "diverse"))$n)
 GenderDataMuspad[nrow(GenderDataMuspad) + 1, ] <- c("male",	(GenderMus %>% filter(sex == "male"))$n, 100*(GenderMus %>% filter(sex == "male"))$n/sum(GenderMus$n), "MuSPAD",(GenderMus %>% filter(sex == "female"))$n+(GenderMus %>% filter(sex == "male"))$n+(GenderMus %>% filter(sex == "diverse"))$n)
@@ -73,6 +69,7 @@ GenderDataMuspad$n <- as.integer(GenderDataMuspad$n)
 GenderDataMuspad$sum <- as.integer(GenderDataMuspad$sum)
 GenderDataMuspad$percent <- as.double(GenderDataMuspad$percent)
 
+# Creation of plot
 GenderPlot <- GenderData %>% count(gender) %>% mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% mutate(Source = "External Survey") %>% 
                   rbind(GenderDataStatBundesamt) %>%
                   rbind(GenderDataMuspad) %>%
@@ -86,7 +83,6 @@ ggplot(aes(gender, percent)) +
     geom_errorbar(aes(x=gender, ymin=lci, ymax=uci, colour = factor(Source, levels = c("External Survey", "Federal Statistical Office, Federal Employment Agency", "MuSPAD"))), position = position_dodge(0.8), width = 0.3, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
-  #facet_wrap(~name, nrow=2) +
   ylab("Share (Percentage)") +
   xlab("Gender") +
   scale_fill_manual(values = palette_surveyfedmuspad_bars()) +
@@ -98,11 +94,12 @@ ggplot(aes(gender, percent)) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("Gender_Comparison.pdf", GenderPlot, dpi = 500, w = 9.5, h = 6)
-ggsave("Gender_Comparison.png", GenderPlot, dpi = 500, w = 9.5, h = 6)
+#ggsave("Gender_Comparison.pdf", GenderPlot, dpi = 500, w = 9.5, h = 6)
+#ggsave("Gender_Comparison.png", GenderPlot, dpi = 500, w = 9.5, h = 6)
 
 # Age ---------------------------------------------------------------------
 
+# Processing of external survey data
 AgeData <- data_reduced %>% select(year_of_birth) %>% mutate(age = 2023-year_of_birth) %>%
           mutate(age_bracket = case_when(age < 20 ~ "18-39",
                                         age < 40 ~ "18-39",
@@ -111,8 +108,9 @@ AgeData <- data_reduced %>% select(year_of_birth) %>% mutate(age = 2023-year_of_
                                         age < 100 ~ "80-99")) 
 AgeData$age_bracket <- factor(AgeData$age_bracket, levels = c("18-39", "40-59", "60-79", "80-99"))
 
-# Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html
-# https://de.statista.com/statistik/daten/studie/1174053/umfrage/minderjaehrige-in-deutschland-nach-altersgruppen/#:~:text=Kinder%20und%20Jugendliche%20in%20Deutschland%20nach%20Altersgruppen%202023&text=Zum%2031.,sechs%20bis%20einschlie%C3%9Flich%2014%20Jahren.
+# Processing of federal statistical office data
+# Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html [accessed: 2025-02-10]
+# https://de.statista.com/statistik/daten/studie/1174053/umfrage/minderjaehrige-in-deutschland-nach-altersgruppen/#:~:text=Kinder%20und%20Jugendliche%20in%20Deutschland%20nach%20Altersgruppen%202023&text=Zum%2031.,sechs%20bis%20einschlie%C3%9Flich%2014%20Jahren. [accessed: 2025-02-10]
 AgeDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeDataStatBundesamt) <- c("age_bracket", "n", "source", "sum")
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("18-39", 84669326*0.188-14300000+84669326*0.245, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
@@ -124,6 +122,7 @@ AgeDataStatBundesamt$sum <- as.integer(AgeDataStatBundesamt$sum)
 AgeDataStatBundesamt <- AgeDataStatBundesamt %>% mutate(percent = 100*n/sum)
 AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("18-39", "40-59", "60-79", "80-99"))
 
+# Processing of MuSPAD data
 AgeMuspad <- MuSPAD_s22 %>% select(birth_date_yyyy, age, age_floor, age_group) %>% 
                         filter(age_floor != 17) %>% filter(!is.na(age_floor)) %>% filter(is.finite(age_floor)) %>%
                         mutate(age_bracket = case_when(age_floor >= 80 ~ "80-99",
@@ -131,7 +130,6 @@ AgeMuspad <- MuSPAD_s22 %>% select(birth_date_yyyy, age, age_floor, age_group) %
                                                                 age_floor >= 40 ~ "40-59",
                                                                 age_floor >= 20 ~ "18-39",
                                                                 age_floor < 20 ~ "18-39")) %>% count(age_bracket)
-
 AgeDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(AgeDataMuspad) <- c("age_bracket", "n", "percent", "source", "sum")
 AgeDataMuspad[nrow(AgeDataMuspad) + 1, ] <- c("18-39", (AgeMuspad %>% filter(age_bracket=="18-39"))$n, 100*(AgeMuspad %>% filter(age_bracket=="18-39"))$n/sum(AgeMuspad$n), "MuSPAD", sum(AgeMuspad$n))
@@ -143,6 +141,7 @@ AgeDataMuspad$sum <- as.integer(AgeDataMuspad$sum)
 AgeDataMuspad$percent <- as.double(AgeDataMuspad$percent)
 AgeDataMuspad$age_bracket <- factor(AgeDataMuspad$age_bracket, levels = c("18-39", "40-59", "60-79", "80-99"))
 
+# Creation of plot
 AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% count(age_bracket) %>% 
             mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% 
             mutate(source = "External Survey") %>%
@@ -159,8 +158,6 @@ ggplot(aes(age_bracket, percent)) +
   scale_color_manual(values = palette_surveyfedmuspad_errorbars())+
   theme_minimal() +
     theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
-  #facet_wrap(~name, nrow=2) +
-  #ylab("") +
   ylab("Share (Percentage)") +
   xlab("Age Bracket") +
   scale_fill_manual(values = palette_surveyfedmuspad_bars()) +
@@ -171,19 +168,16 @@ ggplot(aes(age_bracket, percent)) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("Age_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
-ggsave("Age_Comparison.png", dpi = 500, w = 9.5, h = 6)
+#ggsave("Age_Comparison.pdf", dpi = 500, w = 9.5, h = 6)
+#ggsave("Age_Comparison.png", dpi = 500, w = 9.5, h = 6)
 
 # Household Size ----------------------------------------------------
 
-# The following section compares the household sizes for the survey, MuSPAD and the Federal Statistical Office
-
+# Processing of external survey data
 HouseholdData <- data_reduced %>% select(respondent_hsld_size_2019, respondent_hsld_size_03_2020, respondent_hsld_size_summer_2021, respondent_hsld_size_01_2023, respondent_hsld_size_persons_under_14, number_of_children_under_18)
 HouseholdData <- HouseholdData %>% pivot_longer(cols = c("respondent_hsld_size_2019", "respondent_hsld_size_03_2020", "respondent_hsld_size_summer_2021", "respondent_hsld_size_01_2023", "respondent_hsld_size_persons_under_14", "number_of_children_under_18"))
-
-#HouseholdData$name <- factor(HouseholdData$name, levels = c("hsld_size_2019_", "hsld_size_03_2020_", "hsld_size_summer_2021_", "hsld_size_01_2023_", "total_hsld_size_persons_under_14", "total_hsld_size_persons_above_14", "number_of_children_under_18"))
-HouseholdData <- HouseholdData %>% mutate(value = case_when(value == 1 ~ "1", value == 2 ~ "2", value == 3 ~ "3", value == 4 ~ "4", value >= 5 ~ "5+"))
-HouseholdData <- HouseholdData %>% mutate(name = case_when(name == "respondent_hsld_size_2019" ~ "Household size 2019",
+HouseholdData <- HouseholdData %>% mutate(value = case_when(value == 1 ~ "1", value == 2 ~ "2", value == 3 ~ "3", value == 4 ~ "4", value >= 5 ~ "5+")) %>%
+                                   mutate(name = case_when(name == "respondent_hsld_size_2019" ~ "Household size 2019",
                                                           name == "respondent_hsld_size_03_2020" ~ "Household size 3/20",
                                                           name == "respondent_hsld_size_summer_2021" ~ "Household size Summer/21",
                                                           name == "respondent_hsld_size_01_2023" ~ "Household size 1/23",
@@ -191,6 +185,7 @@ HouseholdData <- HouseholdData %>% mutate(name = case_when(name == "respondent_h
                                                           name == "number_of_children_under_18" ~ "# Children < 18"))
 HouseholdData$name <- factor(HouseholdData$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
 
+# Processing of federal statistical office data
 #https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Haushalte-Familien/Tabellen/1-1-privathaushalte-haushaltsmitglieder.html
 HouseholdDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 6))
 colnames(HouseholdDataStatBundesamt) <- c("name", "value", "n", "percent", "Source", "sum")
@@ -219,6 +214,7 @@ HouseholdDataStatBundesamt$sum <- as.integer(HouseholdDataStatBundesamt$sum)
 HouseholdDataStatBundesamt$percent <- as.double(HouseholdDataStatBundesamt$percent)
 HouseholdDataStatBundesamt$name <- factor(HouseholdDataStatBundesamt$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
 
+# Processing of MuSPAD data
 MuSPADHousehold <- MuSPAD_s22 %>%  
                          select(haushalt_gesamt, haushalt_gesamt_g) %>%
                          filter(haushalt_gesamt != 0) %>%
@@ -229,7 +225,6 @@ MuSPADHousehold <- MuSPAD_s22 %>%
                          haushalt_gesamt == 4 ~ "4",
                          haushalt_gesamt >= 5 ~ "5+")) %>%
                          count(haushalt_gesamt)
-
 HouseholdDataMuspad <- data.frame(matrix(nrow = 0, ncol = 6))
 colnames(HouseholdDataMuspad) <- c("name", "value", "n", "percent", "Source", "sum")
 HouseholdDataMuspad[nrow(HouseholdDataMuspad) + 1, ] <- c("Household size 2019", "1", (MuSPADHousehold %>% filter(haushalt_gesamt == "1"))$n, 100*(MuSPADHousehold %>% filter(haushalt_gesamt == "1"))$n/sum(MuSPADHousehold$n), "MuSPAD", sum(MuSPADHousehold$n))
@@ -258,7 +253,7 @@ HouseholdDataMuspad$percent <- as.double(HouseholdDataMuspad$percent)
 HouseholdDataMuspad$Source <- as.character(HouseholdDataMuspad$Source)
 HouseholdDataMuspad$name <- factor(HouseholdDataMuspad$name, levels = c("Household size 2019","Household size 3/20","Household size Summer/21","Household size 1/23","Children < 14 in household","Persons > 14 in household","# Children < 18"))
 
-
+# Creation of plot
 HouseholdPlot <- HouseholdData %>% filter(name != "Children < 14 in household") %>%
                   filter(name != "# Children < 18") %>%  filter(!is.na(name)) %>% filter(!is.na(value)) %>% 
                   group_by(name) %>% count(value) %>% mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% mutate(Source = "External Survey") %>% 
@@ -274,8 +269,6 @@ HouseholdPlot <- HouseholdData %>% filter(name != "Children < 14 in household") 
   geom_errorbar(aes(x=value, ymin=lci, ymax=uci, colour = factor(Source, levels = c("External Survey", "Federal Statistical Office, Federal Employment Agency", "MuSPAD"))), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
   theme_minimal() +
   theme(plot.margin=unit(c(1,1,1,1), 'cm')) +
-  #facet_wrap(~name, nrow=2) +
-  #ylab("") +
   ylab("Share (Percentage)") +
   xlab("Household size [# Members]") +
   scale_fill_manual(values = palette_surveyfedmuspad_bars()) +
@@ -287,11 +280,12 @@ HouseholdPlot <- HouseholdData %>% filter(name != "Children < 14 in household") 
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("HouseholdSize.png", HouseholdPlot, dpi = 500, w = 9.5, h = 6)
-ggsave("HouseholdSize.pdf", HouseholdPlot, dpi = 500, w = 9.5, h = 6)
+#ggsave("HouseholdSize.png", HouseholdPlot, dpi = 500, w = 9.5, h = 6)
+#ggsave("HouseholdSize.pdf", HouseholdPlot, dpi = 500, w = 9.5, h = 6)
 
 # Children under 14 ------------------------------------------------------------------
 
+# Creation of external survey/MuSPAD color palette (no data available by federal statistical office)
 palette_surveymuspad_bars <- function() {
   c("#9900CC", "#990000")
 }
@@ -300,7 +294,7 @@ palette_surveymuspad_errorbars <- function() {
    c("#640085", "#5c0000")
 }
 
-
+# Processing of external survey data
 Children <- data_reduced %>% select(respondent_hsld_size_persons_under_14) %>%
                             mutate(respondent_hsld_size_persons_under_14 = case_when(respondent_hsld_size_persons_under_14  == 0 ~ "0",
                             respondent_hsld_size_persons_under_14  == 1 ~ "1",
@@ -308,18 +302,16 @@ Children <- data_reduced %>% select(respondent_hsld_size_persons_under_14) %>%
                             respondent_hsld_size_persons_under_14  == 3 ~ "3+",
                             respondent_hsld_size_persons_under_14  == 4 ~ "3+"))
 
+# Processing of MuSPAD data
 MuSPAD_s22 <- MuSPAD_s22 %>% rename(ChildrenUnder14 = household_under14) 
-
-
 ChildrenMuspad <- MuSPAD_s22 %>% select(ChildrenUnder14) %>%
                             mutate(ChildrenUnder14 = case_when(ChildrenUnder14  == 0 ~ "0",
                             ChildrenUnder14  == 1 ~ "1",
                             ChildrenUnder14  == 2 ~ "2",
                             ChildrenUnder14  == 3 ~ "3+",
-                            ChildrenUnder14  > 3 ~ "3+"))
-
-ChildrenMuspad <- ChildrenMuspad %>% count(ChildrenUnder14) %>% filter(!is.na(ChildrenUnder14))                  
-
+                            ChildrenUnder14  > 3 ~ "3+")) %>%
+                            count(ChildrenUnder14) %>% 
+                            filter(!is.na(ChildrenUnder14))
 ChildrenDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(ChildrenDataMuspad) <- c("respondent_hsld_size_persons_under_14", "n", "percent", "Source", "sum")
 ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("0", (ChildrenMuspad %>% filter(ChildrenUnder14 == "0"))$n, 100*(ChildrenMuspad %>% filter(ChildrenUnder14 == "0"))$n/sum(ChildrenMuspad$n), "MuSPAD", sum(ChildrenMuspad$n))
@@ -328,11 +320,11 @@ ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("2",	(ChildrenMuspad %>%
 ChildrenDataMuspad[nrow(ChildrenDataMuspad) + 1, ] <- c("3+",	(ChildrenMuspad %>% filter(ChildrenUnder14 == "3+"))$n, 100*(ChildrenMuspad %>% filter(ChildrenUnder14 == "3+"))$n/sum(ChildrenMuspad$n), "MuSPAD", sum(ChildrenMuspad$n))
 ChildrenDataMuspad$n <- as.integer(ChildrenDataMuspad$n)
 ChildrenDataMuspad$sum <- as.integer(ChildrenDataMuspad$sum)
-
 ChildrenDataMuspad$respondent_hsld_size_persons_under_14 <- factor(ChildrenDataMuspad$respondent_hsld_size_persons_under_14, levels = c("0", "1", "2", "3+"))
 ChildrenDataMuspad$n <- as.integer(ChildrenDataMuspad$n)
 ChildrenDataMuspad$percent <- as.double(ChildrenDataMuspad$percent)
 
+# Creation of plot
 ChildrenPlot <- Children %>% filter(!is.na(respondent_hsld_size_persons_under_14)) %>% 
                   count(respondent_hsld_size_persons_under_14) %>% 
                   mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% 
@@ -362,24 +354,22 @@ ggplot(aes(respondent_hsld_size_persons_under_14, percent)) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(5, "pt"))
 
-ggsave("Children_Comparison.png", ChildrenPlot, dpi = 500, w = 9.5, h = 6)
-ggsave("Children_Comparison.pdf", ChildrenPlot, dpi = 500, w = 9.5, h = 6)
+#ggsave("Children_Comparison.png", ChildrenPlot, dpi = 500, w = 9.5, h = 6)
+#ggsave("Children_Comparison.pdf", ChildrenPlot, dpi = 500, w = 9.5, h = 6)
 
 
-# Education / Occupation --------------------------------------------------
+# Education --------------------------------------------------
 
-#Education 
-
-educationLevel <- data_reduced %>% select(highest_educational_qualification)
-
-educationLevel <- educationLevel %>% mutate(highest_educational_qualification = case_when(highest_educational_qualification == "Haupt-/ Volksschulabschluss" ~ "Certification\nafter 9 years",
+# Processing of external survey data
+educationLevel <- data_reduced %>% select(highest_educational_qualification) %>%
+                  mutate(highest_educational_qualification = case_when(highest_educational_qualification == "Haupt-/ Volksschulabschluss" ~ "Certification\nafter 9 years",
                                                                                           highest_educational_qualification == "Realschulabschluss" ~ "Certification\nafter 10 years",
                                                                                           highest_educational_qualification == "Abitur / Fachhochschulabitur" ~ "Higher Education",
                                                                                           highest_educational_qualification == "Anderer" ~ "Other/None"))
-
 educationLevel$highest_educational_qualification <- factor(educationLevel$highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other/None"))
 
-#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Bildungsstand/Tabellen/bildungsabschluss.html
+# Processing of federal statistical office data
+# https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Bildungsstand/Tabellen/bildungsabschluss.html [accessed 2025-02-10]
 EducationDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(EducationDataStatBundesamt ) <- c("highest_educational_qualification", "n", "percent", "source", "sum")
 EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Higher Education", 82000000*0.335, 33.5, "Federal Statistical Office, Federal Employment Agency", 82000000)
@@ -391,6 +381,7 @@ EducationDataStatBundesamt$sum  <- as.integer(EducationDataStatBundesamt$sum)
 EducationDataStatBundesamt $percent <- as.double(EducationDataStatBundesamt $percent)
 EducationDataStatBundesamt $highest_educational_qualification <- factor(EducationDataStatBundesamt $highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other/None"))
 
+# Processing of MuSPAD data
 Education <- MuSPAD_s22 %>% 
                         select(education) %>% 
                         filter(!is.na(education)) %>% 
@@ -404,7 +395,6 @@ Education <- MuSPAD_s22 %>%
                         education == "Keinen Schulabschluss" ~ "Other/None",
                         education == "Realschulabschluss" ~ "Certification\nafter 10 years")) %>% 
                         count(education) 
-
 EducationDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(EducationDataMuspad) <- c("highest_educational_qualification", "n", "percent", "source", "sum")
 EducationDataMuspad[nrow(EducationDataMuspad) + 1, ] <- c("Higher Education", (Education %>% filter(education == "Higher Education"))$n, 100*(Education %>% filter(education == "Higher Education"))$n/sum(Education$n), "MuSPAD", sum(Education$n))
@@ -416,6 +406,7 @@ EducationDataMuspad$sum <- as.integer(EducationDataMuspad$sum)
 EducationDataMuspad$percent <- as.double(EducationDataMuspad$percent)
 EducationDataMuspad$highest_educational_qualification <- factor(EducationDataMuspad$highest_educational_qualification, levels = c("Higher Education", "Certification\nafter 10 years", "Certification\nafter 9 years", "Other/None"))
 
+# Creation of plot
 EducationPlot <- educationLevel %>% filter(!is.na(highest_educational_qualification)) %>% 
             filter(highest_educational_qualification != "Other") %>%
             count(highest_educational_qualification) %>% 
@@ -447,15 +438,14 @@ ggplot(aes(highest_educational_qualification, percent)) +
         axis.ticks.length = unit(5, "pt")) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.75, hjust=0.7))
 
-ggsave("EducationLevel_Comparison.pdf", EducationPlot, dpi = 500, w =9.5, h = 9)
-ggsave("EducationLevel_Comparison.png", EducationPlot, dpi = 500, w =9.5, h = 9)
+#ggsave("EducationLevel_Comparison.pdf", EducationPlot, dpi = 500, w =9.5, h = 9)
+#ggsave("EducationLevel_Comparison.png", EducationPlot, dpi = 500, w =9.5, h = 9)
 
+# Occupation --------------------------------------------------
 
-#Occupation
-
-currentOccupation <- raw_data %>% select(current_occupation)
-
-currentOccupation <- currentOccupation %>% mutate(current_occupation = case_when(current_occupation == "Ich bin in einem anderen Beruf tätig." ~ "Other",
+# Processing of external survey data
+currentOccupation <- raw_data %>% select(current_occupation) %>%
+                    mutate(current_occupation = case_when(current_occupation == "Ich bin in einem anderen Beruf tätig." ~ "Other",
                                                                                  current_occupation == "Ich bin als Lehrer:in oder Erzieher:in tätig." ~ "Teaching Sector", 
                                                                                  current_occupation == "Ich bin Rentner:in oder Pensionär:in." ~ "Retired",
                                                                                  current_occupation == "Ich bin arbeitssuchend." ~ "Unemployed", 
@@ -466,6 +456,7 @@ currentOccupation <- currentOccupation %>% mutate(current_occupation = case_when
                                                                                  is.na(current_occupation) ~ "Unknown")) %>%
                                             filter(current_occupation != "Unknown")
 
+# Processing of MuSPAD data
 OccupationMuSPAD <- MuSPAD_s22 %>% count(employment) %>% filter(employment != "") %>%
                     mutate(employment = case_when(employment == "Andere (z.B. Elternzeit, Sabbatical)" ~ "Other",
                                                   employment == "Mutterschafts-, Erziehungsurlaub, Elternzeit oder sonstige Beurlaubung" ~ "Other",
@@ -482,8 +473,6 @@ OccupationMuSPAD <- MuSPAD_s22 %>% count(employment) %>% filter(employment != ""
                                                   employment == "Ich bin in einem medizinischen oder pflegerischen Beruf bei einem Gesundheitsversorger tätig" ~ "Medical Sector",
                                                   employment == "Ich bin in einem medizinischen oder pflegerischen Beruf bei einem Gesundheitsversorger tätig." ~ "Medical Sector")) %>%
                                                   group_by(employment) %>% summarise(n = sum(n))
-
-
 OccupationDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Other", (OccupationMuSPAD %>% filter(employment == "Other"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Other"))$n/sum(OccupationMuSPAD$n), "MuSPAD", sum(OccupationMuSPAD$n))
 OccupationDataMuspad[nrow(OccupationDataMuspad) + 1, ] <- c("Teaching Sector", (OccupationMuSPAD %>% filter(employment == "Teaching Sector"))$n, 100*(OccupationMuSPAD %>% filter(employment == "Teaching Sector"))$n/sum(OccupationMuSPAD$n), "MuSPAD", sum(OccupationMuSPAD$n))
@@ -496,7 +485,8 @@ OccupationDataMuspad$n <- as.integer(OccupationDataMuspad$n)
 OccupationDataMuspad$sum <- as.integer(OccupationDataMuspad$sum)
 OccupationDataMuspad$percent <- as.double(OccupationDataMuspad$percent)
 
-#Data stems from https://de.statista.com/statistik/daten/studie/1099494/umfrage/beschaeftigte-in-deutschland-nach-berufsgruppen/
+# Processing of federal statistical office data
+#Data stems from https://de.statista.com/statistik/daten/studie/1099494/umfrage/beschaeftigte-in-deutschland-nach-berufsgruppen/ [accessed: 2025-02-10]
 FedEmploymentAgency <- read_xlsx("/Users/sydney/Downloads/statistic_id1099494_beschaeftigte-in-deutschland-nach-berufsgruppen-2023.xlsx", sheet = 2)
 colnames(FedEmploymentAgency) <- c("occupation", "n")
 OccupationDataFedEmploymentAgency <- data.frame(matrix(nrow = 0, ncol = 3))
@@ -519,6 +509,7 @@ colnames(OccupationDataFedEmploymentAgency) <- c("current_occupation", "n", "sou
 OccupationDataFedEmploymentAgency$n <- as.double(OccupationDataFedEmploymentAgency$n)
 OccupationDataFedEmploymentAgency <- OccupationDataFedEmploymentAgency %>% mutate(sum = sum(n), percent = n/sum*100)
 
+# Creation of plot
 OccupationPlot <- currentOccupation %>% filter(!is.na(current_occupation)) %>% 
             count(current_occupation) %>% 
             mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% 
@@ -548,13 +539,10 @@ ggplot(aes(current_occupation, percent)) +
         axis.ticks.length = unit(5, "pt")) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.75, hjust=0.7))
 
-ggsave("Occupation_Comparison.pdf", OccupationPlot, dpi = 500, w =9.5, h = 9)
-ggsave("Occupation_Comparison.png", OccupationPlot, dpi = 500, w =9.5, h = 9)
+#ggsave("Occupation_Comparison.pdf", OccupationPlot, dpi = 500, w =9.5, h = 9)
+#ggsave("Occupation_Comparison.png", OccupationPlot, dpi = 500, w =9.5, h = 9)
 
-## All plots together
-#plot_grid(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = "AUTO", nrow = 3, label_size = 24, rel_heights = c(1,1,1.25))
-
+# Layout and save plots
 ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
- 
 ggsave("DemographicComparison.pdf", dpi = 500, w = 24, h = 30)
 ggsave("DemographicComparison.png", dpi = 500, w = 24, h = 30)
