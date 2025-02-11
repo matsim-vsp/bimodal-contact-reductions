@@ -15,6 +15,7 @@ library(tidyverse)
 
 ```{r}
 # Read in raw data from the LimeSurvey export (automatically labels data)
+
 source(here("survey_415684_R_syntax_file.R"))
 
 # Read in csv data, group by user_id and keep rows with highest last_page (people that at least started the survey)
@@ -71,13 +72,13 @@ source("rename.R")
 # save filtered datasets
 
 # filtered data with timing information
-saveRDS(filtered_data, "data/filtered_data.rds")
+saveRDS(filtered_data, here("data", "filtered_data.rds"))
 
 #filtered data of completed survey with timing information
-saveRDS(filtered_data_lastpage, "data/filtered_data_lastpage.rds")
+saveRDS(filtered_data_lastpage, here("data", "filtered_data_lastpage.rds"))
 
 #cleaned data without timing information including incomplete survey
-saveRDS(cleaned_data, "data/cleaned_data.rds")
+saveRDS(cleaned_data, here("data", "cleaned_data.rds"))
 ```
 
 
@@ -235,5 +236,5 @@ translated_data <- translated_data %>%
 
 #save cleaned data
 
-saveRDS(translated_data, "data/translated_data.rds")
+saveRDS(translated_data, here("data", "translated_data.rds"))
 ```
