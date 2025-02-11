@@ -308,7 +308,7 @@ ggplot(aes(highest_educational_qualification, percent)) +
 # Occupation --------------------------------------------------
 
 # Processing of external survey data
-currentOccupation <- raw_data %>% select(current_occupation) %>%
+currentOccupation <- data_reduced %>% select(current_occupation) %>%
                     mutate(current_occupation = case_when(current_occupation == "Ich bin in einem anderen Beruf tätig." ~ "Other",
                                                                                  current_occupation == "Ich bin als Lehrer:in oder Erzieher:in tätig." ~ "Teaching Sector", 
                                                                                  current_occupation == "Ich bin Rentner:in oder Pensionär:in." ~ "Retired",

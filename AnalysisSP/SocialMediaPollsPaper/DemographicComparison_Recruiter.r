@@ -2,46 +2,38 @@ library(tidyverse)
 library(RColorBrewer)
 library(cowplot)
 library(ggpubr)
+library(here)
 
-#raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds") 
-
-setwd("./AnalysisSP") # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
-source("DataCleaningPrepForContactAnalysis.R")
+here() # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
+source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
 
 
-scenario <- "Twitter" #Alternative: "Twitter/Mastodon"
-
-if(scenario == "Twitter"){
 palette_recruiters_bars <- function(){
   c("#253494", "#ffffcc", "#7fcdbb", "#2c7fb8", "#c7e9b4", "#663300", "#151515")
 }
 palette_recruiters_errorbars <- function(){
   c("#1a2569", "#c9c99f", "#5e978a", "#1d577d", "#8ba37d", "#261300", "#000000")
 }
-}
 
 
 # Gender ------------------------------------------------------------------
 
-if(scenario == "Twitter"){
-    GenderData <- data_reduced %>% select(gender, ref, origin) %>% 
+# Processing of external survey data
+GenderData <- data_reduced %>% select(gender, ref, origin) %>% 
     filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
     mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
                             ref == "4a76b" ~ "Recruiter 2",
                             ref == "008b5" ~ "Recruiter 3", 
                             ref == "7b598" ~ "Recruiter 4", 
                             ref == "6c8d7" ~ "Recruiter 5", 
-                            ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))
-}
-
-GenderData <- GenderData %>% mutate(gender = case_when(gender == "Weiblich" ~ "female", 
+                            ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)")) %>%
+    mutate(gender = case_when(gender == "Weiblich" ~ "female", 
                                                         gender == "Männlich" ~ "male",
                                                         gender == "Divers" ~ "diverse",
                                                         gender == "Ich möchte nicht antworten" ~ "I Don't Want To Answer")) %>% 
                                                         filter(gender != "I Don't Want To Answer")
 
 GenderData$gender <- factor(GenderData$gender, levels = c("female", "male", "diverse", "I Don't Want To Answer"))
-
 
 GenderAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(GenderAdd) <- c("ref", "gender", "n", "percent")
@@ -57,7 +49,8 @@ GenderAdd$percent <- as.double(GenderAdd$percent)
 GenderAdd$ref <- as.character(GenderAdd$ref)
 GenderAdd$gender <- as.character(GenderAdd$gender)
 
-#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/deutsche-nichtdeutsche-bevoelkerung-nach-geschlecht-deutschland.html
+# Processing of federal statistical office data
+# https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/deutsche-nichtdeutsche-bevoelkerung-nach-geschlecht-deutschland.html [accessed 2025-02-11]
 GenderDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(GenderDataStatBundesamt) <- c("gender", "n", "percent", "ref", "sum")
 GenderDataStatBundesamt[nrow(GenderDataStatBundesamt) + 1, ] <- c("female",42885791, 100*42885791/84669326, "Federal Statistical Office, Federal Employment Agency", 84669326)
@@ -68,6 +61,7 @@ GenderDataStatBundesamt$n <- as.integer(GenderDataStatBundesamt$n)
 GenderDataStatBundesamt$sum <- as.integer(GenderDataStatBundesamt$sum)
 GenderDataStatBundesamt$percent <- as.double(GenderDataStatBundesamt$percent)
 
+# Creation of plot
 GenderPlot <- GenderData %>% group_by(ref) %>% filter(!is.na(ref)) %>% count(gender) %>% mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% 
 rbind(GenderDataStatBundesamt) %>%
 rbind(GenderAdd) %>%
@@ -95,10 +89,12 @@ ggplot(aes(gender, percent)) +
         axis.ticks.y = element_line(),
         axis.ticks.length = unit(10, "pt")) +
         guides(fill=guide_legend(nrow=4), color=guide_legend(nrow=4))
+
+
 # Age ---------------------------------------------------------------------
 
-if(scenario == "Twitter"){
-    AgeData <- data_reduced %>% select(year_of_birth, ref, origin) %>% mutate(age = 2023-year_of_birth) %>%
+# Processing of external survey data
+AgeData <- data_reduced %>% select(year_of_birth, ref, origin) %>% mutate(age = 2023-year_of_birth) %>%
             mutate(age_bracket = case_when(age < 20 ~ "18-39",
                                             age < 40 ~ "18-39",
                                             age < 60 ~ "40-59",
@@ -111,7 +107,6 @@ if(scenario == "Twitter"){
                             ref == "008b5" ~ "Recruiter 3", 
                             ref == "4a76b" ~ "Recruiter 2",
                             ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))
-}
 
 AgeAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeAdd) <- c("ref", "age_bracket", "n", "percent")
@@ -129,8 +124,9 @@ AgeAdd$percent <- as.double(AgeAdd$percent)
 AgeAdd$ref <- as.character(AgeAdd$ref)
 AgeAdd$age_bracket <- as.character(AgeAdd$age_bracket)
  
-# Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html
-# https://de.statista.com/statistik/daten/studie/1174053/umfrage/minderjaehrige-in-deutschland-nach-altersgruppen/#:~:text=Kinder%20und%20Jugendliche%20in%20Deutschland%20nach%20Altersgruppen%202023&text=Zum%2031.,sechs%20bis%20einschlie%C3%9Flich%2014%20Jahren.
+# Processing of federal statistical office data
+# Data from https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Bevoelkerungsstand/Tabellen/bevoelkerung-altersgruppen-deutschland.html [accessed 2025-02-11]
+# https://de.statista.com/statistik/daten/studie/1174053/umfrage/minderjaehrige-in-deutschland-nach-altersgruppen/#:~:text=Kinder%20und%20Jugendliche%20in%20Deutschland%20nach%20Altersgruppen%202023&text=Zum%2031.,sechs%20bis%20einschlie%C3%9Flich%2014%20Jahren. [accessed 2025-02-11]
 AgeDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(AgeDataStatBundesamt) <- c("age_bracket", "n", "ref", "sum")
 AgeDataStatBundesamt[nrow(AgeDataStatBundesamt) + 1, ] <- c("18-39", 84669326*0.188-14300000+84669326*0.245, "Federal Statistical Office, Federal Employment Agency", 84669326-14300000)
@@ -142,6 +138,7 @@ AgeDataStatBundesamt$sum <- as.integer(AgeDataStatBundesamt$sum)
 AgeDataStatBundesamt <- AgeDataStatBundesamt %>% mutate(percent = 100*n/sum)
 AgeDataStatBundesamt$age_bracket <- factor(AgeDataStatBundesamt$age_bracket, levels = c("18-39", "40-59", "60-79", "80-99"))
 
+# Creation of plot
 AgePlot <- AgeData %>% filter(!is.na(age_bracket)) %>% filter(!is.na(ref)) %>% group_by(ref) %>% count(age_bracket) %>% 
             mutate(percent = 100 * n / sum(n), sum = sum(n)) %>% rbind(AgeAdd) %>%
             rbind(AgeDataStatBundesamt) %>%
@@ -172,10 +169,8 @@ ggplot(aes(factor(age_bracket, levels = c("18-39", "40-59", "60-79", "80-99")), 
 
 # Household Size ----------------------------------------------------
 
-# The following section compares the household sizes for the survey, MuSPAD and the Federal Statistical Office
-
-if(scenario == "Twitter"){
-    HouseholdData <- data_reduced %>% select(ref, respondent_hsld_size_01_2023, origin) %>%
+# Processing of external survey data
+HouseholdData <- data_reduced %>% select(ref, respondent_hsld_size_01_2023, origin) %>%
                 filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
                 mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
                             ref ==  "6c8d7" ~ "Recruiter 5", 
@@ -183,7 +178,6 @@ if(scenario == "Twitter"){
                             ref == "008b5" ~ "Recruiter 3", 
                             ref == "4a76b" ~ "Recruiter 2",
                             ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))
-}
 
 HouseholdData <- HouseholdData %>% mutate(respondent_hsld_size_01_2023 = case_when(respondent_hsld_size_01_2023 == 1 ~ "1", respondent_hsld_size_01_2023 == 2 ~ "2", respondent_hsld_size_01_2023 == 3 ~ "3", respondent_hsld_size_01_2023 == 4 ~ "4", respondent_hsld_size_01_2023 >= 5 ~ "5+"))
 
@@ -200,7 +194,8 @@ HouseholdAdd$respondent_hsld_size_01_2023 <- as.character(HouseholdAdd$responden
 HouseholdAdd$n <- as.double(HouseholdAdd$n)
 HouseholdAdd$percent <- as.double(HouseholdAdd$percent)
 
-#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Haushalte-Familien/Tabellen/1-1-privathaushalte-haushaltsmitglieder.html
+# Processing of federal statistical office data
+# https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Haushalte-Familien/Tabellen/1-1-privathaushalte-haushaltsmitglieder.html [accessed 2025-02-11]
 HouseholdDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(HouseholdDataStatBundesamt) <- c("respondent_hsld_size_01_2023", "n", "percent", "ref", "sum")
 HouseholdDataStatBundesamt[nrow(HouseholdDataStatBundesamt) + 1, ] <- c("1", 84669326*0.411, 41.1, "Federal Statistical Office, Federal Employment Agency", 84669326)
@@ -241,7 +236,7 @@ HouseholdPlot <- HouseholdData %>% filter(!is.na(ref))  %>% group_by(ref) %>% fi
 
 # Children under 14 ------------------------------------------------------------------
 
-if(scenario == "Twitter"){
+# Processing of external survey data
 Children <- data_reduced  %>% select(ref, respondent_hsld_size_persons_under_14, origin) %>%
                         filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
                 mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
@@ -255,7 +250,6 @@ Children <- data_reduced  %>% select(ref, respondent_hsld_size_persons_under_14,
                             respondent_hsld_size_persons_under_14  == 2 ~ "2",
                             respondent_hsld_size_persons_under_14  == 3 ~ "3+",
                             respondent_hsld_size_persons_under_14  == 4 ~ "3+"))
-}
 
 ChildrenAdd <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(ChildrenAdd) <- c("ref", "respondent_hsld_size_persons_under_14", "n", "percent")
@@ -301,10 +295,8 @@ ggplot(aes(respondent_hsld_size_persons_under_14, percent)) +
 
 # Education / Occupation --------------------------------------------------
 
-#Education 
-
-if(scenario == "Twitter"){
-    educationLevel <- data_reduced %>% filter(!is.na(ref))  %>% select(highest_educational_qualification, ref, origin) %>%
+# Processing external survey data
+educationLevel <- data_reduced %>% filter(!is.na(ref))  %>% select(highest_educational_qualification, ref, origin) %>%
                             filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
                         mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
                             ref ==  "6c8d7" ~ "Recruiter 5", 
@@ -312,7 +304,6 @@ if(scenario == "Twitter"){
                             ref == "008b5" ~ "Recruiter 3", 
                             ref == "4a76b" ~ "Recruiter 2",
                             ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))    
-}
 
 educationLevel <- educationLevel %>% mutate(highest_educational_qualification = case_when(highest_educational_qualification == "Haupt-/ Volksschulabschluss" ~ "Certification\nafter 9 years",
                                                                                           highest_educational_qualification == "Realschulabschluss" ~ "Certification\nafter 10 years",
@@ -334,7 +325,8 @@ EducationAdd$highest_educational_qualification <- as.character(EducationAdd$high
 EducationAdd$n <- as.double(EducationAdd$n)
 EducationAdd$percent <- as.double(EducationAdd$percent)
 
-#https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Bildungsstand/Tabellen/bildungsabschluss.html
+# Processing federal statistical office data
+# https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bildung-Forschung-Kultur/Bildungsstand/Tabellen/bildungsabschluss.html [accessed 2025-02-11]
 EducationDataStatBundesamt <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(EducationDataStatBundesamt ) <- c("highest_educational_qualification", "n", "percent", "ref", "sum")
 EducationDataStatBundesamt [nrow(EducationDataStatBundesamt ) + 1, ] <- c("Higher Education", 83166711*0.335*100, 33.5, "Federal Statistical Office, Federal Employment Agency", 83166711)
@@ -378,10 +370,8 @@ ggplot(aes(factor(highest_educational_qualification, levels = c("Higher Educatio
 
 #Occupation
 
-# To do: The following section needs to be updated once we've received the according data from MuSPAD
-
-if(scenario == "Twitter"){
-    currentOccupation <- data_reduced %>% filter(!is.na(ref))  %>% select(ref, current_occupation, origin) %>%
+# Processing external survey data
+currentOccupation <- data_reduced %>% filter(!is.na(ref))  %>% select(ref, current_occupation, origin) %>%
                             filter(ref %in% c("dec9d", "6c8d7", "7b598", "008b5", "4a76b")) %>%
                         mutate(ref = case_when(ref == "dec9d" & origin == "b73c2" ~ "Recruiter 1 (Twitter)",
                             ref ==  "6c8d7" ~ "Recruiter 5", 
@@ -389,7 +379,6 @@ if(scenario == "Twitter"){
                             ref == "008b5" ~ "Recruiter 3", 
                             ref == "4a76b" ~ "Recruiter 2",
                             ref == "dec9d" & origin == "6080d" ~ "Recruiter 1 (Mastodon)"))
-}
 
 currentOccupation <- currentOccupation %>% mutate(current_occupation = case_when(current_occupation == "Ich bin in einem anderen Beruf tätig." ~ "Other",
                                                                                  current_occupation == "Ich bin als Lehrer:in oder Erzieher:in tätig." ~ "Teaching Sector", 
@@ -421,7 +410,8 @@ OccupationAdd$current_occupation <- as.character(OccupationAdd$current_occupatio
 OccupationAdd$n <- as.double(OccupationAdd$n)
 OccupationAdd$percent <- as.double(OccupationAdd$percent)
 
-#Data stems from https://de.statista.com/statistik/daten/studie/1099494/umfrage/beschaeftigte-in-deutschland-nach-berufsgruppen/
+# Processing federal statistical office data
+# Data stems from https://de.statista.com/statistik/daten/studie/1099494/umfrage/beschaeftigte-in-deutschland-nach-berufsgruppen/ [accessed 2025-02-11]
 FedEmploymentAgency <- read_xlsx("/Users/sydney/Downloads/statistic_id1099494_beschaeftigte-in-deutschland-nach-berufsgruppen-2023.xlsx", sheet = 2)
 colnames(FedEmploymentAgency) <- c("occupation", "n")
 OccupationDataFedEmploymentAgency <- data.frame(matrix(nrow = 0, ncol = 3))
@@ -477,8 +467,7 @@ ggplot(aes(current_occupation, percent)) +
     guides(fill=guide_legend(nrow=7), color=guide_legend(nrow=7))
 
 
-## All plots together
-#plot_grid(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = "AUTO", nrow = 3, label_size = 24, rel_heights = c(1,1,1.25))
+# Layout and save plots
 
 ggarrange(GenderPlot, AgePlot, HouseholdPlot, labels = c("A", "B", "C"), nrow = 3, ncol = 1, font.label = list(size = 37), common.legend = TRUE, legend = "bottom")
 
@@ -489,14 +478,6 @@ ggarrange(EducationPlot, OccupationPlot, ChildrenPlot, labels = c("A", "B", "C")
 
 ggsave("DemographicComparison_TwitterRecruiter_FinalTwo.pdf", dpi = 500, w = 24, h = 37)
 ggsave("DemographicComparison_TwitterRecruiter_FinalTwo.png", dpi = 500, w = 24, h = 37)
-
-
-ggarrange(GenderPlot, AgePlot, HouseholdPlot, ChildrenPlot, EducationPlot, OccupationPlot, labels = c("A", "B", "C", "D", "E", "F"), nrow = 6, ncol = 1, font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
-
-
-
-    ggsave("DemographicComparison_TwitterRecruiter_FirstFour.pdf", dpi = 500, w = 24, h = 37)
-    ggsave("DemographicComparison_TwitterRecruiter_FirstFour.png", dpi = 500, w = 24, h = 37)
 
 
 
