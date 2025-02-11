@@ -16,7 +16,7 @@ library(tidyverse)
 ```{r}
 # Read in raw data from the LimeSurvey export (automatically labels data)
 
-source(here("survey_415684_R_syntax_file.R"))
+source(here("R", "survey_415684_R_syntax_file.R"))
 
 # Read in csv data, group by user_id and keep rows with highest last_page (people that at least started the survey)
 csv_data <- read.csv(here("raw_data", "twitter_data.csv")) %>% group_by(user_id) %>% filter(last_page != -1, last_page == max(last_page)) %>% ungroup()
@@ -67,7 +67,7 @@ cleaned_data <- filtered_data %>% select(!ends_with("time"), -c(last_page, comme
 filtered_data_lastpage <- filtered_data_lastpage %>% mutate(age = 2023 - year_of_birth, .after = year_of_birth)
 
 # rename all labels
-source("rename.R")
+source(here("R", "rename.R"))
 
 # save filtered datasets
 
