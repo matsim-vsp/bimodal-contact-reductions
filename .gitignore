@@ -245,10 +245,10 @@ $RECYCLE.BIN/
 *.lnk
 
 # Data folder
-data/
 data/**.csv
-raw_data/
+data/*.rds
 raw_data/**.csv
+raw_data/MuSPAD/*.R
 
 *.csv
 
