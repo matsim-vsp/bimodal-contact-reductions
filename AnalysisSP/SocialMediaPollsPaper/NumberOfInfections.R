@@ -4,16 +4,16 @@ library(cowplot)
 library(ggpubr)
 library(readxl)
 
-setwd("/Users/sydney/git/twitter-study/AnalysisSP/SecondOrderContactsPaper")
-source("DataCleaningPrepForContactAnalysis.R")
-
 # Author: S. Paltra, contact: paltra@tu-berlin.de
+
+here()
+source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R") #Todo: Update once repo has been reorganized
+source("./AnalysisSP/SocialMediaPollsPaper/Timeline.R") #Todo: Update once repo has been reorganized
+
 
 # Number of infections ----------------------------------------------------
 
-# The following section creates the bar chart depicting how often people have been infected
-# To do: Include COSMO data
-
+# Creation of palette for comparison of twittwr, mastodon, external survey, MuSPAD, and COSMO
 palette_twittermastodonsurvey_bars <- function() {
   c("#41b6c4", "#663300", "#9900CC", "#990000", "#CC3300")
 }
@@ -22,6 +22,29 @@ palette_twittermastodonsurvey_errorbars <- function() {
   c("#2d7e87", "#261300", "#640085", "#5c0000", "#771f01")
 }
 
+# Procession of Twitter data
+InfectionsDataTwitter <- data.frame(matrix(nrow = 0, ncol = 5))
+colnames(InfectionsDataTwitter) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1191, 28.25, "Twitter", 1191+2310+716)
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1",	2310, 54.77, "Twitter", 1191+2310+716)
+InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 716, 16.98, "Twitter", 1191+2310+716)
+InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
+InfectionsDataTwitter$n <- as.integer(InfectionsDataTwitter$n)
+InfectionsDataTwitter$percent <- as.double(InfectionsDataTwitter$percent)
+InfectionsDataTwitter$sum <- as.double(InfectionsDataTwitter$sum)
+
+# Procesion of Mastodon data
+InfectionsDataMastodon <- data.frame(matrix(nrow = 0, ncol = 5))
+colnames(InfectionsDataMastodon) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
+InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("0", 1802*0.37, 100*1802*0.37/(1802*0.37+1802*0.49+1802*0.12), "Mastodon", 1802*0.37+1802*0.49+1802*0.12)
+InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("1",	1802*0.49, 100*1802*0.49/(1802*0.37+1802*0.49+1802*0.12), "Mastodon", 1802*0.37+1802*0.49+1802*0.12)
+InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("2+", 1802*0.12, 100*1802*0.12/(1802*0.37+1802*0.49+1802*0.12), "Mastodon", 1802*0.37+1802*0.49+1802*0.12)
+InfectionsDataMastodon$num_c19_infs_eng <- factor(InfectionsDataMastodon$num_c19_infs_eng, levels = c("0", "1", "2+"))
+InfectionsDataMastodon$n <- as.integer(InfectionsDataMastodon$n)
+InfectionsDataMastodon$percent <- as.double(InfectionsDataMastodon$percent)
+InfectionsDataMastodon$sum <- as.double(InfectionsDataMastodon$sum)
+
+# Procession of external survey data
 data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "0",
                                                                     num_c19_infs == "Einmal" ~ "1",
                                                                     num_c19_infs == "Zweimal" ~ "2+",
@@ -31,6 +54,7 @@ data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_inf
 
 data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("0", "1", "2+"))
 
+# Procession of MuSPAD data
 InfectionsMuspad <- MuSPADnewplusold %>% select(w22_positive_test, s23_test_covid_2023)  %>% 
                                   mutate(w22_positive_test = case_when(w22_positive_test == "Nie" ~ "0",
                                                                     w22_positive_test == "Einmal" ~ "1",
@@ -42,7 +66,6 @@ InfectionsMuspad <- MuSPADnewplusold %>% select(w22_positive_test, s23_test_covi
                                   .default = w22_positive_test)) %>% 
                                   count(s23_positive_test)
 InfectionsMuspad <- InfectionsMuspad %>% filter(!is.na(s23_positive_test))
-
 InfectionsDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataMuspad) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
 InfectionsDataMuspad[nrow(InfectionsDataMuspad) + 1, ] <- c("0", (InfectionsMuspad %>% filter(s23_positive_test=="0"))$n, 100*(InfectionsMuspad %>% filter(s23_positive_test=="0"))$n/sum(InfectionsMuspad$n), "MuSPAD", sum(InfectionsMuspad$n))
@@ -52,28 +75,9 @@ InfectionsDataMuspad$num_c19_infs_eng <- factor(InfectionsDataMuspad$num_c19_inf
 InfectionsDataMuspad$n <- as.integer(InfectionsDataMuspad$n)
 InfectionsDataMuspad$percent <- as.double(InfectionsDataMuspad$percent)
 InfectionsDataMuspad$sum <- as.double(InfectionsDataMuspad$sum)
-
-InfectionsDataTwitter <- data.frame(matrix(nrow = 0, ncol = 5))
-colnames(InfectionsDataTwitter) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1191, 28.25, "Twitter", 1191+2310+716)
-InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1",	2310, 54.77, "Twitter", 1191+2310+716)
-InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 716, 16.98, "Twitter", 1191+2310+716)
-InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
-InfectionsDataTwitter$n <- as.integer(InfectionsDataTwitter$n)
-InfectionsDataTwitter$percent <- as.double(InfectionsDataTwitter$percent)
-InfectionsDataTwitter$sum <- as.double(InfectionsDataTwitter$sum)
-
-InfectionsDataMastodon <- data.frame(matrix(nrow = 0, ncol = 5))
-colnames(InfectionsDataMastodon) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
-InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("0", 1802*0.37, 100*1802*0.37/(1802*0.37+1802*0.49+1802*0.12), "Mastodon", 1802*0.37+1802*0.49+1802*0.12)
-InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("1",	1802*0.49, 100*1802*0.49/(1802*0.37+1802*0.49+1802*0.12), "Mastodon", 1802*0.37+1802*0.49+1802*0.12)
-InfectionsDataMastodon[nrow(InfectionsDataMastodon) + 1, ] <- c("2+", 1802*0.12, 100*1802*0.12/(1802*0.37+1802*0.49+1802*0.12), "Mastodon", 1802*0.37+1802*0.49+1802*0.12)
-InfectionsDataMastodon$num_c19_infs_eng <- factor(InfectionsDataMastodon$num_c19_infs_eng, levels = c("0", "1", "2+"))
-InfectionsDataMastodon$n <- as.integer(InfectionsDataMastodon$n)
-InfectionsDataMastodon$percent <- as.double(InfectionsDataMastodon$percent)
-InfectionsDataMastodon$sum <- as.double(InfectionsDataMastodon$sum)
  
-# Data comes from https://projekte.uni-erfurt.de/cosmo2020/files/COSMO_W70.pdf --> DEC 2022!
+# Procession of COSMO data
+# Data comes from https://projekte.uni-erfurt.de/cosmo2020/files/COSMO_W70.pdf [accessed: 2025-02-12]
 InfectionsDataCOSMO <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataCOSMO) <- c("num_c19_infs_eng", "n", "percent", "Source", "sum")
 InfectionsDataCOSMO[nrow(InfectionsDataCOSMO) + 1, ] <- c("0", 1003*0.5, 50, "COSMO", 1003)
@@ -84,8 +88,9 @@ InfectionsDataCOSMO$n <- as.integer(InfectionsDataCOSMO$n)
 InfectionsDataCOSMO$percent <- as.double(InfectionsDataCOSMO$percent)
 InfectionsDataCOSMO$sum <- as.double(InfectionsDataCOSMO$sum)
 
-#Intervals based on: http://www.stat.yale.edu/Courses/1997-98/101/catinf.htm
-left_panel <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
+#Upper panel of Fig. 2
+#Confidence intervals based on: http://www.stat.yale.edu/Courses/1997-98/101/catinf.htm
+upper_panel <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   count(num_c19_infs_eng) %>%
   mutate(percent = 100 * n / sum(n)) %>%
   mutate(Source = "External Survey") %>%
@@ -120,60 +125,12 @@ left_panel <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answe
       theme(plot.title = element_text(hjust = 0.5))
 
 
-ggarrange(left_panel, ggparagraph(text="   ", face = "italic", size = 14, color = "black"), timelineplot, nrow = 3, labels = c("A", "", "B"), font.label = list(size = 37), heights = c(1,0.01,0.5))
+ggarrange(upper_panel, ggparagraph(text="   ", face = "italic", size = 14, color = "black"), timelineplot, nrow = 3, labels = c("A", "", "B"), font.label = list(size = 37), heights = c(1,0.01,0.5))
 
 ggsave("NoInfections_Comparison.pdf", dpi = 500, w = 24, h = 18)
 ggsave("NoInfections_Comparison.png", dpi = 500, w = 24, h = 18)
 
-
-palette_muspadcosmo_bars <- function(){
-c("#990000", "#CC3300")
-}
-
-palette_muspadcosmo_errorbars <- function(){
-c("#5c0000", "#771f01")
-}
-
-right_panel <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
-  count(num_c19_infs_eng) %>%
-  mutate(percent = 100 * n / sum(n)) %>%
-  mutate(Source = "External Survey\n(data acquisition:\n2023/07/18\nuntil\n2023/08/30)") %>%
-  mutate(sum = sum(n)) %>%
-  #rbind(InfectionsDataTwitter) %>%
-  rbind(InfectionsDataMuspad) %>%
-  rbind(InfectionsDataCOSMO) %>% 
-  #rbind(InfectionsDataMastodon) %>%
-  filter(Source != "External Survey\n(data acquisition:\n2023/07/18\nuntil\n2023/08/30)") %>%
-  mutate(lci = sum*(n/sum - 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
-  mutate(lci = 100/sum*lci) %>%
-  mutate(uci = sum*(n/sum + 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
-  mutate(uci = 100/sum*uci) %>%
-  mutate(Source = factor(Source, levels = c("Mastodon\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", "Twitter\n(data acquisition:\n2023/07/19\nuntil\n2023/07/26)", "External Survey\n(data acquisition:\n2023/07/18\nuntil\n2023/08/30)", "MuSPAD\n(data acquisition:\nYY/MM/DD\nuntil\nYY/MM/DD)", "COSMO\n(data acquisition:\n2022/11/29\nuntil\n2022/11/30)"))) %>%
-  ggplot(aes(num_c19_infs_eng, percent)) +
-  geom_bar(aes(fill=Source), stat = "identity", position = "dodge", width = 0.95, alpha=0.8) +
-  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, colour = Source), position = position_dodge(0.8), width = 0.3, size=1.3) +
-  theme_minimal() +
-  facet_wrap(~Source, nrow=1) +
-  ylab("Share (Percentage)") +
-  xlab("Number of Infections") +
-  scale_fill_manual(values = palette_muspadcosmo_bars()) +
-  scale_color_manual(values = palette_muspadcosmo_errorbars()) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 0.5), breaks = c(0,12.5,25,37.5, 50,75,100)) +
-  theme(text = element_text(size = 42)) +
-  theme(legend.position = "none", legend.title = element_blank()) +
-   guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
-      theme(axis.ticks.x = element_line(size = 1), 
-                   axis.ticks.y = element_line(size = 1),
-                   axis.ticks.length = unit(20, "pt"))
-
-
-ggarrange(left_panel, right_panel, labels = c("A", "B"), nrow = 1, ncol = 2, widths = c(1.35, 1), font.label = list(size = 37))
- 
-ggsave("NoInfections_Comparison.pdf", dpi = 500, w = 25, h = 10)
-ggsave("NoInfections_Comparison.png", dpi = 500, w = 25, h = 10)
-
-
-# Infection numbers (by recruiter)
+# Number of infections (by recruiter) ----------------------------------------------------
 
 palette_recruiters_bars <- function(){
   c("#253494", "#ffffcc", "#7fcdbb", "#2c7fb8", "#c7e9b4", "#663300")
@@ -182,7 +139,7 @@ palette_recruiters_errorbars <- function(){
   c("#1a2569", "#c9c99f", "#5e978a", "#1d577d", "#8ba37d", "#261300")
 }
 
-#Priesemann
+# Procession of data collected by recruiter 1
 InfectionsDataTwitter <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(InfectionsDataTwitter) <- c("num_c19_infs_eng", "n", "percent", "recruiter", "sum")
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 2120*(0.3030), 2120*(0.3030)/(2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390)), "Recruiter 1 (Twitter)", 2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390))
@@ -190,31 +147,31 @@ InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 2120*(0.5270)
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 2120*(0.1390), 2120*(0.1390)/(2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390)), "Recruiter 1 (Twitter)", 2120*(0.3030) + 2120*(0.5270) + 2120*(0.1390))
 InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
 
-#Valdez
+# Procession of data collected by recruiter 5
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 101*(0.1780), 101*(0.1780)/(101*(0.1780) + 101*(0.5740) + 101*(0.2180)), "Recruiter 5", 101*(0.1780) + 101*(0.5740) + 101*(0.2180))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 101*(0.5740), 101*(0.5740)/(101*(0.1780) + 101*(0.5740) + 101*(0.2180)), "Recruiter 5", 101*(0.1780) + 101*(0.5740) + 101*(0.2180))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 101*(0.2180), 101*(0.2180)/(101*(0.1780) + 101*(0.5740) + 101*(0.2180)), "Recruiter 5", 101*(0.1780) + 101*(0.5740) + 101*(0.2180))
 InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
 
-#Franke
+# Procession of data collected by recruiter 4
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 111*(0.2610), 111*(0.2610)/(111*(0.2610) + 111*(0.5410) + 111*(0.1530)), "Recruiter 4", 111*(0.2610) + 111*(0.5410) + 111*(0.1530))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 111*(0.5410), 111*(0.5410)/(111*(0.2610) + 111*(0.5410) + 111*(0.1530)), "Recruiter 4", 111*(0.2610) + 111*(0.5410) + 111*(0.1530))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 111*(0.1530), 111*(0.1530)/(111*(0.2610) + 111*(0.5410) + 111*(0.1530)), "Recruiter 4", 111*(0.2610) + 111*(0.5410) + 111*(0.1530))
 InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
 
-#Briest
+# Procession of data collected by recruiter 3
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 371*(0.2210), 371*(0.2210)/(371*(0.2210) + 371*(0.5690) + 371*(0.1640)), "Recruiter 3", 371*(0.2210) + 371*(0.5690) + 371*(0.1640))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 371*(0.5690), 371*(0.5690)/(371*(0.2210) + 371*(0.5690) + 371*(0.1640)), "Recruiter 3", 371*(0.2210) + 371*(0.5690) + 371*(0.1640))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 371*(0.1640), 371*(0.1640)/(371*(0.2210) + 371*(0.5690) + 371*(0.1640)), "Recruiter 3", 371*(0.2210) + 371*(0.5690) + 371*(0.1640))
 InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
 
-#Bachmann
+# Procession of data collected by recruiter 2
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1667*(0.2520), 1667*(0.2520)/(1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930)), "Recruiter 2", 1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 1667*(0.5180), 1667*(0.5180)/(1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930)), "Recruiter 2", 1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 1667*(0.1930),  1667*(0.1930)/(1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930)), "Recruiter 2", 1667*(0.2520) + 1667*(0.5180) + 1667*(0.1930))
 InfectionsDataTwitter$num_c19_infs_eng <- factor(InfectionsDataTwitter$num_c19_infs_eng, levels = c("0", "1", "2+"))
 
-#Priesemann (Mastodon)
+# Procession of data collected by recruiter 1 (Mastodon)
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("0", 1802*(0.37), 1802*(0.37)/(1802*(0.37) + 1802*(0.49) + 1802*(0.1200)), "Recruiter 1 (Mastodon)", 1802*(0.37) + 1802*(0.49) + 1802*(0.1200))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("1", 1802*(0.49), 1802*(0.49)/(1802*(0.37) + 1802*(0.49) + 1802*(0.1200)), "Recruiter 1 (Mastodon)", 1802*(0.37) + 1802*(0.49) + 1802*(0.1200))
 InfectionsDataTwitter[nrow(InfectionsDataTwitter) + 1, ] <- c("2+", 1802*(0.1200), 1802*(0.1200)/(1802*(0.37) + 1802*(0.49) + 1802*(0.1200)), "Recruiter 1 (Mastodon)", 1802*(0.37) + 1802*(0.49) + 1802*(0.1200))
@@ -225,6 +182,7 @@ InfectionsDataTwitter$percent <- as.double(InfectionsDataTwitter$percent)
 InfectionsDataTwitter$percent <- 100*(InfectionsDataTwitter$percent)
 InfectionsDataTwitter$sum <- as.double(InfectionsDataTwitter$sum)
 
+# Creation of plot
 InfectionsDataTwitter %>% group_by(recruiter) %>%
   mutate(lci = sum*(n/sum - 1.96*(((n/sum*(1-n/sum))/sum)^0.5))) %>%
   mutate(lci = 100/sum*lci) %>%
@@ -249,45 +207,3 @@ InfectionsDataTwitter %>% group_by(recruiter) %>%
 
 ggsave("NoInfections_Comparison_Recruiter.pdf", dpi = 500, w = 10, h = 7.5)
 ggsave("NoInfections_Comparison_Recruiter.png", dpi = 500,  w = 10, h = 7.5)
-
-
-
-# Infection context -------------------------------------------------------
-
-# To discuss: Would we like to include a pie chart(?) on the infection context?
-
-ownInfection <- data_reduced %>% select(loc_home, loc_work, loc_school, loc_friends,
-                                    loc_sport_event, loc_health_fac, loc_shopping, loc_party,
-                                    loc_conference, loc_unknown, loc_no_info, loc_other)
-
-ownInfection <- ownInfection %>% pivot_longer(cols = c("loc_home", "loc_work", "loc_school", "loc_friends",
-                                                       "loc_sport_event", "loc_health_fac", "loc_shopping", "loc_party",
-                                                       "loc_conference", "loc_unknown", "loc_no_info", "loc_other"))
-
-ownInfection <- na.omit(ownInfection)
-ownInfection <- ownInfection %>% filter(value != "Nein")
-
-ownInfection %>% count(name)
-
-householdInfections <- raw_data %>% select(user_id, inf_locs_hsld_mbrs_home, inf_locs_hsld_mbrs_workplace, 
-                                           inf_locs_hsld_mbrs_school, inf_locs_hsld_mbrs_friends_meetings,
-                                           inf_locs_hsld_mbrs_sports_event, inf_locs_hsld_mbrs_shopping,
-                                           inf_locs_hsld_mbrs_party, inf_locs_hsld_mbrs_conference,
-                                           inf_locs_hsld_mbrs_health_facility, inf_locs_hsld_mbrs_childcare,
-                                           inf_locs_hsld_mbrs_vacation, inf_locs_hsld_mbrs_public_transport,
-                                           inf_locs_hsld_mbrs_restaurants_bars, inf_locs_hsld_mbrs_unknown,
-                                           inf_locs_hsld_mbrs_no_information, inf_locs_hsld_mbrs_other)
-
-householdInfections <- householdInfections %>% pivot_longer(cols = c("inf_locs_hsld_mbrs_home", "inf_locs_hsld_mbrs_workplace", 
-                                                                     "inf_locs_hsld_mbrs_school", "inf_locs_hsld_mbrs_friends_meetings",
-                                                                     "inf_locs_hsld_mbrs_sports_event", "inf_locs_hsld_mbrs_shopping",
-                                                                     "inf_locs_hsld_mbrs_party", "inf_locs_hsld_mbrs_conference",
-                                                                     "inf_locs_hsld_mbrs_health_facility", "inf_locs_hsld_mbrs_childcare",
-                                                                     "inf_locs_hsld_mbrs_vacation", "inf_locs_hsld_mbrs_public_transport",
-                                                                     "inf_locs_hsld_mbrs_restaurants_bars", "inf_locs_hsld_mbrs_unknown",
-                                                                     "inf_locs_hsld_mbrs_no_information", "inf_locs_hsld_mbrs_other"))
-
-householdInfections <- na.omit(householdInfections)
-householdInfections <- householdInfections %>% filter(value != "Nein")
-
-householdInfections %>% count(name)
