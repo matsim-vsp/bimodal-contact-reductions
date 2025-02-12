@@ -3,9 +3,21 @@ library(RColorBrewer)
 library(cowplot)
 library(ggpubr)
 library(readxl)
+library(here)
 
-setwd("./AnalysisSP") # You need to set the working directory accordingly, otherwise the cleaning script (below does not work)
-source("DataCleaningPrepForContactAnalysis.R")
+# Author: S. Paltra, contact: paltra@tu-berlin.de
+
+here()
+source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R") #Todo: Update once repo has been reorganized
+source("./AnalysisSP/SocialMediaPollsPaper/Timeline.R") #Todo: Update once repo has been reorganized
+
+palette_surveymuspadrki_bars <- function() {
+  c("#9900CC", "#93A3b1", "#990000")
+}
+
+palette_surveymuspadrki_errorbars <- function() {
+   c("#640085", "#292e2e", "#5c0000") 
+}
 
 MuSPAD <- read_delim("/Users/sydney/Downloads/Uni_Lübeck/MuSPAD_data_subset.csv") # Enter MuSPAD path
 count_na_w22 <- function(row) {
@@ -21,11 +33,9 @@ count_na_s22w22 <- function(row) {
 MuSPAD_s22 <- readRDS("/Users/sydney/Downloads/9921_dataset/muspad_22-Nov-2022.rds")
 MuSPADnewplusold <- left_join(MuSPAD_s22 %>% mutate(user_id = gsub("_", "-", user_id)) %>% select(user_id), MuSPAD, by = join_by(user_id == merge_id))
 
-
 # Vaccination Supplier ----------------------------------------------------
 
-# The following section creates bar plots which show the share of the different vaccination suppliers for the different doses
-
+# Procession of external survey data
 vaccinationData <- data_reduced %>% select(year_of_birth, c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
 vaccinationData <- na.omit(vaccinationData)
 vaccinationData <- vaccinationData %>% pivot_longer(cols = c("c19_vaccination_details_vaccine_dose_1", "c19_vaccination_details_vaccine_dose_2", "c19_vaccination_details_vaccine_dose_3", "c19_vaccination_details_vaccine_dose_4"))
@@ -38,16 +48,16 @@ vaccinationData <- vaccinationData %>% mutate(value_eng = case_when(value == "Bi
                                                                     value == "Andere" ~ "Other",
                                                                     value == "Ich möchte nicht antworten" ~ "I Don't Want To Answer",
                                                                     value == "Nicht zutreffend" ~ "Does Not Apply"))
-vaccinationData$value_eng <- factor(vaccinationData$value_eng, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/Johnson &\nJohnson", "Other", "Other", "I Don't Want To Answer", "Does Not Apply"))
+vaccinationData$value_eng <- factor(vaccinationData$value_eng, levels=c("BioNTech", "Moderna", "AstraZeneca", "Janssen/Johnson &\nJohnson", "Other", "I Don't Want To Answer", "Does Not Apply"))
 vaccinationData <- vaccinationData %>% mutate(Impfserie = case_when(name == "c19_vaccination_details_vaccine_dose_1" ~ "1", 
                                                                     name == "c19_vaccination_details_vaccine_dose_2" ~ "2",
                                                                     name == "c19_vaccination_details_vaccine_dose_3" ~ "3",
                                                                     name == "c19_vaccination_details_vaccine_dose_4" ~ "4"))
 vaccinationData$Impfserie <- factor(vaccinationData$Impfserie, levels = c("1", "2", "3", "4"))
-vaccinationData <- vaccinationData %>% mutate(Source = "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)")
+vaccinationData <- vaccinationData %>% mutate(Source = "External Survey")
 vaccinationData<- vaccinationData %>% select(Impfserie, value_eng, Source)
 
-# Compare to RKI vaccination data
+# Procession of RKI data
 rkiVaccinations <- read_csv("https://raw.githubusercontent.com/robert-koch-institut/COVID-19-Impfungen_in_Deutschland/main/Deutschland_Bundeslaender_COVID-19-Impfungen.csv")
 rkiVaccinations <- rkiVaccinations %>% mutate(value_eng = case_when(Impfstoff == "Comirnaty" ~ "BioNTech",
                                                                     Impfstoff == "Comirnaty Omicron XBB.1.5" ~ "BioNTech",
@@ -66,20 +76,17 @@ rkiVaccinations <- rkiVaccinations %>% mutate(value_eng = case_when(Impfstoff ==
                                                                     Impfstoff == "VidPrevtyn Beta" ~ "Other"))
 
 rkiVaccinations <- rkiVaccinations %>% filter(Impfdatum < "2023-09-01") %>%
-                  mutate(Source = "RKI\n(data acquisition:\n2020/12/27-2023/08/30)") %>% filter(Impfserie %in% c(1,2,3,4))
-rkiVaccinations <- rkiVaccinations %>% uncount(Anzahl)
-
-rkiVaccinations <- rkiVaccinations %>% select(Impfserie, value_eng, Source)
+                  mutate(Source = "RKI") %>% filter(Impfserie %in% c(1,2,3,4))
+rkiVaccinations <- rkiVaccinations %>% uncount(Anzahl) %>% select(Impfserie, value_eng, Source)
 
 vaccinationData <- rbind(vaccinationData, rkiVaccinations)
-
 vaccinationData <- vaccinationData %>% mutate(vaccineNo = case_when(Impfserie == "1" ~ "1st COVID-19 Vaccination Dosis",
                                                                     Impfserie == "2" ~ "2nd COVID-19 Vaccination Dosis",
                                                                     Impfserie == "3" ~ "3rd COVID-19 Vaccination Dosis",
                                                                     Impfserie == "4" ~ "4th COVID-19 Vaccination Dosis"
                                                                     ))
 
-#Compare to MuSPAD data
+# Procession of MuSPAD data
 
 VaccinationSupplierMuspad <- MuSPADnewplusold %>% select(s23_vacc_type_1, s23_vacc_type_2, s23_vacc_type_3, s23_vacc_type_4)
 VaccinationSupplierMuspad1 <- VaccinationSupplierMuspad %>% count(s23_vacc_type_1) %>% filter(!is.na(s23_vacc_type_1)) %>%
@@ -95,40 +102,32 @@ VaccinationSupplierMuspad4 <- VaccinationSupplierMuspad %>% count(s23_vacc_type_
                                                             mutate(s23_vacc_type_4 = case_when(s23_vacc_type_4 %in% c("Andere", "Novavax", "Gamaleya Sputnik V") ~ "Other", 
                                                             .default = s23_vacc_type_4)) %>% filter(s23_vacc_type_4 != "keine (weitere) Impfung erhalten")
 
-
 VaccinationSupplierDataMuspad <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(VaccinationSupplierDataMuspad) <- c("vaccineNo", "Source", "value_eng", "n", "percent")
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "BioNTech", (VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "BioNTech"))$n/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Moderna", (VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Moderna"))$n,100*(VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Moderna"))$n/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "AstraZeneca", (VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Janssen/Johnson &\nJohnson", (VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Other", sum((VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Other"))$n), 100*sum((VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Other"))$n)/sum(VaccinationSupplierMuspad1$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "BioNTech", (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "BioNTech"))$n/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Moderna",  (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Moderna"))$n, 100* (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Moderna"))$n/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "AstraZeneca", (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Janssen/Johnson &\nJohnson", (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Other", sum((VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Other"))$n), 100*sum((VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Other"))$n)/sum(VaccinationSupplierMuspad2$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "BioNTech", (VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "BioNTech"))$n/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Moderna",  (VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Moderna"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Moderna"))$n/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "AstraZeneca", (VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Janssen/Johnson &\nJohnson", (VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Other", sum((VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Other"))$n), 100*sum((VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Other"))$n)/sum(VaccinationSupplierMuspad3$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "BioNTech", (VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "BioNTech"))$n/sum(VaccinationSupplierMuspad4$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Moderna",  (VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Moderna"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Moderna"))$n/sum(VaccinationSupplierMuspad4$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "AstraZeneca", (VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad4$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Janssen/Johnson &\nJohnson", (VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad4$n))
-VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD", "Other", sum((VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Other"))$n), 100*sum((VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Other"))$n)/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "BioNTech"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "Moderna", (VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Moderna"))$n,100*(VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Moderna"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "Janssen/Johnson &\nJohnson", (VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("1st COVID-19 Vaccination Dosis", "MuSPAD", "Other", sum((VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Other"))$n), 100*sum((VaccinationSupplierMuspad1 %>% filter(s23_vacc_type_1 == "Other"))$n)/sum(VaccinationSupplierMuspad1$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "BioNTech"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Moderna"))$n, 100* (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Moderna"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "Janssen/Johnson &\nJohnson", (VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("2nd COVID-19 Vaccination Dosis", "MuSPAD", "Other", sum((VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Other"))$n), 100*sum((VaccinationSupplierMuspad2 %>% filter(s23_vacc_type_2 == "Other"))$n)/sum(VaccinationSupplierMuspad2$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "BioNTech"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Moderna"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Moderna"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "Janssen/Johnson &\nJohnson", (VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("3rd COVID-19 Vaccination Dosis", "MuSPAD", "Other", sum((VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Other"))$n), 100*sum((VaccinationSupplierMuspad3 %>% filter(s23_vacc_type_3 == "Other"))$n)/sum(VaccinationSupplierMuspad3$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "BioNTech", (VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "BioNTech"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "BioNTech"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "Moderna",  (VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Moderna"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Moderna"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "AstraZeneca", (VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "AstraZeneca"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "AstraZeneca"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "Janssen/Johnson &\nJohnson", (VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n, 100*(VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Janssen/ Johnson & Johnson"))$n/sum(VaccinationSupplierMuspad4$n))
+VaccinationSupplierDataMuspad[nrow(VaccinationSupplierDataMuspad) + 1, ] <- c("4th COVID-19 Vaccination Dosis", "MuSPAD", "Other", sum((VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Other"))$n), 100*sum((VaccinationSupplierMuspad4 %>% filter(s23_vacc_type_4 == "Other"))$n)/sum(VaccinationSupplierMuspad4$n))
 VaccinationSupplierDataMuspad$n <- as.integer(VaccinationSupplierDataMuspad$n)
 VaccinationSupplierDataMuspad$percent <- as.double(VaccinationSupplierDataMuspad$percent)
 
-palette_surveymuspadrki_bars <- function() {
-  c("#9900CC", "#93A3b1", "#990000")
-}
-
-palette_surveymuspadrki_errorbars <- function() {
-   c("#640085", "#292e2e", "#5c0000") 
-}
-
+# Creation of plot
 vaccinationData %>% filter(value_eng != "Does Not Apply") %>% filter(value_eng != "I Don't Want To Answer") %>% group_by(vaccineNo, Source) %>% count(value_eng) %>%
                     mutate(percent = 100 * n / sum(n)) %>% mutate(percent = round(percent, digits = 2)) %>%
                     rbind(VaccinationSupplierDataMuspad) %>% 
@@ -139,7 +138,7 @@ vaccinationData %>% filter(value_eng != "Does Not Apply") %>% filter(value_eng !
                     mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
                     mutate(uci = sum(n)*(n/sum(n) + 1.96*(((n/sum(n)*(1-n/sum(n)))/sum(n))^0.5))) %>%
                     mutate(uci = 100/sum(n)*uci) %>%
-                    mutate(Source = factor(Source, levels = c("External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "RKI\n(data acquisition:\n2020/12/27-2023/08/30)", "MuSPAD\n(data acquisition:\n2022/MM/DD-2023/MM/DD"))) %>%
+                    mutate(Source = factor(Source, levels = c("External Survey", "RKI", "MuSPAD"))) %>%
 ggplot(aes(value_eng, percent)) +
   geom_bar(aes(fill = Source), stat = "identity", position = "dodge", width = 0.95) +
   geom_errorbar(aes(x=value_eng, ymin=lci, ymax=uci, colour = Source), position = position_dodge(0.95), width = 0.3, alpha=0.9, size=1.3) +
@@ -156,15 +155,15 @@ ggplot(aes(value_eng, percent)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))  +
   theme(axis.ticks.x = element_line(),
         axis.ticks.y = element_line(),
-        axis.ticks.length = unit(, "pt"))
+        axis.ticks.length = unit(5, "pt"))
 
 ggsave("ShareVaccinationSupplier.pdf", dpi = 500, w = 24, h = 18)
 ggsave("ShareVaccinationSupplier.png", dpi = 500, w = 24, h = 18)
 
-# Vaccination -------------------------------------------------------------
+# Number of Vaccinations -------------------------------------------------------------
 
+# Procession of external survey data
 vaccinationData <- data_reduced %>% select(year_of_birth, c19_vaccination_status, c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
-
 vaccinationData <- vaccinationData %>%  mutate(agegroup = case_when(2023-year_of_birth >= 80 ~ "80-99",
                                                                     2023-year_of_birth >= 60 ~ "60-79",
                                                                     2023-year_of_birth >= 40 ~ "40-59",
@@ -210,17 +209,17 @@ vaccinationData$dose_4_received<- factor(vaccinationData$dose_4_received, levels
 
 vaccinationData <- vaccinationData %>% group_by(agegroup) %>% pivot_longer(cols=c(dose_1_received, dose_2_received, dose_3_received, dose_4_received)) %>%
                                       filter(value %in% c("Yes", "Not Vaccinated")) %>% 
-                                      mutate(Source = "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)") %>%
+                                      mutate(Source = "External Survey") %>%
                                       mutate(name = case_when(name == "dose_1_received" ~ "Received at\nleast 1 dose",
                                                               name == "dose_2_received" ~ "Received at\nleast 2 doses",
                                                               name == "dose_3_received" ~ "Received at\nleast 3 doses",
-                                                              name == "dose_4_received" ~ "Received at\nleast 4 doses")) %>% count(name) %>% mutate(Source = "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)") 
+                                                              name == "dose_4_received" ~ "Received at\nleast 4 doses")) %>% count(name) %>% mutate(Source = "External Survey") 
 NotVacc <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(NotVacc) <- c("name", "n", "Source", "agegroup")
-NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 1, "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "18-39")
-NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 8, "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "40-59")
-NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 1 , "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "60-79")
-NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 0 , "External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "80-99") ##Use c19_vaccination_status to find unvaccinated
+NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 1, "External Survey", "18-39")
+NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 8, "External Survey", "40-59")
+NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 1 , "External Survey", "60-79")
+NotVacc[nrow(NotVacc) + 1, ] <- c("Received 0 doses", 0 , "External Survey", "80-99") ##Use c19_vaccination_status to find unvaccinated
 NotVacc$n <- as.double(NotVacc$n)                                                              
 
 vaccinationData <- rbind(vaccinationData, NotVacc)
@@ -231,10 +230,9 @@ vaccinationData <- vaccinationData %>% filter(!is.na(agegroup)) %>%
                                 agegroup == "80-99"  ~ 2)) %>%
  group_by(agegroup, name) %>% mutate(percent = n/groupsize) %>% select(n, name, percent, Source, agegroup, groupsize)
 
-
+# Procession of RKI data
 Rki <- read_csv("https://raw.githubusercontent.com/robert-koch-institut/COVID-19-Impfungen_in_Deutschland/refs/heads/main/Archiv/2023-09-12_Deutschland_Impfquoten_COVID-19.csv") %>%
        filter(Bundesland == "Deutschland")
-#RKI data: https://impfdashboard.de/ 
 RkiVacc <- data.frame(matrix(nrow = 0, ncol = 5))
 colnames(RkiVacc) <- c("name", "percent", "Source", "agegroup", "groupsize")
 RkiVacc[nrow(RkiVacc) + 1, ] <- c("Received 0 doses", 100-Rki$Impfquote_18bis59_min1,"RKI\n(data acquisition:\n2020/12/27-2023/09/11)", "18-59", 84669326*(0.188-0.169+0.245+0.268))
@@ -252,10 +250,7 @@ RkiVacc$percent <- RkiVacc$percent/100
 RkiVacc$groupsize <- as.double(RkiVacc$groupsize)
 RkiVacc <- RkiVacc %>% mutate(n= groupsize*percent)
 
-#vaccinationData <- rbind(vaccinationData, RkiVacc)
-
-#Muspad vacc data
-
+# Procession of MuSPAD data
 MuSPADVacc <- MuSPADnewplusold %>% select(c(s22_birth_date_yyyy, s23_vacc_COVID_2019_2023, s23_vacc_type_1, s23_vacc_type_2, s23_vacc_type_3, s23_vacc_type_4))
 MuSPADVacc <- MuSPADVacc %>% mutate(s23_vacc_type_1 = case_when(s23_vacc_type_1 %in% c("Moderna", "BioNTech", "AstraZeneca", "Janssen/ Johnson & Johnson", "Novavax") ~ "Yes",
                                                                 s23_vacc_type_1 == NA ~ NA,
@@ -303,7 +298,8 @@ MuSPADVacc <- MuSPADVacc %>%
                group_by(agegroup, name) %>%
                mutate(percent = n/groupsize)
 MuSPADVacc$percent <- as.double(MuSPADVacc$percent)
-#vaccinationData <- rbind(vaccinationData, MuSPADVacc)
+
+# Creation of external survey plot
 
 palette_survey_bars <- function() {
   c("#c084d4", "#b646db", "#9900CC", "#730099")
@@ -320,8 +316,7 @@ filter(name != "Received 0 doses") %>%
                     mutate(lci = case_when(lci < 0 ~ 0, .default= lci)) %>%
                     mutate(uci = groupsize*(n/groupsize + 1.96*(((n/groupsize*(1-n/groupsize))/groupsize)^0.5))) %>%
                     mutate(uci = uci/groupsize) %>%
-                    mutate(uci = case_when(uci > 1 ~ 1, .default= uci)) %>%
-mutate(Source = factor(Source, levels = c("External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "MuSPAD\n(data acquisition:\nYY/MM/DD-YY/MM/DD)", "RKI\n(data acquisition:\n2020/12/27-2023/09/11)"))), 
+                    mutate(uci = case_when(uci > 1 ~ 1, .default= uci)),
 aes(x = name,  y = percent)) +
   geom_bar(stat = "identity", position="dodge", aes(fill = agegroup)) +
   geom_errorbar(aes(x=name, ymin=lci, ymax=uci, colour = agegroup), position = position_dodge(0.9), width = 0.3, size=2) +
@@ -340,6 +335,7 @@ aes(x = name,  y = percent)) +
         axis.ticks.length = unit(5, "pt")) +
         theme(plot.title = element_text(hjust = 0.5))
 
+# Creation of RKI plot
 palette_rki_bars <- function() {
   c("#c0cad2", "#6d7b88")
 }
@@ -354,8 +350,7 @@ filter(name != "Received 0 doses") %>%
                     mutate(lci = lci/groupsize) %>%
                     mutate(lci = case_when(lci < 0 ~ 0, lci == 1 ~ 0, .default= lci)) %>%
                     mutate(uci = groupsize*(n/groupsize + 1.96*(((n/groupsize*(1-n/groupsize))/groupsize)^0.5))) %>%
-                    mutate(uci = uci/groupsize) %>%
-mutate(Source = factor(Source, levels = c("External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "MuSPAD\n(data acquisition:\nYY/MM/DD-YY/MM/DD)", "RKI\n(data acquisition:\n2020/12/27-2023/09/11)"))), 
+                    mutate(uci = uci/groupsize), 
 aes(x = name,  y = percent)) +
   geom_bar(stat = "identity", position="dodge", aes(fill = agegroup)) +
   geom_errorbar(aes(x=name, ymin=lci, ymax=uci, colour = agegroup), position = position_dodge(0.9), width = 0.3, size=2) +
@@ -373,6 +368,7 @@ aes(x = name,  y = percent)) +
         axis.ticks.length = unit(10, "pt")) +
         theme(plot.title = element_text(hjust = 0.5))
 
+# Creation of MuSPAD plot
 palette_muspad_bars <- function() {
   c("#e79393", "#d24747", "#cc0202", "#6d0101")
 }
@@ -381,7 +377,6 @@ palette_muspad_errorbars <- function() {
   c("#d24747", "#cc0202", "#6d0101", "#350000")
 }
 
-
 muspad_doses <- ggplot(MuSPADVacc %>%
 filter(!is.na(agegroup)) %>%
 filter(name != "Received 0 doses") %>%
@@ -389,8 +384,7 @@ filter(name != "Received 0 doses") %>%
                     mutate(lci = lci/groupsize) %>%
                     mutate(lci = case_when(lci < 0 ~ 0, .default= lci)) %>%
                     mutate(uci = groupsize*(n/groupsize + 1.96*(((n/groupsize*(1-n/groupsize))/groupsize)^0.5))) %>%
-                    mutate(uci = uci/groupsize) %>%
-mutate(Source = factor(Source, levels = c("External Survey\n(data acquisition:\n2023/07/18-2023/08/30)", "MuSPAD\n(data acquisition:\nYY/MM/DD-YY/MM/DD)", "RKI\n(data acquisition:\n2020/12/27-2023/09/11)"))), 
+                    mutate(uci = uci/groupsize), 
 aes(x = name,  y = percent)) +
   geom_bar(stat = "identity", position="dodge", aes(fill = agegroup)) +
   geom_errorbar(aes(x=name, ymin=lci, ymax=uci, colour = agegroup), position = position_dodge(0.9), width = 0.3, size=2) +
@@ -408,8 +402,7 @@ aes(x = name,  y = percent)) +
         axis.ticks.length = unit(10, "pt")) +
         theme(plot.title = element_text(hjust = 0.5)) 
 
-ggarrange(survey_doses, muspad_doses, rki_doses, labels = c("A", "B", "C"), nrow = 3, ncol = 1,font.label = list(size = 30), heights = c(1,1,1), legend = "bottom")
- 
+# Layout and save plots
 ggarrange(survey_doses, ggparagraph(text="   ", face = "italic", size = 14, color = "black"), muspad_doses,  ggparagraph(text="   ", face = "italic", size = 14, color = "black"), rki_doses,  ggparagraph(text="   ", face = "italic", size = 14, color = "black"), timelineplot2, ncol = 1,  nrow = 7, labels=c("A", "", "", "", "", "", "B"), font.label = list(size = 37), heights=c(1,0.05,1,0.05,1, 0.05,0.5), widths=c(1, 1, 1, 1, 1,1,1))
 
 ggsave("NoVaccinations_Comparison.pdf", dpi = 500, w = 24, h = 36)
