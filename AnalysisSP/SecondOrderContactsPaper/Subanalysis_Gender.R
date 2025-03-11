@@ -150,5 +150,5 @@ my_theme()
 
 ggarrange(no_infections, ecdf, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("NoInfectionsECDF_Gender.pdf", dpi = 500, w = 18, h = 9) 
-ggsave("NoInfectionsECDF_Gender.png", dpi = 500, w = 18, h = 9) 
+ggsave("NoInfectionsECDF_Gender.pdf", dpi = 500, w = 22, h = 9) 
+ggsave("NoInfectionsECDF_Gender.png", dpi = 500, w = 22, h = 9) 

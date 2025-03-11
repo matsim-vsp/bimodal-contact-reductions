@@ -5,13 +5,23 @@ library(RColorBrewer)
 library(patchwork)
 library(ggpubr)
 library(ggh4x)
+library(here)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
-source("DataCleaningPrepForContactAnalysis.R")
+here()
+source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
+source("./AnalysisSP/SecondOrderContactsPaper/mytheme.r")
 
-# Higher Reduction of Contacts Due To Comorbidities ----------------------------------------
+palette <- function() {
+  c("#3C5488FF", "#DC0000FF")
+}
 
+palette2 <- function() {
+  c("#1d2942", "#870000")
+}
+
+#Data prep
 data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
                                         .default = as.Date(as.character(date_f1_inf)))) %>%
                                 filter(date_f1_inf != as.Date("1922-03-01")) %>%
@@ -54,8 +64,8 @@ data_reduced$cond_cancer <- factor(data_reduced$cond_cancer, levels = c("No", "Y
 data_reduced$cond_post_c_19 <- factor(data_reduced$cond_post_c19, levels = c("No", "Yes"))
 data_reduced$cond_none <- factor(data_reduced$cond_none, levels = c("No Comorbidities", "Some Comorbidity"))
 
-comorbidities <- c("cond_hbp", "cond_diabetes", "cond_cardio", "cond_resp",
-                    "cond_immuno", "cond_cancer", "cond_post_c19", "cond_none")
+#comorbidities <- c("cond_hbp", "cond_diabetes", "cond_cardio", "cond_resp",
+#                    "cond_immuno", "cond_cancer", "cond_post_c19", "cond_none")
 
 comorbidities <- c("cond_none")
 
@@ -76,13 +86,8 @@ data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(cond_hbp  = case_when(
                                 mutate(cond_none = case_when(cond_none == "Ja" ~ "No Comorbidities",
                                 cond_none == "Nicht Gewählt" ~ "Some Comorbidity"))
 
-palette <- function() {
-  c("#998ec3", "#f1a340")
-}
-
-palette2 <- function() {
-  c("#542788", "#b35806")
-}
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(time = case_when(time == "Summer 2021" ~ "Summer\n2021", .default = time))
+data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("03/2020", "Summer\n2021", "01/2023"))
 
 for (com in comorbidities){
   if (com != "cond_none") {
@@ -90,37 +95,64 @@ for (com in comorbidities){
   } else {
     my_comparisons <- list(c("Some Comorbidity", "No Comorbidities"))
   }
-    p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
-    filter(!is.na(!!sym(com))) %>% filter(!is.na(TypeOfContact)) %>% filter(TypeOfContact %in% c("Work", "Leisure")) %>%
-    filter(value > -150) %>% filter(value < 100) %>%  
-    filter(!is.na(TypeOfContact)), aes(!!sym(com), value, color = !!sym(com), fill = !!sym(com))) +
-    sm_raincloud(aes(stat = median_cl), boxplot.params =  list(alpha = 0.6, width = 0.15, notch = TRUE), 
-               violin.params = list(width = 1.6),
-               shape = 21, sep_level = 2)  +
-    #geom_violin(aes(fill = !!sym(com), color = !!sym(com)), scale = "area", trim = TRUE) + 
-    #stat_summary(aes(color=!!sym(com)), fun.data=mean_sdl, fun.args = list(mult=1), 
-                # geom="pointrange", linewidth = 1) +
-    #stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = -0.5, label.y.npc = 0)+
-    facet_nested(~ TypeOfContact + time) +
-    theme_minimal() +
-    scale_fill_manual(values = palette()) +
-    scale_color_manual(values = palette2()) +
-    ylab("Change of No. of \n Contacts (in percent)") +
-    scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
-    theme(text = element_text(size = 35)) +
-    theme(panel.spacing.y = unit(3, "lines")) +
-    theme(panel.spacing.x = unit(3, "lines")) +
-    theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-    theme(legend.position = "bottom", legend.title = element_blank()) +
-    theme(panel.spacing.x = unit(c(rep(0,2),5, 0,0), "lines")) +
-    #labs(color ="Comorbidity") +
-    theme(panel.spacing = unit(0.8, "cm", data = NULL)) +
-        theme(axis.ticks.x = element_line(size = 1), 
-                   axis.ticks.y = element_line(size = 1),
-                   axis.ticks.length = unit(20, "pt"))
+    p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+    filter(!is.na(!!sym(com))) %>%
+    filter(!is.na(TypeOfContact)) %>% 
+    filter(TypeOfContact %in% c("Leisure")) %>%
+    filter(value > -150) %>%  filter(value < 100) %>%
+    filter(!is.na(TypeOfContact)) %>% group_by(!!sym(com), TypeOfContact, time), aes(!!sym(com), value, color = !!sym(com), fill = !!sym(com))) +
+    sm_raincloud(aes(stat = median_cl), 
+                   point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
+                     nudge.x = -0.1,
+                     jitter.width = 0.1, jitter.height = 0.01      
+                   )), 
+                   boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
+                   violin.params = list(width = 1),
+                   shape = 21, sep_level = 2)  +
+      scale_fill_manual(values = palette()) +
+      scale_color_manual(values = palette2()) +
+      scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
+      facet_grid(~(time), switch="both")+
+      ggtitle("Leisure") +
+      theme_minimal() +
+      theme(panel.spacing = unit(4, "lines")) +
+      ylab("Change of No. of \n Contacts (in percent)") +
+      my_theme() +
+      theme(axis.text.x = element_blank(), axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
+      theme(axis.ticks.x = element_line(size = 0)) +
+      theme(legend.position = "bottom", legend.title = element_blank())
+    
+    p1_work <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+                                 filter(!is.na(!!sym(com))) %>%
+                                 filter(!is.na(TypeOfContact)) %>% 
+                                 filter(TypeOfContact %in% c("Work")) %>%
+                                 filter(value > -150) %>%  filter(value < 100) %>%
+                                 filter(!is.na(TypeOfContact)) %>% group_by(!!sym(com), TypeOfContact, time), aes(!!sym(com), value, color = !!sym(com), fill = !!sym(com))) +
+      sm_raincloud(aes(stat = median_cl), 
+                   point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
+                     nudge.x = -0.1,
+                     jitter.width = 0.1, jitter.height = 0.01      
+                   )), 
+                   boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
+                   violin.params = list(width = 1),
+                   shape = 21, sep_level = 2)  +
+      scale_fill_manual(values = palette()) +
+      scale_color_manual(values = palette2()) +
+      scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
+      facet_grid(~(time), switch="both")+
+      ggtitle("Work") +
+      theme_minimal() +
+      theme(panel.spacing = unit(4, "lines")) +
+      ylab("Change of No. of \n Contacts (in percent)") +
+      my_theme() +
+      theme(axis.text.x = element_blank(), axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
+      theme(axis.ticks.x = element_line(size = 0)) +
+      theme(legend.position = "bottom", legend.title = element_blank())
+    
+    ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-    ggsave(paste0("CollectionViolinplots_", com, ".pdf"), p1,  dpi = 500, w = 22, h = 9)
-    ggsave(paste0("CollectionViolinplots_", com, ".png"), p1, dpi = 500, w = 22, h = 9)
+    ggsave(paste0("CollectionViolinplots_", com, ".pdf"),  dpi = 500, w = 24, h = 9)
+    ggsave(paste0("CollectionViolinplots_", com, ".png"), dpi = 500, w = 24, h = 9)
 
     ecdf_comp <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% group_by(!!sym(com)) %>% 
   count(date_f1_inf) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
@@ -130,7 +162,7 @@ for (com in comorbidities){
     mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
     mutate(uci = case_when(uci > 1 ~ 1, .default = uci))
 
-  p2 <- ggplot(ecdf_comp %>% filter(!is.na(!!sym(com))), aes(date_f1_inf)) +
+  ecdf <- ggplot(ecdf_comp %>% filter(!is.na(!!sym(com))), aes(date_f1_inf)) +
   geom_ribbon(aes(ymin = lci, ymax = uci, x = date_f1_inf, , fill = !!sym(com)), alpha = 0.1)+
   geom_line(aes(y=ecdf,  color = !!sym(com)), size = 2) +
   theme_minimal() +
@@ -139,11 +171,7 @@ for (com in comorbidities){
   coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
   theme(text = element_text(size = 30)) +
   scale_color_manual(values = palette()) +
-  #scale_y_continuous(labels=percent) +
-  theme(legend.title = element_blank(), legend.position = "bottom")  +
-      theme(axis.ticks.x = element_line(size = 1), 
-                    axis.ticks.y = element_line(size = 1),
-                    axis.ticks.length = unit(15, "pt"))
+  my_theme() 
 
     if(com == "cond_hbp"){
       yes <- 149
@@ -239,7 +267,7 @@ for (com in comorbidities){
     ggplot(aes(num_c19_infs_eng, percent, fill = !!sym(com))) +
     geom_bar(stat = "identity", position = "dodge", width = 0.8) +
     scale_x_discrete(limits = c("0", "1", "2", "3+")) +
-    geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = !!sym(com)), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+    geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = !!sym(com)), position = position_dodge(0.8), width = 0.5, size=1.3) +
     theme_minimal() +
     ylab("Share of Respondents\n(Percentage)") +
     scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
@@ -250,23 +278,14 @@ for (com in comorbidities){
     scale_fill_manual(values = palette()) +
     scale_color_manual(values = palette2()) +
     theme(legend.title = element_blank(), legend.position = "bottom")  +
-    theme(axis.ticks.x = element_line(size = 1), 
-                   axis.ticks.y = element_line(size = 1),
-                   axis.ticks.length = unit(15, "pt"))
+    my_theme()
 
-    ggsave(paste0("NumberOfInfection_", com, ".pdf"), p3, dpi = 500, w = 9, h = 9)
-    ggsave(paste0("NumberOfInfection_", com,".png"), p3, dpi = 500, w = 9, h = 9)
+    #ggsave(paste0("NumberOfInfection_", com, ".pdf"), p3, dpi = 500, w = 9, h = 9)
+    #ggsave(paste0("NumberOfInfection_", com,".png"), p3, dpi = 500, w = 9, h = 9)
 
 
-  ggarrange(p3, p2, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
+  ggarrange(p3, ecdf, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-  ggsave("NoInfectionsECDF_cond_none.pdf", dpi = 500, w = 18, h = 9) 
-  ggsave("NoInfectionsECDF_cond_none.png", dpi = 500, w = 18, h = 9) 
+  ggsave("NoInfectionsECDF_cond_none.pdf", dpi = 500, w = 22, h = 9) 
+  ggsave("NoInfectionsECDF_cond_none.png", dpi = 500, w = 22, h = 9) 
 }
-
-
-mean <- data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
-    filter(!is.na(TypeOfContact)) %>% 
-    filter(cond_none %in% c("No Comorbidities", "Some Comorbidity")) %>% filter(TypeOfContact %in% c("Leisure", "Work")) %>%
-    filter(value < 100) %>% filter(value > -150) %>%  
-    filter(!is.na(TypeOfContact)) %>% group_by(TypeOfContact, cond_none, time) %>% summarise(mean =mean(value))
