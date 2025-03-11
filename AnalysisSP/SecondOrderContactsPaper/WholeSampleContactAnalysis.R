@@ -6,7 +6,9 @@ library(Hmisc)
 library(ggpubr)
 library(smplot2)
 library(sdamr)
+library(here)
 
+here()
 source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
 source("./AnalysisSP/SecondOrderContactsPaper/mytheme.r")
 
@@ -44,12 +46,11 @@ palette <- function() {
   c("#3C5488FF", "#3C5488FF",  "#3C5488FF")
 }
 
-palette2 <- function() {
-  c("#515972", "#515972", "#515972")
-}
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(time = case_when(time == "Summer 2021" ~ "Summer\n2021", .default = time))
+data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("03/2020", "Summer\n2021", "01/2023"))
 
-pandemic_contacts_relative_work <- ggplot(data_reduced_tidy_rel %>%  
-    filter((TypeOfContact %in% c("Work"))) %>% #Need to replace "Work" by "Leisure" if one is interested in leisure contacts instead
+pandemic_contacts_relative_leisure<- ggplot(data_reduced_tidy_rel %>%  
+    filter((TypeOfContact %in% c("Leisure"))) %>% #Need to replace "Work" by "Leisure" if one is interested in leisure contacts instead
     filter(WhoseContacts == "Respondent") %>% filter(!is.na(value)) %>%
    filter(value > -150) %>% filter(value < 100) %>%  
     filter(!is.na(TypeOfContact))) +
@@ -70,13 +71,11 @@ pandemic_contacts_relative_work <- ggplot(data_reduced_tidy_rel %>%
   theme(panel.spacing = unit(1, "lines")) +
   #ylab("") +
   ylab("Change of No. of\nContacts (percent)") +
-  my_theme() +
-  theme(axis.text.x = element_text(angle = 90))
+  my_theme()
 
-#ggarrange(pandemic_contacts_relative_work, pandemic_contacts_relative_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37))
-#ggsave("CollectionViolinplots_RemainingRespondent.pdf", dpi = 500, w = 18, h = 12)
-#ggsave("CollectionViolinplots_RemainingRespondentright.png", p1_zeroth_order_percred_leisure, dpi = 500, w = 10, h = 12)
-
+ggarrange(pandemic_contacts_relative_work, pandemic_contacts_relative_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37))
+ggsave("CollectionViolinplots_RemainingRespondent.pdf", dpi = 500, w = 24, h = 9)
+ggsave("CollectionViolinplots_RemainingRespondent.png", dpi = 500, w = 24, h = 9)
 # Household Pandemic Contact Data -------------------------------------------------------
 
 palette <- function() {

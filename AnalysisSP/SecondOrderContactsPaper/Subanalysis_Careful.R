@@ -1,4 +1,3 @@
-
 library(tidyverse)
 library(MMWRweek)
 library(see)
@@ -14,9 +13,8 @@ library(ggbreak)
 
 #In the first part of this script we compare the incidence of the respondents of the survey to the official incidence reported by RKI
 
-#raw_data <- readRDS(file = "/Users/sydney/Desktop/cleaned_data.rds")
-
-source("DataCleaningPrepForContactAnalysis.R")
+here()
+source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
 
 ## RISK-PERCEPTION SCORE
 
@@ -31,54 +29,69 @@ data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = 
 
 
 palette <- function() {
-  c("#f1a340", "#998ec3")
+  c("#3C5488FF", "#DC0000FF")
 }
 
 palette2 <- function() {
-  c("#b35806", "#542788")
+  c("#2C3E65FF", "#A90000FF")
 }
 
-my_comparisons <- list(c("Risk-averse", "Risk-tolerant"))
 
-p1 <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+group_sizes <- data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(RiskyCarefulAtt )) %>% 
     filter(!is.na(TypeOfContact)) %>% 
+    filter(TypeOfContact %in% c("Leisure")) %>%
+    filter(value > -150) %>%  filter(value < 100) %>%
+    filter(!is.na(TypeOfContact)) %>% group_by(RiskyCarefulAtt, TypeOfContact, time) %>%
+    mutate(group = case_when(value < -75 ~ "CutAll", value < -25 ~ "Middle", .default = "CutNone"))
+
+group_sizes <- group_sizes %>% group_by(TypeOfContact, RiskyCarefulAtt, time) %>% count(group)
+group_sizes <- group_sizes %>% mutate(share = n/sum(n))
+
+data_reduced_tidy_rel$RiskyCarefulAtt <- factor(data_reduced_tidy_rel$RiskyCarefulAtt, levels = c("Risk-averse", "Risk-tolerant"))
+
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(time = case_when(time == "Summer 2021" ~ "Summer\n2021", .default = time))
+data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("03/2020", "Summer\n2021", "01/2023"))
+
+p1_work <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+    filter(!is.na(RiskyCarefulAtt)) %>% 
+    filter(!is.na(TypeOfContact)) %>% 
     filter(TypeOfContact %in% c("Work")) %>%
-   filter(value > -150) %>% filter(value < 100) %>%  
+    filter(value > -150) %>%  filter(value < 100) %>%
     filter(!is.na(TypeOfContact)) %>% group_by(RiskyCarefulAtt, TypeOfContact, time), aes(RiskyCarefulAtt, value, color = RiskyCarefulAtt, fill = RiskyCarefulAtt)) +
-    sm_raincloud(aes(stat = median_cl), boxplot.params =  list(alpha = 0.6, width = 0.2, notch = TRUE), 
-              violin.params = list(width = 1.5),
+    sm_raincloud(aes(stat = median_cl), 
+    point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
+        nudge.x = -0.1,
+        jitter.width = 0.1, jitter.height = 0.01      
+      )), 
+    boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
+              violin.params = list(width = 1),
               shape = 21, sep_level = 2)  +
-  #geom_violin(aes(fill = RiskyCarefulAtt, color = RiskyCarefulAtt), scale = "area", trim = TRUE) +  
-  #stat_summary(aes(color=RiskyCarefulAtt ), fun.data=mean_sdl, fun.args = list(mult=1), 
-  #               geom="pointrange", linewidth = 1) +
-  #stat_compare_means(comparisons = my_comparisons, method = "t.test", symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("**** (p < 0.0001)", "*** (p < 0.001)", "** (p < 0.01)", "* (p < 0.05)", "not significant (p > 0.05)")), size = 6, bracket.size = 1, tip.length = 0.01, vjust = 0, label.y.npc = 0)+
-  #geom_violin(aes(color=WhoseContacts), size = 1.3) +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
-  #facet_nested(~ TypeOfContact + time) +
-  facet_grid(~(time))+
+  facet_grid(~(time), switch="both")+
+  ggtitle("Work") +
   theme_minimal() +
   theme(panel.spacing = unit(4, "lines")) +
   ylab("Change of No. of \n Contacts (in percent)") +
-  theme(text = element_text(size = 25)) +
-  theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
-  theme(panel.spacing.x = unit(c(1,1), "lines")) +
-  theme(axis.ticks.x = element_line(size = 1), 
-                   axis.ticks.y = element_line(size = 1),
-                   axis.ticks.length = unit(15, "pt"))
+  my_theme() +
+  theme(axis.text.x = element_blank(), axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
+  theme(axis.ticks.x = element_line(size = 0)) +
+  theme(legend.position = "bottom", legend.title = element_blank())
 
-ggsave("CollectionViolinplots_AttCarefulnessScoreWork.pdf", p1, dpi = 500, w = 15, h = 6)
-ggsave("CollectionViolinplots_AttCarefulnessScoreWork.png", p1, dpi = 500, w = 15, h = 6)
+ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-mean <- data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
-    filter(!is.na(TypeOfContact)) %>% 
-    filter(TypeOfContact %in% c("Leisure", "Work")) %>%
-    filter(value < 100) %>% filter(value > -150) %>%  
-    filter(!is.na(TypeOfContact)) %>% group_by(TypeOfContact, RiskyCarefulAtt, time) %>% summarise(mean =mean(value), sd = sd(value))
+ggsave("CollectionViolinplots_AttCarefulnessScore.pdf",  dpi = 500, w = 24, h = 9)
+ggsave("CollectionViolinplots_AttCarefulnessScore.png", dpi = 500, w = 24, h = 9)
 
+data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% 
+    filter(!is.na(RiskyCarefulAtt)) %>% 
+    filter(!is.na(TypeOfContact)) %>% filter(time ==  "2019") %>% 
+    filter(!is.na(value)) %>% 
+    filter(value < 500) %>%
+    filter(TypeOfContact %in% c("Work", "Leisure"))  %>%  
+    group_by(RiskyCarefulAtt, TypeOfContact) %>% summarise(median = median(value), twentyfive = quantile(value, 0.25), seventyfive = quantile(value, 0.75))
 
 p4 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(RiskyCarefulAtt)) %>% 
@@ -87,8 +100,11 @@ p4 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>%
     filter(value < 500) %>%
     filter(TypeOfContact %in% c("Work", "Leisure"))  %>%  
     group_by(RiskyCarefulAtt, TypeOfContact), aes(RiskyCarefulAtt, value, fill = RiskyCarefulAtt, color = RiskyCarefulAtt)) +
-        sm_raincloud(aes(stat = median_cl), boxplot.params =  list(alpha = 0.6, width = 0.3, notch = TRUE), 
-              violin.params = list(width = 1.6),
+        sm_raincloud(aes(stat = median_cl), boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
+              violin.params = list(width = 1.3), point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
+        nudge.x = -0.1,
+        jitter.width = 0.1, jitter.height = 0.01      
+      )), 
               shape = 21, sep_level = 2)  +
   # geom_violin(aes(fill = RiskyCarefulAtt, color = RiskyCarefulAtt), scale = "area", trim = TRUE) +  
   # stat_summary(aes(color=RiskyCarefulAtt ), fun.data=mean_sdl, fun.args = list(mult=1), 
@@ -100,18 +116,15 @@ p4 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>%
   facet_wrap(vars(TypeOfContact)) +
   scale_y_continuous(trans=scales::pseudo_log_trans(base = 10), breaks = c(0,1,3,10,30,100,300)) +
   theme_minimal() +
-  xlab("Point In Time") +
   theme(panel.spacing = unit(2, "lines")) +
-  ylab("Number of \n Contacts (2019)") +
-  theme(text = element_text(size = 30)) +
+  ylab("Number of\nContacts (2019)") +
+  my_theme() +
   theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
-    theme(axis.ticks.x = element_line(size = 1), 
-                   axis.ticks.y = element_line(size = 1),
-                   axis.ticks.length = unit(20, "pt"))
+  theme(legend.position = "bottom", legend.title = element_blank())
+  #guides(fill=guide_legend(nrow=2,byrow=TRUE))
 
 ggsave("ViolinplotsPrePandemic_AttCarefulnessScore.pdf", p4, dpi = 500, w = 9, h = 9)
-ggsave("ViolinplotsPrePandemic_AttCarefulnessScore.png", p4, dpi = 500, w = 9, h = 9)
+ggsave("ViolinplotsPrePandemic_AttCarefulnessScore.png", p4, dpi = 500, w = 7.5, h = 9)
 
 
 mean <- data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% 
@@ -123,10 +136,6 @@ mean <- data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>%
 
 
 ## Are respondents sociable across categories?
-
-palette <- function() {
-  c("#f1a340", "#998ec3")
-}
 
 options(scipen = 999)
 
@@ -160,12 +169,13 @@ theme(text = element_text(size = 30))
 ggsave("WorkvsLeisureContacts_AttitudeScore.pdf", dpi = 500, w = 9, h = 9)
 ggsave("WorkvsLeisureContacts_AttitudeScore.png", dpi = 500, w = 9, h = 9)
 
-
-palette <- function() {
-  c("#f1a340", "#998ec3")
-}
-
 options(scipen = 999)
+
+
+risktolerant <- data_reduced %>% filter(RiskyCarefulAtt == "Risk-tolerant")
+cor(risktolerant$respondent_work_2019, risktolerant$respondent_leisure_2019)
+riskaverse <- data_reduced %>% filter(RiskyCarefulAtt == "Risk-averse")
+cor(riskaverse$respondent_work_2019, riskaverse$respondent_leisure_2019)
 
 p5 <- ggplot(data_reduced %>% mutate(respondent_work_2019 = case_when(respondent_work_2019 == 0 ~ 0.1,
                                          .default = respondent_work_2019)) %>%
@@ -175,7 +185,7 @@ p5 <- ggplot(data_reduced %>% mutate(respondent_work_2019 = case_when(respondent
         filter(respondent_leisure_2019 > -1) %>%
         filter(respondent_work_2019 < 300) %>% filter(respondent_leisure_2019 < 500) %>%
         filter(!is.na(RiskyCarefulAtt))) +
-geom_jitter(aes(x = respondent_work_2019, y = respondent_leisure_2019, color = RiskyCarefulAtt), size = 3) +
+geom_jitter(aes(x = respondent_work_2019, y = respondent_leisure_2019, color = RiskyCarefulAtt,  alpha = 0.8), size = 3) +
 #geom_jitter(aes(x=(respondent_work_2019 - min(respondent_work_2019)) / (max(respondent_work_2019)-min(respondent_work_2019)),
 theme_minimal() + 
 scale_color_manual(values = palette()) +
@@ -185,18 +195,16 @@ scale_y_continuous(trans=scales::pseudo_log_trans(base = 10), breaks = c(0,1,3,1
 scale_x_continuous(trans=scales::pseudo_log_trans(base = 10), breaks = c(0,1,3,10,30,100)) +
 xlab("Number of Work Contacts(2019)") +
 ylab("Number of Leisure Contacts (2019)") +
-theme(text = element_text(size = 29)) +
-  theme(axis.ticks.x = element_line(size = 1), 
-                   axis.ticks.y = element_line(size = 1),
-                   axis.ticks.length = unit(15, "pt"))
+my_theme() +
+  theme(legend.position = "bottom", legend.title = element_blank())
 
 ggsave("WorkvsLeisureContacts_AttitudeScore.pdf", p5, dpi = 500, w = 9, h = 9)
 ggsave("WorkvsLeisureContacts_AttitudeScore.png", p5, dpi = 500, w = 9, h = 9)
 
 ggarrange(p4, p5, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 34), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("WorkvsLeisureViolin_AttitudeScore2019.pdf", dpi = 500, w = 18, h = 9) 
-ggsave("WorkvsLeisureViolin_AttitudeScore2019.png", dpi = 500, w = 18, h = 9) 
+ggsave("WorkvsLeisureViolin_AttitudeScore2019.pdf", dpi = 500, w = 21.5, h = 12.25) 
+ggsave("WorkvsLeisureViolin_AttitudeScore2019.png", dpi = 500, w = 21.5, h = 12.25) 
 
 
 ## 2019 Contacts vs Reduction [Percentage]
@@ -347,23 +355,20 @@ ecdf_comp <- ecdf_comp %>% mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/
   mutate(uci = case_when(uci > 1 ~ 1, .default = uci))
 
 p2 <- ggplot(ecdf_comp, aes(date_f1_inf)) +
-geom_ribbon(aes(ymin = lci, ymax = uci, x = date_f1_inf, , fill = RiskyCarefulAtt), alpha = 0.1)+
+geom_ribbon(aes(ymin = lci, ymax = uci, x = date_f1_inf, , fill = RiskyCarefulAtt), alpha = 0.3)+
 geom_line(aes(y=ecdf,  color = RiskyCarefulAtt), size = 2) +
 theme_minimal() +
 ylab("Empirical Cumulative \n Distribution Function") +
-xlab("Date of 1st Infection") +
+xlab("Date of\n1st Infection") +
 coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
-theme(text = element_text(size = 30)) +
 scale_color_manual(values = palette()) +
+scale_x_date(date_labels = "'%y")+
 #scale_y_continuous(labels=percent) +
-theme(legend.title = element_blank(), legend.position = "bottom")  +
-    theme(axis.ticks.x = element_line(size = 1), 
-                   axis.ticks.y = element_line(size = 1),
-                   axis.ticks.length = unit(15, "pt"))
+my_theme()
 
 
 ggsave("ECDF_AttCarefulnessScore.pdf", p2, dpi = 500, w = 9, h = 9)
-ggsave("ECDF_AttCarefulnessScore.png", p2, dpi = 500, w = 9, h = 9)
+ggsave("ECDF_AttCarefulnessScore.png", p2, dpi = 500, w = 7.5, h = 8)
 
 
 RemainingAnswers <- data.frame(matrix(nrow = 0, ncol = 4))
@@ -389,9 +394,9 @@ p3 <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   ggplot(aes(num_c19_infs_eng, percent/100, fill = RiskyCarefulAtt)) +
   #geom_col(position = position_dodge(preserve = 'single')) +
   geom_bar(stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci/100, ymax=uci/100, color = RiskyCarefulAtt), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=1.3) +
+  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci/100, ymax=uci/100, color = RiskyCarefulAtt), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=2.5) +
   theme_minimal() +
-  ylab("Share of Respondents\n(in percent)") +
+  ylab("Share\n(percent)") +
   xlab("Number of Infections") +
   scale_y_continuous(breaks = c(0,0.25, 0.50)) +
   theme(text = element_text(size = 30)) +
@@ -400,17 +405,15 @@ p3 <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   #theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
-    theme(axis.ticks.x = element_line(size = 1), 
-                   axis.ticks.y = element_line(size = 1),
-                   axis.ticks.length = unit(15, "pt"))
+    my_theme()
 
 ggsave("NoInfections_AttCarefulnessScore.pdf", p3, dpi = 500, w = 9, h = 9)
 ggsave("NoInfections_AttCarefulnessScore.png", p3, dpi = 500, w = 9, h = 9)
 
 ggarrange(p3, p2, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("NoInfectionsECDF_AttCarefulnessScore.pdf", dpi = 500, w = 18, h = 9) 
-ggsave("NoInfectionsECDF_AttCarefulnessScore.png", dpi = 500, w = 18, h = 9) 
+ggsave("NoInfectionsECDF_AttCarefulnessScore.pdf", dpi = 500, w = 21, h = 12) 
+ggsave("NoInfectionsECDF_AttCarefulnessScore.png", dpi = 500, w = 21, h = 12) 
 
 
 
@@ -421,31 +424,6 @@ ggsave("BoxplotNoInfectionsECDF_attitudeScore.png", p4, dpi = 500, w = 18, h = 1
 
 
 # Did careful attitudes/behaviors result in less/later infections? --------
-
-# data_reduced <- raw_data %>% select(num_c19_infs, date_f1_inf, date_s2_inf, date_t3_inf, cc_change_during_pandemic,
-#                                     attitudes_precautions_mar2020_low_infection_risk_perception,                
-#                                     attitudes_precautions_mar2020_risky_infection_course_assessment,            
-#                                     attitudes_precautions_mar2020_high_risk_perception,                         
-#                                     attitudes_precautions_mar2020_avoided_risky_situations,                     
-#                                     attitudes_precautions_mar2020_aware_distance_rule_effectiveness,         
-#                                     attitudes_precautions_mar2020_understood_mask_reduces_risk,                
-#                                     attitudes_precautions_mar2020_followed_measures,                         
-#                                     attitudes_precautions_mar2020_felt_restricted_by_measures,                  
-#                                     attitudes_precautions_mar2020_wore_ffp2_ffp3_over_medical,
-#                                     beh_change_start_pandemic_avoid_in_person,                                  
-#                                     beh_change_start_pandemic_avoid_careless_contacts,                       
-#                                     beh_change_start_pandemic_contact_cautious_people,                        
-#                                     beh_change_start_pandemic_avoid_peak_hours,                          
-#                                     beh_change_start_pandemic_maintain_distance,                                
-#                                     beh_change_start_pandemic_outdoor_only,                                     
-#                                     beh_change_start_pandemic_no_visit_high_risk,                               
-#                                     beh_change_start_pandemic_avoid_busy_places,                               
-#                                     beh_change_start_pandemic_avoid_public_trans,                               
-#                                     beh_change_start_pandemic_mask_public_trans,                                
-#                                     beh_change_start_pandemic_mask_supermarket,                                 
-#                                     beh_change_start_pandemic_work_from_home,                                  
-#                                     beh_change_start_pandemic_children_limited_contacts,                       
-#                                     beh_change_start_pandemic_meet_close_despite_restrict)
 
 attitudesAndBehaviors <- c("attitudes_precautions_mar2020_low_infection_risk_perception",                
                                     "attitudes_precautions_mar2020_risky_infection_course_assessment",            
@@ -475,14 +453,6 @@ data_reduced <- data_reduced %>% select(-contains("cond")) %>%
                 select(-respondent_hsld_size_persons_under_14) %>% 
                 select(-number_of_children_under_18)
 
-palette <- function() {
-  c("#998ec3", "#f1a340")
-}
-
-palette2 <- function() {
-  c("#542788", "#b35806")
-}
-
 data_reduced$respondent_cc_change <- factor(data_reduced$respondent_cc_change, levels = c("Nein", "Ja"))
 
 for(attBeh in attitudesAndBehaviors){
@@ -511,14 +481,6 @@ ggsave(paste0(attBeh, "_changeCC-fullResponses.png"), dpi = 500, w = 12, h = 9)
 }
 #data_reduced <- data_reduced %>% mutate(cc_change_during_pandemic = case_when(cc_change_during_pandemic == "Ja" ~ "Changed CC",
                                                                              #   cc_change_during_pandemic == "Nein" ~ "Did Not Change CC"))
-
-palette <- function() {
-  c("#998ec3", "#f1a340")
-}
-
-palette2 <- function() {
-  c("#542788", "#b35806")
-}
 
 for(attBeh in attitudesAndBehaviors){
 data_reduced %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(!!sym(attBeh) != "trifft nicht zu") %>%
@@ -606,66 +568,6 @@ data_reduced$RiskyCarefulAtt <- factor(data_reduced$RiskyCarefulAtt, levels = c(
 data_reduced$RiskyCarefulBeh <- factor(data_reduced$RiskyCarefulBeh, levels = c("Risk-tolerant", "Risk-averse"))
 
 
-data_reduced %>% count(RiskyCarefulAtt)
-data_reduced %>% count(RiskyCarefulBeh)
-
-## BEHAVIOR SCORE
-
-ggplot(data_reduced %>% filter(!is.na(RiskyCarefulBeh)), aes(date_f1_inf, color = RiskyCarefulBeh)) +
-stat_ecdf(geom="smooth", size = 2) +
-theme_minimal() +
-ylab("Empirical Cumulative \n Distribution Function") +
-xlab("Date Of 1st Infection") +
-coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
-theme(text = element_text(size = 30)) +
-scale_color_manual(values = palette()) +
-theme(legend.title = element_blank(), legend.position = "bottom") +
-guides(color = guide_legend(nrow = 2))
-
-ggsave("TimingOfInfectionBehCarefulnessScore.pdf", dpi = 500, w = 9, h = 9)
-ggsave("TimingOfInfectionBehCarefulnessScore.png", dpi = 500, w = 9, h = 9)
-
-data_reduced %>%
-  count(RiskyCarefulBeh, num_c19_infs_eng) %>%
-  mutate(n = n / sum(n), .by = RiskyCarefulBeh) %>%
-  filter(!is.na(RiskyCarefulBeh)) %>% 
-  ggplot(aes(num_c19_infs_eng, n, fill = RiskyCarefulBeh)) +
-  geom_col(position = position_dodge(preserve = 'single')) +
-  theme_minimal() +
-  ylab("Relative Frequency") +
-  xlab("") +
-  theme(text = element_text(size = 30)) +
-  theme(legend.position = "bottom") +
-  labs(fill="Behavioral Group") +
-  theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1)) +
-  scale_fill_manual(values = palette())
-
-ggsave("NumberOfInfectionBehCarefulnessScore.pdf", dpi = 500, w = 9, h = 12)
-ggsave("NumberOfInfectionBehCarefulnessScore.png", dpi = 500, w = 9, h = 12)
-                                                                                 cc_change_during_pandemic == "Nein" ~ "Did Not Change CC"))
-
-palette <- function() {
-  c("#8F2D56", "#006BA6")
-}
-
-data_reduced %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(attitudeScore != "trifft nicht zu") %>%
-filter(attitudeScore != "keine Angabe") %>%
-  count(attitudeScore , cc_change_during_pandemic) %>%
-  mutate(n = n / sum(n), .by = attitudeScore) %>%
-  filter(!is.na(attitudeScore)) %>% 
-  ggplot(aes(as.factor(attitudeScore), n, fill = cc_change_during_pandemic)) +
-  geom_col(position = "fill") +
-  theme_minimal() +
-  ylab("Relative Frequency") +
-  xlab("Carefulness Score") +
-  theme(text = element_text(size = 25)) +
-  theme(legend.position = "bottom") + 
-  theme(panel.spacing.x = unit(2, "lines")) +
-  scale_fill_manual(values = palette()) +
-  theme(legend.title=element_blank())
-
-ggsave("WillingnessChangeCC_attitudeScore.png", dpi = 500, w = 13, h =9)
-ggsave("WillingnessChangeCC_attitudeScore.pdf", dpi = 500, w = 13, h =9)
 
 
 data_reduced %>% filter(!is.na(cc_change_during_pandemic)) %>% filter(behaviorChangeScore != "trifft nicht zu") %>%
@@ -686,27 +588,3 @@ filter(behaviorChangeScore != "keine Angabe") %>%
 
 ggsave("WillingnessChangeCC_behScore.png", dpi = 500, w = 13, h =9)
 ggsave("WillingnessChangeCC_behScore.pdf", dpi = 500, w = 13, h =9)
-
-
-#Summary stats for NUMBER of Infections
-data_reduced <- data_reduced %>% mutate(noInfInt = case_when(num_c19_infs == "Nie" ~ 0,
-                                                            num_c19_infs == "Einmal" ~ 1,
-                                                            num_c19_infs == "Zweimal" ~ 2,
-                                                            num_c19_infs == "Dreimal" ~ 3,
-                                                            num_c19_infs == "Mehr als dreimal" ~ 10))
-
-
-for(attBeh in attitudesAndBehaviors){
-ggplot(data_reduced %>% filter(!is.na(!!sym(attBeh)))) +
-geom_point(aes(x=date_f1_inf, y = noInfInt, color = !!sym(attBeh))) +
-theme_minimal() +
-theme(legend.position="bottom") +
-theme(text = element_text(size = 22)) +
-xlab("Date Of First Infection") +
-ylab("Number of Infections") +
-scale_y_continuous(breaks = c(0,1,2,3,10))+ 
-guides(color = guide_legend(nrow = 2))
-
-ggsave(paste0(attBeh, ".pdf"), dpi = 500, w = 14, h = 4.5)
-ggsave(paste0(attBeh, ".png"), dpi = 500, w = 14, h = 4.5)
-}
