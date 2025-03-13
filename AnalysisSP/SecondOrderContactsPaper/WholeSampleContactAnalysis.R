@@ -21,15 +21,14 @@ palette <- function() {
 prepandemic_contacts_absolute <- ggplot(data_reduced_tidy %>% 
 filter((TypeOfContact %in% c("Work", "Leisure"))) %>% filter(time %in% c("2019")) %>%
 filter(!is.na(TypeOfContact)) %>% filter(value < 500) %>%
-filter(WhoseContacts=="Respondent"), aes(time, value)) +
-  sm_raincloud(mapping=aes(x=TypeOfContact, y=value), fill = "#3C5488FF",
-      point.params = list(size = 3, shape = 21, alpha = 0.4, color = "#3C5488FF", fill = "#3C5488FF", position = sdamr::position_jitternudge(
-        nudge.x = -0.1,
-        jitter.width = 0.1, jitter.height = 0.01      
-      )), 
-      boxplot.params =  list(alpha = 0.0, width = 0.0), 
-              violin.params = list(width = 1),
-              shape = 21, sep_level = 2)  +
+filter(WhoseContacts=="Respondent"), aes(TypeOfContact, value, fill = "#3C5488FF")) +
+      sm_raincloud(aes(stat = median_cl), 
+                   point.params = list(size = 3, shape = 21, color = "transparent", alpha = 0.5, position = sdamr::position_jitternudge(
+                     nudge.x = -0.1,
+                     jitter.width = 0.1, jitter.height = 0.01      
+                   )), 
+                   boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
+                   violin.params = list(width = 1), sep_level = 2)  +
   scale_fill_manual(values = palette()) +
   ylab("Reported Number\nof Contacts (2019)") +
   xlab("") +
@@ -39,6 +38,18 @@ filter(WhoseContacts=="Respondent"), aes(time, value)) +
 
 ggsave("CollectionViolinplots_Respondent.pdf", prepandemic_contacts_absolute, dpi = 500, w = 7.5, h = 9)
 ggsave("CollectionViolinplots_Respondent.png", prepandemic_contacts_absolute, dpi = 500, w = 7.5, h = 9)
+
+data2019work <- data_reduced_tidy %>% filter(TypeOfContact == "Work") %>% 
+  filter(time %in% c("2019")) %>%
+  filter(value < 500) %>%
+  filter(WhoseContacts=="Respondent")
+round(quantile(data2019work$value, na.rm=TRUE))
+
+data2019leisure <- data_reduced_tidy %>% filter(TypeOfContact == "Leisure") %>% 
+  filter(time %in% c("2019")) %>%
+  filter(value < 500) %>%
+  filter(WhoseContacts=="Respondent")
+round(quantile(data2019leisure$value, na.rm=TRUE))
 
 # Pandemic Contact Data (2020, 2021, 2023) -------------------------------------------------------
 
