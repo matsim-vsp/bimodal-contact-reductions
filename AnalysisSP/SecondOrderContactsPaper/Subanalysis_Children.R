@@ -5,64 +5,46 @@ library(ggiraphExtra)
 
 # 0th order Results -------------------------------------------------------
 
-source("DataCleaningPrepForContactAnalysis.R")
+source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
+source("./AnalysisSP/SecondOrderContactsPaper/mytheme.r")
 
 #Subanalysis for school children
-data_reduced_children <- data_reduced_children %>% select(-c(respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
-                                  select(-contains("attitudes")) %>%
-                                  select(-contains("beh_change"))
 
-data_reduced_children <- data_reduced_children %>% pivot_longer(cols = 3:78)
+colnames(data_reduced_tidy_rel)
 
-data_reduced_children <- data_reduced_children  %>% mutate(time = case_when(str_detect(name, "2019") ~ "2019",
-                                                          str_detect(name, "2020") ~ "03/2020",
-                                                          str_detect(name, "2021") ~ "Summer 2021",
-                                                          str_detect(name, "2023") ~ "01/2023")) %>%
-                                  mutate(WhoseContacts = case_when(str_detect(name, "respondent") ~ "Respondent",
-                                  str_detect(name, "cc_pre") ~ "Closest Contact (Pre-Covid)",
-                                  str_detect(name, "cc_during") ~ "Closest Contact (During-Covid)",
-                                  str_detect(name, "hhmember") ~ "Household Member")) %>%
-                                  mutate(TypeOfContact = case_when(str_detect(name, "work") ~ "Work",
-                                  str_detect(name, "school") ~ "School",
-                                  str_detect(name, "leisure") ~ "Leisure",
-                                  str_detect(name, "all") ~ "All"))
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(childrenyesno = case_when(number_of_children_under_18 > 0 ~ "Yes",
+                                                                                    number_of_children_under_18 == 0 ~ "No"))
 
-data_reduced_children$time <- factor(data_reduced_children$time, levels = c("2019", "03/2020", "Summer 2021", "01/2023"))
-data_reduced_children$TypeOfContact <- factor(data_reduced_children$TypeOfContact, levels = c("Work", "Leisure", "School", "All"))
-data_reduced_children$WhoseContacts <- factor(data_reduced_children$WhoseContacts, levels = c("Respondent", "Household Member", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
+palette <- function() {
+  c("#3C5488FF", "#3C5488FF",  "#3C5488FF")
+}
 
-ggplot(data_reduced_children %>% filter(WhoseContacts == "Household Member") %>% filter(value < 100) %>% filter(!is.na(TypeOfContact)), aes(WhoseContacts, value)) +
-  #geom_violin(aes(color = WhoseContacts), width = 1, trim = FALSE, position=position_dodge(0.9)) + 
-  #geom_boxplot(aes(color = WhoseContacts), width = 0.1, position = position_dodge(0.9)) +
-  geom_boxplot(color = "#FFBC42", size = 1.3) +
-  scale_color_manual(values = palette()) +
-  facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(time = case_when(time == "Summer 2021" ~ "Summer\n2021", .default = time))
+data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("03/2020", "Summer\n2021", "01/2023"))
+
+pandemic_contacts_relative_school <- ggplot(data_reduced_tidy_rel %>%  
+                                              filter((TypeOfContact %in% c("School"))) %>% #Need to replace "Work" by "Leisure" if one is interested in leisure contacts instead
+                                              filter(WhoseContacts == "Household Members") %>% filter(!is.na(value)) %>%
+                                              filter(value > -150) %>% filter(value < 100) %>%  
+                                              filter(!is.na(TypeOfContact))) +
+  sm_raincloud(mapping=aes(x=time, y=value, fill = time, color = time), 
+               point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
+                 nudge.x = -0.1,
+                 jitter.width = 0.1, jitter.height = 0.01      
+               )), 
+               boxplot.params =  list(alpha = 0.0, width = 0.0), 
+               violin.params = list(width = 1),
+               shape = 21, sep_level = 2)  +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
+  scale_color_manual(values = palette2()) +
+  scale_fill_manual(values = palette()) +
+  facet_grid(~(TypeOfContact)) +
   theme_minimal() +
-  ylab("Reported # Of Contacts") +
-  theme(text = element_text(size = 22)) +
-  theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
-  theme(panel.spacing = unit(0.8, "cm", data = NULL))
-  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  xlab("") +
+  theme(panel.spacing = unit(1, "lines")) +
+  #ylab("") +
+  ylab("Change of No. of\nContacts (percent)") +
+  my_theme()
 
-ggsave("CollectionBoxplotsChildren.pdf", dpi = 500, w = 8.5, h = 12)
-ggsave("CollectionBoxplotsChildren.png", dpi = 500, w = 8.5, h = 12)
-
-
-ggplot(data_reduced %>% filter(WhoseContacts == "Household Member") %>% filter(value < 100) %>% filter(!is.na(TypeOfContact)), aes(time, value)) +
-  #geom_violin(aes(color = WhoseContacts), width = 1, trim = FALSE, position=position_dodge(0.9)) + 
-  #geom_boxplot(aes(color = WhoseContacts), width = 0.1, position = position_dodge(0.9)) +
-  geom_boxplot(color = "#FFBC42", size = 1.3) +
-  #scale_color_manual(values = palette()) +
-  facet_grid(rows = vars(TypeOfContact), cols= vars(time)) +
-  theme_minimal() +
-  ylab("Reported # Of Contacts") +
-  theme(text = element_text(size = 22)) +
-  theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
-  theme(panel.spacing = unit(0.8, "cm", data = NULL))
-  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-ggsave("CollectionBoxplotsChildrenRelative.pdf", dpi = 500, w = 8.5, h = 12)
-ggsave("CollectionBoxplotsChildrenRelative.png", dpi = 500, w = 8.5, h = 12)
-
+ggsave("CollectionViolinplots_RemaininSchool.pdf", pandemic_contacts_relative_school, dpi = 500, w = 24, h = 9)
+ggsave("CollectionViolinplots_RemaininSchool.png", pandemic_contacts_relative_school, dpi = 500, w = 24, h = 9)
