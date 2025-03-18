@@ -76,7 +76,7 @@ p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Responde
         jitter.width = 0.1, jitter.height = 0.01      
       )), 
     boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
-              violin.params = list(width = 2, scale = "count"),
+              violin.params = list(width = 1, scale = "area"),
               shape = 21, sep_level = 2)  +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
@@ -88,13 +88,12 @@ p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Responde
   ylab("Change of No. of \n Contacts (in percent)") +
   my_theme() +
   theme(axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
-  theme(axis.ticks.x = element_line(size = 0)) +
+  #theme(axis.ticks.x = element_line(size = 0)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   scale_x_discrete(
     breaks = combined_levels[unique_positions],  # Only put breaks at selected positions
     labels = unique_A_values                     # Use corresponding unique A values as labels
   )
-
 ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
 ggsave("CollectionViolinplots_AttCarefulnessScore.pdf",  dpi = 500, w = 24, h = 9)

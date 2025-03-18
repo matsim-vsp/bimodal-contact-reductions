@@ -8,7 +8,7 @@ library(ggiraphExtra)
 # Aim of this script:
 # Clean and prepare data for contact analysis
  
-raw_data <- readRDS(file = "/Users/sydney/Desktop/TwitterLimeSurvey/data/cleaned_data.rds") #Place to enter the data's path
+raw_data <- readRDS(file = "/Users/sydney/git/twitter-study/data/cleaned_data.rds") #Place to enter the data's path
 
 # Reducing data frame to the variables of interest ------------------------
 
@@ -148,14 +148,13 @@ data_reduced <- data_reduced %>% mutate(cc_during_all_2019 = cc_during_hsld_size
   mutate(cc_during_all_01_2023 = cc_during_hsld_size_01_2023 + cc_during_school_01_2023 + cc_during_work_01_2023 + cc_during_leisure_01_2023)
 
 ##Adding age brackets
-data_reduced <- data_reduced %>% mutate(age_bracket = case_when(year_of_birth <= 1953 ~ "70+",
-                                                                year_of_birth <= 1963 ~ "60-70",
-                                                                year_of_birth <= 1973 ~ "50-60",
-                                                                year_of_birth <= 1983 ~ "40-50",
-                                                                year_of_birth <= 1993 ~ "30-40",
-                                                                year_of_birth <= 2005 ~ "18-30"))
+data_reduced <- data_reduced %>% mutate(age_bracket = case_when(year_of_birth <= 1963 ~ "60+",
+                                                                year_of_birth <= 1973 ~ "40-59",
+                                                                year_of_birth <= 1983 ~ "40-59",
+                                                                year_of_birth <= 1993 ~ "18-39",
+                                                                year_of_birth <= 2005 ~ "18-39"))
 
-data_reduced$age_bracket <- factor(data_reduced$age_bracket, levels = c("18-30", "30-40", "40-50", "50-60", "60-70", "70+"))                                                             
+data_reduced$age_bracket <- factor(data_reduced$age_bracket, levels = c("18-39", "40-59", "60+"))                                                             
 
 #Data Prep Carefulness of Respondents
 
@@ -467,11 +466,11 @@ data_reduced <- data_reduced %>% mutate(cc_during_work_ln_2019_2020 = log(cc_dur
 
 ## Turning data into tidy format (absolute no of contacts)
 
-data_reduced_tidy <- data_reduced %>% select(-c(respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
+data_reduced_tidy <- data_reduced %>% #select(-c(respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
                                       select(-contains("rel")) %>% 
                                       select(-contains("c19_vaccination"))
 
-data_reduced_tidy <- data_reduced_tidy %>% pivot_longer(cols = 49:112)
+data_reduced_tidy <- data_reduced_tidy %>% pivot_longer(cols = 51:114)
 
 data_reduced_tidy <- data_reduced_tidy  %>% mutate(time = case_when(str_detect(name, "2019") ~ "2019",
                                                           str_detect(name, "2020") ~ "03/2020",
@@ -480,7 +479,7 @@ data_reduced_tidy <- data_reduced_tidy  %>% mutate(time = case_when(str_detect(n
                                   mutate(WhoseContacts = case_when(str_detect(name, "respondent") ~ "Respondent",
                                   str_detect(name, "cc_pre") ~ "Closest Contact (Pre-Covid)",
                                   str_detect(name, "cc_during") ~ "Closest Contact (During-Covid)",
-                                  str_detect(name, "hhmember") ~ "Household Member")) %>%
+                                  str_detect(name, "hhmember") ~ "Household Members")) %>%
                                   mutate(TypeOfContact = case_when(str_detect(name, "work") ~ "Work",
                                   str_detect(name, "school") ~ "School",
                                   str_detect(name, "leisure") ~ "Leisure",
@@ -488,13 +487,13 @@ data_reduced_tidy <- data_reduced_tidy  %>% mutate(time = case_when(str_detect(n
 
 data_reduced_tidy$time <- factor(data_reduced_tidy$time, levels = c("2019", "03/2020", "Summer 2021", "01/2023"))
 data_reduced_tidy$TypeOfContact <- factor(data_reduced_tidy$TypeOfContact, levels = c("Work", "Leisure", "School", "All"))
-data_reduced_tidy$WhoseContacts <- factor(data_reduced_tidy$WhoseContacts, levels = c("Respondent", "Household Member", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
+data_reduced_tidy$WhoseContacts <- factor(data_reduced_tidy$WhoseContacts, levels = c("Respondent", "Household Members", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
 
 ## Turning data into tidy format (relative no of contacts)
 
-data_reduced_tidy_rel <- data_reduced %>% select(contains(c("date_f1_inf", "date_s2_inf", "date_t3_inf", "num_c19_infs", "respondent_cc_change", "year", "gender", "age_bracket", "cond", "attitude", "beh_change", "rel", "RiskyCarefulAtt")))
+data_reduced_tidy_rel <- data_reduced %>% select(contains(c("date_f1_inf", "date_s2_inf", "date_t3_inf", "num_c19_infs", "respondent_hsld_size_persons_under_14", "number_of_children_under_18", "respondent_cc_change", "year", "gender", "age_bracket", "cond", "attitude", "beh_change", "rel", "RiskyCarefulAtt")))
 
-data_reduced_tidy_rel <- data_reduced_tidy_rel %>% pivot_longer(cols = 64:111)
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% pivot_longer(cols = 67:114)
 
 data_reduced_tidy_rel <- data_reduced_tidy_rel  %>% mutate(time = case_when(
                                                           str_detect(name, "_rel_2019_2020") ~ "03/2020",
@@ -503,7 +502,7 @@ data_reduced_tidy_rel <- data_reduced_tidy_rel  %>% mutate(time = case_when(
                                   mutate(WhoseContacts = case_when(str_detect(name, "respondent") ~ "Respondent",
                                   str_detect(name, "cc_pre") ~ "Closest Contact (Pre-Covid)",
                                   str_detect(name, "cc_during") ~ "Closest Contact (During-Covid)",
-                                  str_detect(name, "hhmember") ~ "Household Member")) %>%
+                                  str_detect(name, "hhmember") ~ "Household Members")) %>%
                                   mutate(TypeOfContact = case_when(str_detect(name, "work") ~ "Work",
                                   str_detect(name, "school") ~ "School",
                                   str_detect(name, "leisure") ~ "Leisure",
@@ -511,7 +510,7 @@ data_reduced_tidy_rel <- data_reduced_tidy_rel  %>% mutate(time = case_when(
 
 data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("2019", "03/2020", "Summer 2021", "01/2023"))
 data_reduced_tidy_rel$TypeOfContact <- factor(data_reduced_tidy_rel$TypeOfContact, levels = c("Work", "Leisure", "School", "All"))
-data_reduced_tidy_rel$WhoseContacts <- factor(data_reduced_tidy_rel$WhoseContacts, levels = c("Respondent", "Household Member", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
+data_reduced_tidy_rel$WhoseContacts <- factor(data_reduced_tidy_rel$WhoseContacts, levels = c("Respondent", "Household Members", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
 
 data_reduced_tidy_rel$value[is.nan(data_reduced_tidy_rel$value)] <- -1000
 data_reduced_tidy_rel$value[is.na(data_reduced_tidy_rel$value)] <- -1000
@@ -549,7 +548,7 @@ data_reduced_tidy_ln <- data_reduced_tidy_ln  %>% mutate(time = case_when(
                                   mutate(WhoseContacts = case_when(str_detect(name, "respondent") ~ "Respondent",
                                   str_detect(name, "cc_pre") ~ "Closest Contact (Pre-Covid)",
                                   str_detect(name, "cc_during") ~ "Closest Contact (During-Covid)",
-                                  str_detect(name, "hhmember") ~ "Household Member")) %>%
+                                  str_detect(name, "hhmember") ~ "Household Members")) %>%
                                   mutate(TypeOfContact = case_when(str_detect(name, "work") ~ "Work",
                                   str_detect(name, "school") ~ "School",
                                   str_detect(name, "leisure") ~ "Leisure",
@@ -557,7 +556,7 @@ data_reduced_tidy_ln <- data_reduced_tidy_ln  %>% mutate(time = case_when(
 
 data_reduced_tidy_ln$time <- factor(data_reduced_tidy_ln$time, levels = c("2019", "03/2020", "Summer 2021", "01/2023"))
 data_reduced_tidy_ln$TypeOfContact <- factor(data_reduced_tidy_ln$TypeOfContact, levels = c("Work", "Leisure", "School", "All"))
-data_reduced_tidy_ln$WhoseContacts <- factor(data_reduced_tidy_ln$WhoseContacts, levels = c("Respondent", "Household Member", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
+data_reduced_tidy_ln$WhoseContacts <- factor(data_reduced_tidy_ln$WhoseContacts, levels = c("Respondent", "Household Members", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
 
 data_reduced_tidy_ln$value[is.nan(data_reduced_tidy_ln$value)] <- -1000
 data_reduced_tidy_ln$value[is.na(data_reduced_tidy_ln$value)] <- -1000

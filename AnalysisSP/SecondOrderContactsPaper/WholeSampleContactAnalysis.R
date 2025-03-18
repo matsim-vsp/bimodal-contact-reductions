@@ -126,7 +126,7 @@ pandemic_contacts_relative_leisure_hh <- ggplot(data_reduced_tidy_rel %>%
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
   #facet_grid(~(time), switch="both")+
-  ggtitle("Work") +
+  ggtitle("Leisure") +
   theme_minimal() +
   theme(panel.spacing = unit(4, "lines")) +
   ylab("Change of No. of \n Contacts (in percent)") +

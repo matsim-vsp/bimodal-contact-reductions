@@ -100,9 +100,9 @@ no_infections <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To An
   ggplot(aes(num_c19_infs_eng, percent, fill = gender)) +
   #geom_col(position = position_dodge(preserve = 'single')) +
   geom_bar(stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = gender), position = position_dodge(0.8), width = 0.5, size=1.3) +
+  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = gender), position = position_dodge(0.8), width = 0.4, size=1.3) +
   theme_minimal() +
-  ylab("Share of Respondents\n(in percent)") +
+  ylab("Share (in percent)") +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
   xlab("Number of Infections") +
   theme(text = element_text(size = 30)) +
@@ -150,5 +150,5 @@ my_theme()
 
 ggarrange(no_infections, ecdf, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("NoInfectionsECDF_Gender.pdf", dpi = 500, w = 22, h = 9) 
-ggsave("NoInfectionsECDF_Gender.png", dpi = 500, w = 22, h = 9) 
+ggsave("NoInfectionsECDF_Gender.pdf", dpi = 500, w = 22, h = 12) 
+ggsave("NoInfectionsECDF_Gender.png", dpi = 500, w = 22, h = 12) 
