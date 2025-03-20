@@ -96,8 +96,11 @@ p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Responde
   )
 ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("CollectionViolinplots_AttCarefulnessScore.pdf",  dpi = 500, w = 24, h = 9)
+ggsave("CollectionViolinplots_AttCarefulnessScoreLeisure.pdf",  p1_leisure, dpi = 500, w = 12, h = 9)
 ggsave("CollectionViolinplots_AttCarefulnessScore.png", dpi = 500, w = 24, h = 9)
+
+
+# Pre-Pandemic Contacts ---------------------------------------------------
 
 data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(RiskyCarefulAtt)) %>% 
@@ -221,132 +224,7 @@ ggsave("WorkvsLeisureViolin_AttitudeScore2019.pdf", dpi = 500, w = 21.5, h = 12.
 ggsave("WorkvsLeisureViolin_AttitudeScore2019.png", dpi = 500, w = 21.5, h = 12.25) 
 
 
-## 2019 Contacts vs Reduction [Percentage]
-
-timepointOfComparison <- c("respondent_work_rel_2019_2020", "respondent_work_rel_2019_2021", "respondent_work_rel_2019_2023",
-                          "respondent_leisure_rel_2019_2020", "respondent_leisure_rel_2019_2021", "respondent_leisure_rel_2019_2023")
-
-for (timepoint in timepointOfComparison){
-
-  if (timepoint == "respondent_work_rel_2019_2020"){
-    context <- "Work"
-    time <- "2020"
-    context2019 <- "respondent_work_2019"
-  } else if (timepoint == "respondent_work_rel_2019_2021"){
-    context <- "Work"
-    time <- "2021"
-    context2019 <- "respondent_work_2019"
-  } else if (timepoint == "respondent_work_rel_2019_2023"){
-    context <- "Work"
-    time <- "2023"
-    context2019 <- "respondent_work_2019"
-  } else if(timepoint == "respondent_leisure_rel_2019_2020"){
-    context <- "Leisure"
-    time <- "2020"
-    context2019 <- "respondent_leisure_2019" 
-  } else if(timepoint == "respondent_leisure_rel_2019_2021"){
-    context <- "Leisure"
-    time <- "2021"
-    context2019 <- "respondent_leisure_2019"
-  } else if(timepoint == "respondent_leisure_rel_2019_2023"){
-    context <- "Leisure"
-    time <- "2023"
-    context2019 <- "respondent_leisure_2019"
-  }
-
-  ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>%
-          filter(!is.na(RiskyCarefulAtt)) %>%
-          filter(!!sym(context2019) < 100) %>%
-          filter(!!sym(context2019) > -10) %>%
-          filter(!!sym(timepoint) > -25) %>%
-          filter(!!sym(timepoint) < 150)) +
-  geom_jitter(aes(x=!!sym(context2019), y = !!sym(timepoint), color = RiskyCarefulAtt, size = RiskyCarefulAtt), alpha = 0.7) +
-  theme_minimal() + 
-  scale_x_continuous(breaks = c(0, 20, 40, 60, 80, 100), limits = c(-2, 100)) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0, 20, 40, 60, 80, 100), limits = c(-2, 100)) +
-  scale_color_manual(values = palette()) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
-  #scale_y_log10() +
-  #scale_x_log10() +
-  xlab(paste0("# ", context , "Contacts (2019)")) +
-  scale_size_manual(values=c(8,3)) +
-  ylab(paste0(time, " Reduction Of ", context, " Contacts [Percentage]")) +
-  theme(text = element_text(size = 30)) +
-  theme(axis.ticks.x = element_line(),
-          axis.ticks.y = element_line(),
-          axis.ticks.length = unit(5, "pt"))
-
-  ggsave(paste0(context, "2019vsReduction", time, ".png"), dpi = 500, w = 12, h = 12)
-  ggsave(paste0(context, "2019vsReduction", time, ".pdf"), dpi = 500, w = 12, h = 12)
-}
-
-#2019 Contacts vs Reduction [Absolute]
-
-data_reduced <- data_reduced %>% mutate(
-        respondent_work_absred_2019_2020 = respondent_work_2019 - respondent_work_03_2020,
-        respondent_work_absred_2019_2021 = respondent_work_2019 - respondent_work_summer_2021,
-        respondent_work_absred_2019_2023 = respondent_work_2019 - respondent_work_01_2023,
-        respondent_leisure_absred_2019_2020 = respondent_leisure_2019 - respondent_leisure_03_2020,
-        respondent_leisure_absred_2019_2021 = respondent_leisure_2019 - respondent_leisure_summer_2021,
-        respondent_leisure_absred_2019_2023 = respondent_leisure_2019 - respondent_leisure_01_2023
-)
-
-timepointOfComparison <- c("respondent_work_absred_2019_2020", "respondent_work_absred_2019_2021", "respondent_work_absred_2019_2023",
-                            "respondent_leisure_absred_2019_2020", "respondent_leisure_absred_2019_2021", "respondent_leisure_absred_2019_2023")
-
-for (timepoint in timepointOfComparison){
-
-  if (timepoint == "respondent_work_absred_2019_2020"){
-    context <- "Work"
-    time <- "2020"
-    context2019 <- "respondent_work_2019"
-  } else if (timepoint == "respondent_work_absred_2019_2021"){
-    context <- "Work"
-    time <- "2021"
-    context2019 <- "respondent_work_2019"
-  } else if (timepoint == "respondent_work_absred_2019_2023"){
-    context <- "Work"
-    time <- "2023"
-    context2019 <- "respondent_work_2019"
-  } else if(timepoint == "respondent_leisure_absred_2019_2020"){
-    context <- "Leisure"
-    time <- "2020"
-    context2019 <- "respondent_leisure_2019" 
-  } else if(timepoint == "respondent_leisure_absred_2019_2021"){
-    context <- "Leisure"
-    time <- "2021"
-    context2019 <- "respondent_leisure_2019"
-  } else if(timepoint == "respondent_leisure_absred_2019_2023"){
-    context <- "Leisure"
-    time <- "2023"
-    context2019 <- "respondent_leisure_2019"
-  }
-
-  ggplot(data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>%
-          filter(!is.na(RiskyCarefulAtt)) %>%
-          filter(!!sym(context2019) < 100) %>%
-          filter(!!sym(context2019) > -10) %>%
-          filter(!!sym(timepoint) > -25) %>%
-          filter(!!sym(timepoint) < 150)) +
-  geom_jitter(aes(x=!!sym(context2019), y = !!sym(timepoint), color = RiskyCarefulAtt, size = RiskyCarefulAtt), alpha = 0.7) +
-  theme_minimal() + 
-  scale_x_continuous(breaks = c(0, 20, 40, 60, 80, 100), limits = c(-2, 60)) +
-  scale_y_continuous(breaks = c(0, 20, 40, 60, 80, 100), limits = c(-2, 60)) +
-  scale_color_manual(values = palette()) +
-  theme(legend.position = "bottom", legend.title = element_blank()) +
-  #scale_y_log10() +
-  #scale_x_log10() +
-  xlab(paste0("# ", context , "Contacts (2019)")) +
-  scale_size_manual(values=c(8,3)) +
-  ylab(paste0(time, " Reduction Of ", context, " Contacts [Absolute]")) +
-  theme(text = element_text(size = 30)) +
-  theme(axis.ticks.x = element_line(),
-          axis.ticks.y = element_line(),
-          axis.ticks.length = unit(5, "pt"))
-
-  ggsave(paste0(context, "2019vsAbsReduction", time, ".png"), dpi = 500, w = 12, h = 12)
-  ggsave(paste0(context, "2019vsAbsReduction", time, ".pdf"), dpi = 500, w = 12, h = 12)
-}
+# ECDF --------------------------------------------------------------------
 
 data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
                                         .default = as.Date(as.character(date_f1_inf)))) %>%
@@ -385,12 +263,13 @@ ggsave("ECDF_AttCarefulnessScore.pdf", p2, dpi = 500, w = 9, h = 9)
 ggsave("ECDF_AttCarefulnessScore.png", p2, dpi = 500, w = 7.5, h = 8)
 
 
+# Number of Infections ----------------------------------------------------
+
 RemainingAnswers <- data.frame(matrix(nrow = 0, ncol = 4))
 colnames(RemainingAnswers) <- c("RiskyCarefulAtt", "num_c19_infs_eng", "n", "percent")
 RemainingAnswers[nrow(RemainingAnswers)+1, ] <- c("Risk-tolerant", "3+", 0, 0)
 RemainingAnswers$n <- as.integer(RemainingAnswers$n)
 RemainingAnswers$percent <- as.integer(RemainingAnswers$percent)
-
 
 p3 <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   filter(!is.na(RiskyCarefulAtt)) %>%
@@ -602,3 +481,11 @@ filter(behaviorChangeScore != "keine Angabe") %>%
 
 ggsave("WillingnessChangeCC_behScore.png", dpi = 500, w = 13, h =9)
 ggsave("WillingnessChangeCC_behScore.pdf", dpi = 500, w = 13, h =9)
+
+
+Work <- data_reduced_tidy_rel %>% filter(value > -1000) %>% 
+  filter(time == "03/2020") %>%
+  filter(WhoseContacts == "Respondent") %>%
+  filter(!is.na(value)) %>% 
+  filter(TypeOfContact == "Leisure") %>%
+  filter(value<100)
