@@ -126,6 +126,12 @@ ggarrange(prepandemic_contacts_absolute, leisurework_polymod, labels = c("A", "B
 ggsave("PrePandemicContacts_SurveyandPolymod.pdf", dpi = 500, w = 18, h = 9)
 ggsave("PrePandemicContacts_SurveyandPolymod.png", dpi = 500, w = 18, h = 9)
 
+##Arranging polymod and daily survey data 
+ggarrange(prepandemic_contacts_absolute_daily, leisurework_polymod, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37))
+ggsave("PrePandemicContacts_SurveyandPolymodDAILY.pdf", dpi = 500, w = 18, h = 9)
+ggsave("PrePandemicContacts_SurveyandPolymodDAILY.png", dpi = 500, w = 18, h = 9)
+
+
 # Home --------------------------------------------------------------------
 
 polymod_contacts_home <- polymod_contacts %>% filter(contacts.part_id %in% german_part_id)
