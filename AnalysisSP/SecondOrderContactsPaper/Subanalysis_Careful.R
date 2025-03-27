@@ -189,18 +189,16 @@ theme(text = element_text(size = 30))
 ggsave("WorkvsLeisureContacts_AttitudeScore.pdf", dpi = 500, w = 9, h = 9)
 ggsave("WorkvsLeisureContacts_AttitudeScore.png", dpi = 500, w = 9, h = 9)
 
-options(scipen = 999)
+palette <- function() {
+  c("#DC0000FF", "#3C5488FF")
+}
 
 
-risktolerant <- data_reduced %>% filter(RiskyCarefulAtt == "Risk-tolerant")
-cor(risktolerant$respondent_work_2019, risktolerant$respondent_leisure_2019)
-riskaverse <- data_reduced %>% filter(RiskyCarefulAtt == "Risk-averse")
-cor(riskaverse$respondent_work_2019, riskaverse$respondent_leisure_2019)
-
-p5 <- ggplot(data_reduced %>% mutate(respondent_work_2019 = case_when(respondent_work_2019 == 0 ~ 0.1,
-                                         .default = respondent_work_2019)) %>%
-                        mutate(respondent_leisure_2019 = case_when(respondent_leisure_2019 == 0 ~ 0.1,
-                                         .default = respondent_leisure_2019)) %>% 
+p5 <- ggplot(data_reduced %>% 
+               #mutate(respondent_work_2019 = case_when(respondent_work_2019 == 0 ~ 0.1,
+                #                         .default = respondent_work_2019)) %>%
+                 #       mutate(respondent_leisure_2019 = case_when(respondent_leisure_2019 == 0 ~ 0.1,
+                  #                       .default = respondent_leisure_2019)) %>% 
         filter(respondent_work_2019 > -1) %>% 
         filter(respondent_leisure_2019 > -1) %>%
         filter(respondent_work_2019 < 300) %>% filter(respondent_leisure_2019 < 500) %>%
@@ -213,18 +211,26 @@ scale_size_manual(values=c(7,3))+
 theme(legend.position = "bottom", legend.title = element_blank()) +
 scale_y_continuous(trans=scales::pseudo_log_trans(base = 10), breaks = c(0,1,3,10,30,100)) +
 scale_x_continuous(trans=scales::pseudo_log_trans(base = 10), breaks = c(0,1,3,10,30,100)) +
-xlab("Number of Work Contacts(2019)") +
-ylab("Number of Leisure Contacts (2019)") +
+xlab("Weekly Work Contacts(2019)") +
+ylab("Weekly Leisure Contacts (2019)") +
 my_theme() +
   theme(legend.position = "bottom", legend.title = element_blank())
 
-ggsave("WorkvsLeisureContacts_AttitudeScore.pdf", p5, dpi = 500, w = 9, h = 9)
-ggsave("WorkvsLeisureContacts_AttitudeScore.png", p5, dpi = 500, w = 9, h = 9)
+data_reduced_forCorrelation <- data_reduced %>% filter(respondent_work_2019 > -1) %>% 
+  filter(respondent_leisure_2019 > -1) %>%
+  filter(respondent_work_2019 < 300) %>% filter(respondent_leisure_2019 < 500) %>%
+  filter(!is.na(RiskyCarefulAtt)) %>%
+  filter(RiskyCarefulAtt == "Risk-tolerant")
 
-ggarrange(p4, p5, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 34), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
+cor(data_reduced_forCorrelation$respondent_leisure_2019, data_reduced_forCorrelation$respondent_work_2019)
 
-ggsave("WorkvsLeisureViolin_AttitudeScore2019.pdf", dpi = 500, w = 21.5, h = 12.25) 
-ggsave("WorkvsLeisureViolin_AttitudeScore2019.png", dpi = 500, w = 21.5, h = 12.25) 
+#ggsave("WorkvsLeisureContacts_AttitudeScore.pdf", p5, dpi = 500, w = 9, h = 9)
+#ggsave("WorkvsLeisureContacts_AttitudeScore.png", p5, dpi = 500, w = 9, h = 9)
+
+ggarrange(p4, p5, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 34), widths = c(1,1.1), common.legend = TRUE, legend = "bottom")
+
+ggsave("WorkvsLeisureViolin_AttitudeScore2019.pdf", dpi = 500, w = 21, h = 12) 
+ggsave("WorkvsLeisureViolin_AttitudeScore2019.png", dpi = 500, w = 21, h = 12) 
 
 
 # ECDF --------------------------------------------------------------------
