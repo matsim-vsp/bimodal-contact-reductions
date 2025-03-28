@@ -108,6 +108,9 @@ ggplot() +
 
 ggsave("ECDFLeisure.png", dpi = 500, w = 12, h = 6)
 
+
+# DIFFERENCES BETWEEN RISK-AVERSE AND RISK-TOLERANT PARTICIPANTS ----------
+
 # Work Risk-Averse vs Risk-Tolerant ---------------------------------------
 
 data_reducedWork <- data_reduced %>% filter(respondent_work_rel_2019_2020 < 150) %>%
@@ -219,3 +222,116 @@ for(context in contexts){
 ggarrange(work2020, work2021, work2023, leisure2020, leisure2021, leisure2023, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2,font.label = list(size = 37), common.legend=TRUE, legend = "bottom")
 ggsave("KolmogorovTestRiskPerc.pdf", dpi = 5, w = 24, h = 18)
 ggsave("KolmogorovTestRiskPerc.png", dpi = 5, w = 24, h = 18)
+
+# Difference Number of Infections -----------------------------------------
+
+data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "0",
+                                                                     num_c19_infs == "Einmal" ~ "1",
+                                                                     num_c19_infs == "Zweimal" ~ "2",
+                                                                     num_c19_infs == "Dreimal" ~ "3",
+                                                                     num_c19_infs == "Mehr als dreimal" ~ "3",
+                                                                     num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
+
+data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("0", "1", "2", "3", "I Don't Want To Answer"))
+
+data_reducedAverse <- data_reduced %>% filter(RiskyCarefulAtt == "Risk-averse") %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% mutate(num_c19_infs_eng = as.numeric(num_c19_infs_eng)-1)
+data_reducedTolerant <- data_reduced %>% filter(RiskyCarefulAtt == "Risk-tolerant") %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% mutate(num_c19_infs_eng = as.integer(num_c19_infs_eng)-1)
+ks.test(data_reducedAverse$num_c19_infs_eng, data_reducedTolerant$num_c19_infs_eng)
+
+ecdf_compTolerant <- data_reducedTolerant %>% count(num_c19_infs_eng) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
+  mutate(ecdf = cum/sum) %>%
+  mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(uci = case_when(uci > 1 ~ 1, .default = uci))
+
+ecdf_compAverse <- data_reducedAverse %>% count(num_c19_infs_eng) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
+  mutate(ecdf = cum/sum) %>%
+  mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(uci = case_when(uci > 1 ~ 1, .default = uci))
+
+ggplot() +
+  geom_ribbon(data = ecdf_compTolerant, aes(ymin = lci, ymax = uci, x = num_c19_infs_eng, fill = "Risk-Tolerant"), alpha = 0.3)+
+  geom_line(data = ecdf_compTolerant, aes(y=ecdf, x = num_c19_infs_eng, color = "Risk-Tolerant"), size = 1) +
+ geom_ribbon(data = ecdf_compAverse, aes(ymin = lci, ymax = uci, x = num_c19_infs_eng, fill = "Risk-Averse"), alpha = 0.3)+
+geom_line(data = ecdf_compAverse, aes(y=ecdf, x = num_c19_infs_eng, color = "Risk-Averse"), size = 1) +
+  xlab("Number of Infections") +
+  ylab("ECDF") +
+  xlim(0,4) +
+  my_theme()  +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values=c("Risk-Tolerant" = "#DC0000FF", "Risk-Averse" = "#3C5488FF")) +
+  scale_fill_manual(values=c("Risk-Tolerant" = "#DC0000FF", "Risk-Averse" = "#3C5488FF"),
+                    guide = "none")
+
+
+
+# Difference date of first infection --------------------------------------
+
+data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
+                                                                .default = as.Date(as.character(date_f1_inf)))) %>%
+  filter(date_f1_inf != as.Date("1922-03-01")) %>%
+  filter(date_f1_inf != as.Date("1965-06-12")) %>%
+  filter(date_f1_inf != as.Date("2000-12-13")) %>%
+  filter(date_f1_inf != as.Date("2019-12-21")) 
+
+ecdf_comp <- data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>% group_by(RiskyCarefulAtt) %>% 
+  count(date_f1_inf) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
+  mutate(ecdf = cum/sum) %>% 
+  mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(uci = case_when(uci > 1 ~ 1, .default = uci)) %>% ungroup()
+ecdf_comp$date_f1_inf <- as.numeric(as.Date(ecdf_comp$date_f1_inf))
+
+ecdf_compAverse <- ecdf_comp %>% filter(RiskyCarefulAtt == "Risk-averse")
+ecdf_compTolerant <- ecdf_comp %>% filter(RiskyCarefulAtt == "Risk-tolerant")
+
+ggplot() +
+  geom_ribbon(data = ecdf_compTolerant, aes(ymin = lci, ymax = uci, x = as.Date(date_f1_inf), fill = "Risk-Tolerant"), alpha = 0.3)+
+  geom_line(data = ecdf_compTolerant, aes(y=ecdf, x = as.Date(date_f1_inf), color = "Risk-Tolerant"), size = 1) +
+  geom_ribbon(data = ecdf_compAverse, aes(ymin = lci, ymax = uci, x = as.Date(date_f1_inf), fill = "Risk-Averse"), alpha = 0.3)+
+  geom_line(data = ecdf_compAverse, aes(y=ecdf, x = as.Date(date_f1_inf), color = "Risk-Averse"), size = 1) +
+  xlab("Number of Infections") +
+  ylab("ECDF") +
+  #xlim(0,4) +
+  my_theme()  +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values=c("Risk-Tolerant" = "#DC0000FF", "Risk-Averse" = "#3C5488FF")) +
+  scale_fill_manual(values=c("Risk-Tolerant" = "#DC0000FF", "Risk-Averse" = "#3C5488FF"),
+                    guide = "none")
+
+ks.test(ecdf_compAverse$date_f1_inf, ecdf_compTolerant$date_f1_inf)
+
+# DIFFERENCES BETWEEN DIFFERENT AGE GROUPS ----------
+
+
+# DIFFERENCES BETWEEN GENDERS ----------
+
+#Work
+
+data_reducedWorkFemale <- data_reducedWork %>% filter(gender == "Weiblich")
+data_reducedWorkMale <- data_reducedWork %>% filter(gender == "Männlich")
+
+ks.test(data_reducedWorkMale$respondent_work_rel_2019_2020, data_reducedWorkFemale$respondent_work_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedWorkMale$respondent_work_rel_2019_2021, data_reducedWorkFemale$respondent_work_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedWorkMale$respondent_work_rel_2019_2023, data_reducedWorkFemale$respondent_work_rel_2019_2023)
+
+#Leisure
+
+data_reducedLeisureFemale <- data_reducedLeisure %>% filter(gender == "Weiblich")
+data_reducedLeisureMale <- data_reducedLeisure %>% filter(gender == "Männlich")
+
+ks.test(data_reducedLeisureMale$respondent_leisure_rel_2019_2020, data_reducedLeisureFemale$respondent_leisure_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedLeisureMale$respondent_leisure_rel_2019_2021, data_reducedLeisureFemale$respondent_leisure_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedLeisureMale$respondent_leisure_rel_2019_2023, data_reducedLeisureFemale$respondent_leisure_rel_2019_2023)
