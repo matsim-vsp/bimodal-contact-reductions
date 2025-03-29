@@ -294,9 +294,9 @@ ggplot() +
   geom_line(data = ecdf_compTolerant, aes(y=ecdf, x = as.Date(date_f1_inf), color = "Risk-Tolerant"), size = 1) +
   geom_ribbon(data = ecdf_compAverse, aes(ymin = lci, ymax = uci, x = as.Date(date_f1_inf), fill = "Risk-Averse"), alpha = 0.3)+
   geom_line(data = ecdf_compAverse, aes(y=ecdf, x = as.Date(date_f1_inf), color = "Risk-Averse"), size = 1) +
-  xlab("Number of Infections") +
+  xlab("Timing of First Infection") +
   ylab("ECDF") +
-  #xlim(0,4) +
+  xlim(as.Date(18322),as.Date(19539)) +
   my_theme()  +
   theme(legend.position = "bottom") +
   scale_color_manual(values=c("Risk-Tolerant" = "#DC0000FF", "Risk-Averse" = "#3C5488FF")) +
@@ -306,6 +306,48 @@ ggplot() +
 ks.test(ecdf_compAverse$date_f1_inf, ecdf_compTolerant$date_f1_inf)
 
 # DIFFERENCES BETWEEN DIFFERENT AGE GROUPS ----------
+
+data_reducedWork1839<- data_reducedWork %>% filter(age_bracket == "18-39")
+data_reducedWork4059 <- data_reducedWork %>% filter(age_bracket == "40-59")
+data_reducedWork60 <- data_reducedWork %>% filter(age_bracket == "60+")
+
+#Work
+
+#03/2020
+ks.test(data_reducedWork1839$respondent_work_rel_2019_2020, data_reducedWork4059$respondent_work_rel_2019_2020)
+ks.test(data_reducedWork1839$respondent_work_rel_2019_2020, data_reducedWork60$respondent_work_rel_2019_2020)
+ks.test(data_reducedWork60$respondent_work_rel_2019_2020, data_reducedWork4059$respondent_work_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedWork1839$respondent_work_rel_2019_2021, data_reducedWork4059$respondent_work_rel_2019_2021)
+ks.test(data_reducedWork1839$respondent_work_rel_2019_2021, data_reducedWork60$respondent_work_rel_2019_2021)
+ks.test(data_reducedWork60$respondent_work_rel_2019_2021, data_reducedWork4059$respondent_work_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedWork1839$respondent_work_rel_2019_2023, data_reducedWork4059$respondent_work_rel_2019_2023)
+ks.test(data_reducedWork1839$respondent_work_rel_2019_2023, data_reducedWork60$respondent_work_rel_2019_2023)
+ks.test(data_reducedWork60$respondent_work_rel_2019_2023, data_reducedWork4059$respondent_work_rel_2019_2023)
+
+#Leisure
+data_reducedLeisure1839<- data_reducedLeisure %>% filter(age_bracket == "18-39")
+data_reducedLeisure4059 <- data_reducedLeisure %>% filter(age_bracket == "40-59")
+data_reducedLeisure60 <- data_reducedLeisure %>% filter(age_bracket == "60+")
+
+
+#03/2020
+ks.test(data_reducedLeisure1839$respondent_leisure_rel_2019_2020, data_reducedLeisure4059$respondent_leisure_rel_2019_2020)
+ks.test(data_reducedLeisure1839$respondent_leisure_rel_2019_2020, data_reducedLeisure60$respondent_leisure_rel_2019_2020)
+ks.test(data_reducedLeisure60$respondent_leisure_rel_2019_2020, data_reducedLeisure4059$respondent_leisure_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedLeisure1839$respondent_leisure_rel_2019_2021, data_reducedLeisure4059$respondent_leisure_rel_2019_2021)
+ks.test(data_reducedLeisure1839$respondent_leisure_rel_2019_2021, data_reducedLeisure60$respondent_leisure_rel_2019_2021)
+ks.test(data_reducedLeisure60$respondent_leisure_rel_2019_2021, data_reducedLeisure4059$respondent_leisure_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedLeisure1839$respondent_leisure_rel_2019_2023, data_reducedLeisure4059$respondent_leisure_rel_2019_2023)
+ks.test(data_reducedLeisure1839$respondent_leisure_rel_2019_2023, data_reducedLeisure60$respondent_leisure_rel_2019_2023)
+ks.test(data_reducedLeisure60$respondent_leisure_rel_2019_2023, data_reducedLeisure4059$respondent_leisure_rel_2019_2023)
 
 
 # DIFFERENCES BETWEEN GENDERS ----------
@@ -335,3 +377,83 @@ ks.test(data_reducedLeisureMale$respondent_leisure_rel_2019_2021, data_reducedLe
 
 #01/2023
 ks.test(data_reducedLeisureMale$respondent_leisure_rel_2019_2023, data_reducedLeisureFemale$respondent_leisure_rel_2019_2023)
+
+# Difference Number of Infections -----------------------------------------
+
+data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "0",
+                                                                     num_c19_infs == "Einmal" ~ "1",
+                                                                     num_c19_infs == "Zweimal" ~ "2",
+                                                                     num_c19_infs == "Dreimal" ~ "3",
+                                                                     num_c19_infs == "Mehr als dreimal" ~ "3",
+                                                                     num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
+
+data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("0", "1", "2", "3", "I Don't Want To Answer"))
+
+data_reducedFemale <- data_reduced %>% filter(gender == "female") %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% mutate(num_c19_infs_eng = as.numeric(num_c19_infs_eng)-1)
+data_reducedMale <- data_reduced %>% filter(gender == "male") %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% mutate(num_c19_infs_eng = as.integer(num_c19_infs_eng)-1)
+ks.test(data_reducedFemale$num_c19_infs_eng, data_reducedMale$num_c19_infs_eng)
+
+ecdf_compFemale <- data_reducedFemale %>% count(num_c19_infs_eng) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
+  mutate(ecdf = cum/sum) %>%
+  mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(uci = case_when(uci > 1 ~ 1, .default = uci))
+
+ecdf_compMale <- data_reducedMale %>% count(num_c19_infs_eng) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
+  mutate(ecdf = cum/sum) %>%
+  mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(uci = case_when(uci > 1 ~ 1, .default = uci))
+
+ggplot() +
+  geom_ribbon(data = ecdf_compFemale, aes(ymin = lci, ymax = uci, x = num_c19_infs_eng, fill = "Female"), alpha = 0.3)+
+  geom_line(data = ecdf_compFemale, aes(y=ecdf, x = num_c19_infs_eng, color = "Female"), size = 1) +
+  geom_ribbon(data = ecdf_compMale, aes(ymin = lci, ymax = uci, x = num_c19_infs_eng, fill = "Male"), alpha = 0.3)+
+  geom_line(data = ecdf_compMale, aes(y=ecdf, x = num_c19_infs_eng, color = "Male"), size = 1) +
+  xlab("Number of Infections") +
+  ylab("ECDF") +
+  xlim(0,4) +
+  my_theme()  +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values=c("Male" = "#DC0000FF", "Female" = "#3C5488FF")) +
+  scale_fill_manual(values=c("Male" = "#DC0000FF", "Female" = "#3C5488FF"),
+                    guide = "none")
+
+# Difference date of first infection --------------------------------------
+
+data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
+                                                                .default = as.Date(as.character(date_f1_inf)))) %>%
+  filter(date_f1_inf != as.Date("1922-03-01")) %>%
+  filter(date_f1_inf != as.Date("1965-06-12")) %>%
+  filter(date_f1_inf != as.Date("2000-12-13")) %>%
+  filter(date_f1_inf != as.Date("2019-12-21")) 
+
+ecdf_comp <- data_reduced %>% filter(!is.na(gender)) %>% group_by(gender) %>% 
+  count(date_f1_inf) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
+  mutate(ecdf = cum/sum) %>% 
+  mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(uci = case_when(uci > 1 ~ 1, .default = uci)) %>% ungroup()
+ecdf_comp$date_f1_inf <- as.numeric(as.Date(ecdf_comp$date_f1_inf))
+
+ecdf_compFemale <- ecdf_comp %>% filter(gender == "female")
+ecdf_compMale <- ecdf_comp %>% filter(gender == "male")
+
+ggplot() +
+  geom_ribbon(data = ecdf_compFemale, aes(ymin = lci, ymax = uci, x = as.Date(date_f1_inf), fill = "Female"), alpha = 0.3)+
+  geom_line(data = ecdf_compFemale, aes(y=ecdf, x = as.Date(date_f1_inf), color = "Female"), size = 1) +
+  geom_ribbon(data = ecdf_compMale, aes(ymin = lci, ymax = uci, x = as.Date(date_f1_inf), fill = "Male"), alpha = 0.3)+
+  geom_line(data = ecdf_compMale, aes(y=ecdf, x = as.Date(date_f1_inf), color = "Male"), size = 1) +
+  xlab("Timing of First Infection") +
+  ylab("ECDF") +
+  xlim(as.Date(18322),as.Date(19539)) +
+  my_theme()  +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values=c("Male" = "#DC0000FF", "Female" = "#3C5488FF")) +
+  scale_fill_manual(values=c("Male" = "#DC0000FF", "Female" = "#3C5488FF"),
+                    guide = "none")
+
+ks.test(ecdf_compFemale$date_f1_inf, ecdf_compMale$date_f1_inf)
