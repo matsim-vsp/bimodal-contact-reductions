@@ -108,7 +108,6 @@ ggplot() +
 
 ggsave("ECDFLeisure.png", dpi = 500, w = 12, h = 6)
 
-
 # DIFFERENCES BETWEEN RISK-AVERSE AND RISK-TOLERANT PARTICIPANTS ----------
 
 # Work Risk-Averse vs Risk-Tolerant ---------------------------------------
@@ -302,6 +301,59 @@ ggplot() +
                     guide = "none")
 
 ks.test(ecdf_compAverse$date_f1_inf, ecdf_compTolerant$date_f1_inf)
+
+
+# DIFFERENCE PARTICIPANTS, HH MEMBERS AND CC ------------------------------
+
+#Work
+data_reducedWork <- data_reduced %>% filter(respondent_work_rel_2019_2020 < 150) %>%
+  filter(respondent_work_rel_2019_2021 < 150) %>%
+  filter(respondent_work_rel_2019_2023 < 150)
+
+data_reducedWorkHH <- data_reduced %>% filter(hhmember_work_rel_2019_2020 < 150) %>%
+  filter(hhmember_work_rel_2019_2021 < 150) %>%
+  filter(hhmember_work_rel_2019_2023 < 150)
+
+data_reducedWorkCC <- data_reduced %>% filter(cc_pre_work_rel_2019_2020 < 150) %>%
+  filter(cc_pre_work_rel_2019_2021 < 150) %>%
+  filter(cc_pre_work_rel_2019_2023 < 150)
+
+#03/2020
+ks.test(data_reducedWork$respondent_work_rel_2019_2020, data_reducedWorkHH$hhmember_work_rel_2019_2020)
+ks.test(data_reducedWork$respondent_work_rel_2019_2020, data_reducedWorkCC$cc_pre_work_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedWork$respondent_work_rel_2019_2021, data_reducedWorkHH$hhmember_work_rel_2019_2021)
+ks.test(data_reducedWork$respondent_work_rel_2019_2021, data_reducedWorkCC$cc_pre_work_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedWork$respondent_work_rel_2019_2023, data_reducedWorkHH$hhmember_work_rel_2019_2023)
+ks.test(data_reducedWork$respondent_work_rel_2019_2023, data_reducedWorkCC$cc_pre_work_rel_2019_2023)
+
+#Leisure
+data_reducedLeisure <- data_reduced %>% filter(respondent_leisure_rel_2019_2020 < 150) %>%
+  filter(respondent_leisure_rel_2019_2021 < 150) %>%
+  filter(respondent_leisure_rel_2019_2023 < 150)
+
+data_reducedLeisureHH <- data_reduced %>% filter(hhmember_leisure_rel_2019_2020 < 150) %>%
+  filter(hhmember_leisure_rel_2019_2021 < 150) %>%
+  filter(hhmember_leisure_rel_2019_2023 < 150)
+
+data_reducedLeisureCC <- data_reduced %>% filter(cc_pre_leisure_rel_2019_2020 < 150) %>%
+  filter(cc_pre_leisure_rel_2019_2021 < 150) %>%
+  filter(cc_pre_leisure_rel_2019_2023 < 150)
+
+#03/2020
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2020, data_reducedLeisureHH$hhmember_leisure_rel_2019_2020)
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2020, data_reducedLeisureCC$cc_pre_leisure_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2021, data_reducedLeisureHH$hhmember_leisure_rel_2019_2021)
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2021, data_reducedLeisureCC$cc_pre_leisure_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2023, data_reducedLeisureHH$hhmember_leisure_rel_2019_2023)
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2023, data_reducedLeisureCC$cc_pre_leisure_rel_2019_2023)
 
 # DIFFERENCES BETWEEN DIFFERENT AGE GROUPS ----------
 
