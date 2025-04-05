@@ -89,6 +89,14 @@ data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(cond_hbp  = case_when(
 data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(time = case_when(time == "Summer 2021" ~ "Summer\n2021", .default = time))
 data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("03/2020", "Summer\n2021", "01/2023"))
 
+# Mean Reduction ----------------------------------------------------------
+
+print(data_reduced_tidy_rel %>%  
+        filter(!is.na(value)) %>% 
+        filter(value > -150) %>% filter(value < 100) %>% filter(WhoseContacts == "Respondent") %>%
+        filter(!is.na(cond_none)) %>% group_by(TypeOfContact, cond_none, time) %>%
+        summarise(meanRed = mean(value)), n = 100)
+
 for (com in comorbidities){
   if (com != "cond_none") {
     my_comparisons <- list(c("Yes", "No"))
@@ -195,8 +203,8 @@ for (com in comorbidities){
       yes <- 33
       no <- 235
     }else if(com == "cond_none"){
-      yes <- 590
-      no <- 268
+      yes <- 593
+      no <- 269
     }
 
   data <- data.frame(matrix(nrow = 0, ncol = 4))
@@ -248,7 +256,7 @@ for (com in comorbidities){
     count(!!sym(com), num_c19_infs_eng) %>%
     mutate(percent = 100 * n / sum(n), .by = !!sym(com)) %>% rbind(data) %>%
     mutate(lci = case_when(!!sym(com) == "Yes" ~ n - 1.96*(n*(n-1)/yes)^0.5,
-                          !!sym(com) == "No" ~ n - 1.96*(n*(n-1)/no)^0.5,
+                           !!sym(com) == "No" ~ n - 1.96*(n*(n-1)/no)^0.5,
                           !!sym(com) == "No Comorbidities" ~ n - 1.96*(n*(n-1)/yes)^0.5,
                           !!sym(com) == "Some Comorbidity" ~ n - 1.96*(n*(n-1)/no)^0.5)) %>%#
     mutate(lci = case_when(!!sym(com) == "Yes" ~ 100/yes*lci,
