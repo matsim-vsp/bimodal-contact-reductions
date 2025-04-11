@@ -94,6 +94,16 @@ palette2 <- function() {
   c("#253353", "#c63e13", "#900000")
 }
 
+# Mean Reduction ----------------------------------------------------------
+
+print(data_reduced_tidy_rel %>%  
+        filter(!is.na(value)) %>% 
+        filter(value > -150) %>% filter(value < 100) %>% filter(WhoseContacts == "Respondent") %>%
+        filter(!is.na(gender)) %>% group_by(TypeOfContact, age_bracket, time) %>%
+        summarise(meanRed = mean(value)), n = 100)
+
+# Number of Infections ----------------------------------------------------
+
 p3 <- data_reduced %>% group_by(age_bracket)  %>%
   count(num_c19_infs_eng) %>% 
   filter(!is.na(age_bracket)) %>% 
@@ -101,18 +111,18 @@ p3 <- data_reduced %>% group_by(age_bracket)  %>%
   mutate(percent = 100 * n / sum(n)) %>%
   rbind(data) %>%
   mutate(lci = case_when(age_bracket == "18-39" ~ 155*(n/155 - 1.96*(((n/155*(1-n/155))/155)^0.5)),
-                          age_bracket == "40-59" ~ 569*(n/569 - 1.96*(((n/569*(1-n/569))/569)^0.5)),
-                          age_bracket == "60+" ~ 130*(n/130 - 1.96*(((n/130*(1-n/130))/130)^0.5)))) %>%#
+                          age_bracket == "40-59" ~ 566*(n/566 - 1.96*(((n/566*(1-n/566))/566)^0.5)),
+                          age_bracket == "60+" ~ 129*(n/129 - 1.96*(((n/129*(1-n/129))/129)^0.5)))) %>%#
   mutate(lci = case_when(age_bracket == "18-39" ~ 100/155*lci,
-                         age_bracket == "40-59" ~ 100/569*lci,
-                         age_bracket == "60+" ~ 100/130*lci)) %>%
+                         age_bracket == "40-59" ~ 100/566*lci,
+                         age_bracket == "60+" ~ 100/129*lci)) %>%
   mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
   mutate(uci = case_when(age_bracket == "18-39" ~ 155*(n/155 + 1.96*(((n/155*(1-n/155))/155)^0.5)),
-                          age_bracket == "40-59" ~ 569*(n/569 + 1.96*(((n/569*(1-n/569))/569)^0.5)),
-                          age_bracket == "60+" ~ 130*(n/130 + 1.96*(((n/130*(1-n/130))/130)^0.5)))) %>%
+                          age_bracket == "40-59" ~ 566*(n/566 + 1.96*(((n/566*(1-n/566))/566)^0.5)),
+                          age_bracket == "60+" ~ 130*(n/129 + 1.96*(((n/129*(1-n/129))/129)^0.5)))) %>%
   mutate(uci = case_when(age_bracket == "18-39" ~ 100/155*uci,
-                          age_bracket == "40-59" ~ 100/569*uci,
-                          age_bracket == "60+" ~ 100/130*uci)) %>%
+                          age_bracket == "40-59" ~ 100/566*uci,
+                          age_bracket == "60+" ~ 100/129*uci)) %>%
   ggplot(aes(num_c19_infs_eng, percent, fill = age_bracket)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.8) +
   scale_x_discrete(limits = c("0", "1", "2", "3+")) +
@@ -132,6 +142,9 @@ p3 <- data_reduced %>% group_by(age_bracket)  %>%
 
 ggsave("NoInfections_AgeBrackets.pdf", p3, dpi = 500, w = 9, h = 9)
 ggsave("NoInfections_AgeBrackets.png", p3, dpi = 500, w = 9, h = 9)
+
+
+# ECDF Timing of First Infection ------------------------------------------
 
 ecdf_comp <- data_reduced %>% filter(!is.na(age_bracket)) %>% group_by(age_bracket) %>% 
   count(date_f1_inf) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%

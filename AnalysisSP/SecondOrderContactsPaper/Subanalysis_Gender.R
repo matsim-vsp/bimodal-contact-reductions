@@ -66,6 +66,15 @@ ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.lab
 ggsave("CollectionViolinplots_Gender.pdf", dpi = 500, w = 24, h = 9)
 ggsave("CollectionViolinplots_Gender.png", dpi = 500, w = 24, h = 9)
 
+
+# Mean Reduction ----------------------------------------------------------
+
+print(data_reduced_tidy_rel %>%  
+        filter(!is.na(value)) %>% 
+        filter(value > -150) %>% filter(value < 100) %>% filter(WhoseContacts == "Respondent") %>%
+        filter(!is.na(gender)) %>% group_by(TypeOfContact, gender, time) %>%
+        summarise(meanRed = mean(value)), n = 100)
+
 # Number of Infections -------------------------------------------------------
 
 data_reduced <- data_reduced %>% mutate(gender = case_when(gender == "Weiblich" ~ "female",
@@ -86,16 +95,16 @@ data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = 
 
 no_infections <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   filter(!is.na(gender)) %>% filter(gender %in% c("male", "female")) %>%
-  count(gender, num_c19_infs_eng) %>%
+  count(gender,num_c19_infs_eng) %>%
   mutate(percent = 100 * n / sum(n), .by = gender) %>%
-  mutate(lci = case_when(gender == "male" ~ 386*(n/386 - 1.96*(((n/386*(1-n/386))/386)^0.5)),
+  mutate(lci = case_when(gender == "male" ~ 385*(n/385 - 1.96*(((n/385*(1-n/385))/385)^0.5)),
                           gender == "female" ~ 464*(n/464 - 1.96*(((n/464*(1-n/464))/464)^0.5)))) %>%#
-  mutate(lci = case_when(gender == "male" ~ 100/386*lci,
+  mutate(lci = case_when(gender == "male" ~ 100/385*lci,
                          gender == "female" ~ 100/464*lci)) %>%
   mutate(lci = case_when (lci < 0 ~ 0, .default = lci)) %>%
-  mutate(uci = case_when(gender == "male" ~ 386*(n/386 + 1.96*(((n/386*(1-n/386))/386)^0.5)),
+  mutate(uci = case_when(gender == "male" ~ 385*(n/385 + 1.96*(((n/385*(1-n/385))/385)^0.5)),
                           gender == "female" ~ 464*(n/464 + 1.96*(((n/464*(1-n/464))/464)^0.5)))) %>%
-  mutate(uci = case_when(gender == "male" ~ 100/386*uci,
+  mutate(uci = case_when(gender == "male" ~ 100/385*uci,
                           gender == "female" ~ 100/464*uci)) %>%
   ggplot(aes(num_c19_infs_eng, percent, fill = gender)) +
   #geom_col(position = position_dodge(preserve = 'single')) +
