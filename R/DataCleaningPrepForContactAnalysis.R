@@ -470,7 +470,7 @@ data_reduced_tidy <- data_reduced %>% #select(-c(respondent_hsld_size_persons_un
                                       select(-contains("rel")) %>% 
                                       select(-contains("c19_vaccination"))
 
-data_reduced_tidy <- data_reduced_tidy %>% pivot_longer(cols = 51:114)
+data_reduced_tidy <- data_reduced_tidy %>% pivot_longer(cols = 52:115)
 
 data_reduced_tidy <- data_reduced_tidy  %>% mutate(time = case_when(str_detect(name, "2019") ~ "2019",
                                                           str_detect(name, "2020") ~ "03/2020",
@@ -491,9 +491,11 @@ data_reduced_tidy$WhoseContacts <- factor(data_reduced_tidy$WhoseContacts, level
 
 ## Turning data into tidy format (relative no of contacts)
 
-data_reduced_tidy_rel <- data_reduced %>% select(contains(c("date_f1_inf", "date_s2_inf", "date_t3_inf", "num_c19_infs", "respondent_hsld_size_persons_under_14", "number_of_children_under_18", "respondent_cc_change", "year", "gender", "age_bracket", "cond", "attitude", "beh_change", "rel", "RiskyCarefulAtt")))
+data_reduced <- tibble::rowid_to_column(data_reduced, "ID")
 
-data_reduced_tidy_rel <- data_reduced_tidy_rel %>% pivot_longer(cols = 67:114)
+data_reduced_tidy_rel <- data_reduced %>% select(contains(c("ID", "ref", "date_f1_inf", "date_s2_inf", "date_t3_inf", "num_c19_infs", "respondent_hsld_size_persons_under_14", "number_of_children_under_18", "respondent_cc_change", "year", "gender", "age_bracket", "cond", "attitude", "beh_change", "rel", "RiskyCarefulAtt")))
+
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% pivot_longer(cols = 67:118)
 
 data_reduced_tidy_rel <- data_reduced_tidy_rel  %>% mutate(time = case_when(
                                                           str_detect(name, "_rel_2019_2020") ~ "03/2020",
@@ -611,4 +613,19 @@ data_reduced$respondent_all_rel_2019_2023[is.na(data_reduced$respondent_all_rel_
 data_reduced$cc_pre_work_rel_2019_2023[is.na(data_reduced$cc_pre_work_rel_2019_2023)] <- -1000
 data_reduced$cc_pre_leisure_rel_2019_2023[is.na(data_reduced$cc_pre_leisure_rel_2019_2023)] <- -1000
 data_reduced$cc_pre_all_rel_2019_2023[is.na(data_reduced$cc_pre_all_rel_2019_2023)] <- -1000
+
+
+# Group addition
+
+group_belonging <- read_csv("/Users/sydney/git/second-order-contacts/AnalysisSP/TrimodalGroups/GroupAssignment.csv")
+
+data_reduced_tidy_rel$value <- round(data_reduced_tidy_rel$value)
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% 
+  left_join(group_belonging, by = c("value", "time", "TypeOfContact")) %>% 
+  mutate(group = case_when(
+    runif(n()) < group_0 ~ 0,
+    runif(n()) < group_0 + group_1 ~ 1,
+    TRUE ~ 2
+  ))
+
 

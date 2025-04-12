@@ -1,11 +1,21 @@
 library(tidyverse)
 library(stats)
+library(coin)
+
+#The following script applies Kolmogorov-Smirnov-Tests and permutation tests to test for difference in distributions.
+#The script is split into the following sections:
+#1: Comparison of distribution of change of number of work/leisure contacts between different time points --> Applied to whole sample
+#2: For every time point: Difference in distributions between risk-averse and risk-tolerant individuals
+#3: For every time point: Difference in distribution between different age groups
+#4: For every time point: Difference in distribution between female and male participants
+#5: For every time point: Difference in distribution between participants with and without comorbidity
+#6: For every time point: Difference in distribution between a) participant and hh members and b) participant and closest contact (CC).
+
+# Author: S. Paltra, contact: paltra@tu-berlin.de
 
 here()
 source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
 source("./AnalysisSP/SecondOrderContactsPaper/mytheme.r")
-
-colnames(data_reduced)
 
 # Work --------------------------------------------------------------------
 
@@ -302,59 +312,6 @@ ggplot() +
 
 ks.test(ecdf_compAverse$date_f1_inf, ecdf_compTolerant$date_f1_inf)
 
-
-# DIFFERENCE PARTICIPANTS, HH MEMBERS AND CC ------------------------------
-
-#Work
-data_reducedWork <- data_reduced %>% filter(respondent_work_rel_2019_2020 < 150) %>%
-  filter(respondent_work_rel_2019_2021 < 150) %>%
-  filter(respondent_work_rel_2019_2023 < 150)
-
-data_reducedWorkHH <- data_reduced %>% filter(hhmember_work_rel_2019_2020 < 150) %>%
-  filter(hhmember_work_rel_2019_2021 < 150) %>%
-  filter(hhmember_work_rel_2019_2023 < 150)
-
-data_reducedWorkCC <- data_reduced %>% filter(cc_pre_work_rel_2019_2020 < 150) %>%
-  filter(cc_pre_work_rel_2019_2021 < 150) %>%
-  filter(cc_pre_work_rel_2019_2023 < 150)
-
-#03/2020
-ks.test(data_reducedWork$respondent_work_rel_2019_2020, data_reducedWorkHH$hhmember_work_rel_2019_2020)
-ks.test(data_reducedWork$respondent_work_rel_2019_2020, data_reducedWorkCC$cc_pre_work_rel_2019_2020)
-
-#Summer 2021
-ks.test(data_reducedWork$respondent_work_rel_2019_2021, data_reducedWorkHH$hhmember_work_rel_2019_2021)
-ks.test(data_reducedWork$respondent_work_rel_2019_2021, data_reducedWorkCC$cc_pre_work_rel_2019_2021)
-
-#01/2023
-ks.test(data_reducedWork$respondent_work_rel_2019_2023, data_reducedWorkHH$hhmember_work_rel_2019_2023)
-ks.test(data_reducedWork$respondent_work_rel_2019_2023, data_reducedWorkCC$cc_pre_work_rel_2019_2023)
-
-#Leisure
-data_reducedLeisure <- data_reduced %>% filter(respondent_leisure_rel_2019_2020 < 150) %>%
-  filter(respondent_leisure_rel_2019_2021 < 150) %>%
-  filter(respondent_leisure_rel_2019_2023 < 150)
-
-data_reducedLeisureHH <- data_reduced %>% filter(hhmember_leisure_rel_2019_2020 < 150) %>%
-  filter(hhmember_leisure_rel_2019_2021 < 150) %>%
-  filter(hhmember_leisure_rel_2019_2023 < 150)
-
-data_reducedLeisureCC <- data_reduced %>% filter(cc_pre_leisure_rel_2019_2020 < 150) %>%
-  filter(cc_pre_leisure_rel_2019_2021 < 150) %>%
-  filter(cc_pre_leisure_rel_2019_2023 < 150)
-
-#03/2020
-ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2020, data_reducedLeisureHH$hhmember_leisure_rel_2019_2020)
-ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2020, data_reducedLeisureCC$cc_pre_leisure_rel_2019_2020)
-
-#Summer 2021
-ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2021, data_reducedLeisureHH$hhmember_leisure_rel_2019_2021)
-ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2021, data_reducedLeisureCC$cc_pre_leisure_rel_2019_2021)
-
-#01/2023
-ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2023, data_reducedLeisureHH$hhmember_leisure_rel_2019_2023)
-ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2023, data_reducedLeisureCC$cc_pre_leisure_rel_2019_2023)
-
 # DIFFERENCES BETWEEN DIFFERENT AGE GROUPS ----------
 
 data_reducedWork1839<- data_reducedWork %>% filter(age_bracket == "18-39")
@@ -605,3 +562,163 @@ ggplot() +
                     guide = "none")
 
 ks.test(ecdf_compFemale$date_f1_inf, ecdf_compMale$date_f1_inf)
+
+# DIFFERENCES BETWEEN NO/SOME COMORBIDITY ----------
+
+#Work
+
+data_reducedWorkNone <- data_reducedWork %>% filter(cond_none == "Ja")
+data_reducedWorkSome <- data_reducedWork %>% filter(cond_none == "Nicht Gewählt")
+
+ks.test(data_reducedWorkNone$respondent_work_rel_2019_2020, data_reducedWorkSome$respondent_work_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedWorkNone$respondent_work_rel_2019_2021, data_reducedWorkSome$respondent_work_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedWorkNone$respondent_work_rel_2019_2023, data_reducedWorkSome$respondent_work_rel_2019_2023)
+
+#Leisure
+
+data_reducedLeisureNone <- data_reducedLeisure %>% filter(cond_none == "Ja")
+data_reducedLeisureSome <- data_reducedLeisure %>% filter(cond_none == "Nicht Gewählt")
+
+ks.test(data_reducedLeisureNone$respondent_leisure_rel_2019_2020, data_reducedLeisureSome$respondent_leisure_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedLeisureNone$respondent_leisure_rel_2019_2021, data_reducedLeisureSome$respondent_leisure_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedLeisureNone$respondent_leisure_rel_2019_2023, data_reducedLeisureSome$respondent_leisure_rel_2019_2023)
+
+# Difference Number of Infections -----------------------------------------
+
+data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_infs == "Nie" ~ "0",
+                                                                     num_c19_infs == "Einmal" ~ "1",
+                                                                     num_c19_infs == "Zweimal" ~ "2",
+                                                                     num_c19_infs == "Dreimal" ~ "3",
+                                                                     num_c19_infs == "Mehr als dreimal" ~ "3",
+                                                                     num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
+
+data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("0", "1", "2", "3", "I Don't Want To Answer"))
+
+data_reducedNone <- data_reduced %>% filter(cond_none == "No Comorbidities") %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% mutate(num_c19_infs_eng = as.numeric(num_c19_infs_eng)-1)
+data_reducedSome <- data_reduced %>% filter(cond_none == "Some Comorbidity") %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% mutate(num_c19_infs_eng = as.integer(num_c19_infs_eng)-1)
+ks.test(data_reducedNone$num_c19_infs_eng, data_reducedSome$num_c19_infs_eng)
+
+ecdf_compNone <- data_reducedNone %>% count(num_c19_infs_eng) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
+  mutate(ecdf = cum/sum) %>%
+  mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(uci = case_when(uci > 1 ~ 1, .default = uci))
+
+ecdf_compSome <- data_reducedSome %>% count(num_c19_infs_eng) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
+  mutate(ecdf = cum/sum) %>%
+  mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(uci = case_when(uci > 1 ~ 1, .default = uci))
+
+ggplot() +
+  geom_ribbon(data = ecdf_compNone, aes(ymin = lci, ymax = uci, x = num_c19_infs_eng, fill = "No Comorbidities"), alpha = 0.3)+
+  geom_line(data = ecdf_compNone, aes(y=ecdf, x = num_c19_infs_eng, color = "No Comorbidities"), size = 1) +
+  geom_ribbon(data = ecdf_compSome, aes(ymin = lci, ymax = uci, x = num_c19_infs_eng, fill = "Some Comorbidity"), alpha = 0.3)+
+  geom_line(data = ecdf_compSome, aes(y=ecdf, x = num_c19_infs_eng, color = "Some Comorbidity"), size = 1) +
+  xlab("Number of Infections") +
+  ylab("ECDF") +
+  xlim(0,4) +
+  my_theme()  +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values=c("Some Comorbidity" = "#DC0000FF", "No Comorbidities" = "#3C5488FF")) +
+  scale_fill_manual(values=c("Some Comorbidity" = "#DC0000FF", "No Comorbidities" = "#3C5488FF"),
+                    guide = "none")
+
+# Difference date of first infection --------------------------------------
+
+data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
+                                                                .default = as.Date(as.character(date_f1_inf)))) %>%
+  filter(date_f1_inf != as.Date("1922-03-01")) %>%
+  filter(date_f1_inf != as.Date("1965-06-12")) %>%
+  filter(date_f1_inf != as.Date("2000-12-13")) %>%
+  filter(date_f1_inf != as.Date("2019-12-21")) 
+
+ecdf_comp <- data_reduced %>% filter(!is.na(cond_none)) %>% group_by(cond_none) %>% 
+  count(date_f1_inf) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
+  mutate(ecdf = cum/sum) %>% 
+  mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(lci = case_when(lci < 0 ~ 0, .default = lci)) %>%
+  mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
+  mutate(uci = case_when(uci > 1 ~ 1, .default = uci)) %>% ungroup()
+ecdf_comp$date_f1_inf <- as.numeric(as.Date(ecdf_comp$date_f1_inf))
+
+ecdf_compNone <- ecdf_comp %>% filter(cond_none == "No Comorbidities")
+ecdf_compSome <- ecdf_comp %>% filter(cond_none == "Some Comorbidity")
+
+ggplot() +
+  geom_ribbon(data = ecdf_compNone, aes(ymin = lci, ymax = uci, x = as.Date(date_f1_inf), fill = "No Comorbidities"), alpha = 0.3)+
+  geom_line(data = ecdf_compNone, aes(y=ecdf, x = as.Date(date_f1_inf), color = "No Comorbidities"), size = 1) +
+  geom_ribbon(data = ecdf_compSome, aes(ymin = lci, ymax = uci, x = as.Date(date_f1_inf), fill = "Some Comorbidities"), alpha = 0.3)+
+  geom_line(data = ecdf_compSome, aes(y=ecdf, x = as.Date(date_f1_inf), color = "Some Comorbidity"), size = 1) +
+  xlab("Timing of First Infection") +
+  ylab("ECDF") +
+  xlim(as.Date(18322),as.Date(19539)) +
+  my_theme()  +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values=c("Some Comorbidity" = "#DC0000FF", "No Comorbidities" = "#3C5488FF")) +
+  scale_fill_manual(values=c("Some Comorbiditiy" = "#DC0000FF", "No Comorbidities" = "#3C5488FF"),
+                    guide = "none")
+
+ks.test(ecdf_compNone$date_f1_inf, ecdf_compSome$date_f1_inf)
+
+# DIFFERENCE PARTICIPANTS, HH MEMBERS AND CC ------------------------------
+
+#Work
+data_reducedWork <- data_reduced %>% filter(respondent_work_rel_2019_2020 < 150) %>%
+  filter(respondent_work_rel_2019_2021 < 150) %>%
+  filter(respondent_work_rel_2019_2023 < 150)
+
+data_reducedWorkHH <- data_reduced %>% filter(hhmember_work_rel_2019_2020 < 150) %>%
+  filter(hhmember_work_rel_2019_2021 < 150) %>%
+  filter(hhmember_work_rel_2019_2023 < 150)
+
+data_reducedWorkCC <- data_reduced %>% filter(cc_pre_work_rel_2019_2020 < 150) %>%
+  filter(cc_pre_work_rel_2019_2021 < 150) %>%
+  filter(cc_pre_work_rel_2019_2023 < 150)
+
+#03/2020
+ks.test(data_reducedWork$respondent_work_rel_2019_2020, data_reducedWorkHH$hhmember_work_rel_2019_2020)
+ks.test(data_reducedWork$respondent_work_rel_2019_2020, data_reducedWorkCC$cc_pre_work_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedWork$respondent_work_rel_2019_2021, data_reducedWorkHH$hhmember_work_rel_2019_2021)
+ks.test(data_reducedWork$respondent_work_rel_2019_2021, data_reducedWorkCC$cc_pre_work_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedWork$respondent_work_rel_2019_2023, data_reducedWorkHH$hhmember_work_rel_2019_2023)
+ks.test(data_reducedWork$respondent_work_rel_2019_2023, data_reducedWorkCC$cc_pre_work_rel_2019_2023)
+
+#Leisure
+data_reducedLeisure <- data_reduced %>% filter(respondent_leisure_rel_2019_2020 < 150) %>%
+  filter(respondent_leisure_rel_2019_2021 < 150) %>%
+  filter(respondent_leisure_rel_2019_2023 < 150)
+
+data_reducedLeisureHH <- data_reduced %>% filter(hhmember_leisure_rel_2019_2020 < 150) %>%
+  filter(hhmember_leisure_rel_2019_2021 < 150) %>%
+  filter(hhmember_leisure_rel_2019_2023 < 150)
+
+data_reducedLeisureCC <- data_reduced %>% filter(cc_pre_leisure_rel_2019_2020 < 150) %>%
+  filter(cc_pre_leisure_rel_2019_2021 < 150) %>%
+  filter(cc_pre_leisure_rel_2019_2023 < 150)
+
+#03/2020
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2020, data_reducedLeisureHH$hhmember_leisure_rel_2019_2020)
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2020, data_reducedLeisureCC$cc_pre_leisure_rel_2019_2020)
+
+#Summer 2021
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2021, data_reducedLeisureHH$hhmember_leisure_rel_2019_2021)
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2021, data_reducedLeisureCC$cc_pre_leisure_rel_2019_2021)
+
+#01/2023
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2023, data_reducedLeisureHH$hhmember_leisure_rel_2019_2023)
+ks.test(data_reducedLeisure$respondent_leisure_rel_2019_2023, data_reducedLeisureCC$cc_pre_leisure_rel_2019_2023)
