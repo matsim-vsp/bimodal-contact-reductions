@@ -213,13 +213,13 @@ pandemic_contacts_relative_leisure_hh <- ggplot(data_reduced_tidy_rel %>%
     filter(!is.na(TypeOfContact))%>% 
     group_by(WhoseContacts, TypeOfContact, time), aes(combined, value, color = WhoseContacts, fill = WhoseContacts)) +
     sm_raincloud(aes(stat = median_cl), 
-    point.params = list(size = 3, shape = 21, alpha = 0.5, position = sdamr::position_jitternudge(
-        nudge.x = -0.1,
-        jitter.width = 0.1, jitter.height = 0.01      
-      )), 
-    boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
-              violin.params = list(width = 1),
-              shape = 21, sep_level = 2)  +
+    point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
+                   nudge.x = -0.12,
+                   jitter.width = 0.1, jitter.height = 0.01      
+                 )), 
+                 boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
+                 violin.params = list(width = 1.4, scale = "area"),
+                 shape = 21, sep_level = 2)  +
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
   #facet_grid(~(time), switch="both")+
@@ -231,10 +231,11 @@ pandemic_contacts_relative_leisure_hh <- ggplot(data_reduced_tidy_rel %>%
   theme(axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
   theme(axis.ticks.x = element_line(size = 0)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(axis.text.x = element_text(hjust=-0.0001))  +
   scale_x_discrete(
     breaks = combined_levels[unique_positions],  # Only put breaks at selected positions
     labels = unique_A_values                     # Use corresponding unique A values as labels
-  )
+  ) 
 
 ggarrange(pandemic_contacts_relative_work_hh, pandemic_contacts_relative_leisure_hh, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
@@ -247,8 +248,8 @@ palette <- function() {
   c("#3C5488FF", "#DC0000FF")
 }
 
-pandemic_contacts_relative_work_cc <- ggplot(data_reduced_tidy_rel %>%  
-    filter((TypeOfContact %in% c("Work"))) %>% 
+pandemic_contacts_relative_leisure_cc <- ggplot(data_reduced_tidy_rel %>%  
+    filter((TypeOfContact %in% c("Leisure"))) %>% 
     filter(!is.na(value)) %>% 
     filter(WhoseContacts %in% c("Respondent", "Closest Contact (Pre-Covid)")) %>%
     filter(value > -150) %>% filter(value < 100) %>%    
@@ -256,15 +257,15 @@ pandemic_contacts_relative_work_cc <- ggplot(data_reduced_tidy_rel %>%
     group_by(WhoseContacts, TypeOfContact, time), aes(combined, value, color = WhoseContacts, fill = WhoseContacts)) +
     sm_raincloud(aes(stat = median_cl), 
     point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
-        nudge.x = -0.1,
-        jitter.width = 0.1, jitter.height = 0.01      
-      )), 
-    boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
-              violin.params = list(width = 1),
-              shape = 21, sep_level = 2)  +
+                   nudge.x = -0.12,
+                   jitter.width = 0.1, jitter.height = 0.01      
+                 )), 
+                 boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
+                 violin.params = list(width = 1.4, scale = "area"),
+                 shape = 21, sep_level = 2)  +
   scale_fill_manual(values = palette()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
-  ggtitle("Work") +
+  ggtitle("Leisure") +
   theme_minimal() +
   theme(panel.spacing = unit(4, "lines")) +
   ylab("Change of No. of \n Contacts (in percent)") +
@@ -272,10 +273,11 @@ pandemic_contacts_relative_work_cc <- ggplot(data_reduced_tidy_rel %>%
   theme(axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
   theme(axis.ticks.x = element_line(size = 0)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(axis.text.x = element_text(hjust=-0.0001))  +
   scale_x_discrete(
     breaks = combined_levels[unique_positions],  # Only put breaks at selected positions
     labels = unique_A_values                     # Use corresponding unique A values as labels
-  )
+  ) 
 ggarrange(pandemic_contacts_relative_work_cc, pandemic_contacts_relative_leisure_cc, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
 ggsave("CollectionViolinplots_cc.pdf",  dpi = 500, w = 24, h = 9)

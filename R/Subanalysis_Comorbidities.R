@@ -10,8 +10,8 @@ library(here)
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
 here()
-source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
-source("./AnalysisSP/SecondOrderContactsPaper/mytheme.r")
+source("./R/DataCleaningPrepForContactAnalysis.R")
+source("./R/mytheme.r")
 
 palette <- function() {
   c("#3C5488FF", "#DC0000FF")
@@ -97,18 +97,27 @@ print(data_reduced_tidy_rel %>%
         filter(!is.na(cond_none)) %>% group_by(TypeOfContact, cond_none, time) %>%
         summarise(meanRed = mean(value)), n = 100)
 
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(time = case_when(time == "Summer 2021" ~ "Summer\n2021", .default = time))
+data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("03/2020", "Summer\n2021", "01/2023"))
+
+
 for (com in comorbidities){
   if (com != "cond_none") {
     my_comparisons <- list(c("Yes", "No"))
   } else {
     my_comparisons <- list(c("Some Comorbidity", "No Comorbidities"))
   }
+  
+  data_reduced_tidy_rel$combined = interaction(data_reduced_tidy_rel$cond_none, data_reduced_tidy_rel$time)
+  combined_levels <- levels(interaction(data_reduced_tidy_rel$cond_none, data_reduced_tidy_rel$time))
+  A_values <- data_reduced_tidy_rel$time[match(combined_levels, data_reduced_tidy_rel$combined)]
+  
     p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(!!sym(com))) %>%
     filter(!is.na(TypeOfContact)) %>% 
     filter(TypeOfContact %in% c("Leisure")) %>%
     filter(value > -150) %>%  filter(value < 100) %>%
-    filter(!is.na(TypeOfContact)) %>% group_by(!!sym(com), TypeOfContact, time), aes(!!sym(com), value, color = !!sym(com), fill = !!sym(com))) +
+    filter(!is.na(TypeOfContact)) %>% group_by(!!sym(com), TypeOfContact, time), aes(combined, value, color = !!sym(com), fill = !!sym(com))) +
     sm_raincloud(aes(stat = median_cl), 
                    point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
                      nudge.x = -0.1,
@@ -120,22 +129,27 @@ for (com in comorbidities){
       scale_fill_manual(values = palette()) +
       scale_color_manual(values = palette2()) +
       scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
-      facet_grid(~(time), switch="both")+
+      #facet_grid(~(time), switch="both")+
       ggtitle("Leisure") +
       theme_minimal() +
       theme(panel.spacing = unit(4, "lines")) +
       ylab("Change of No. of \n Contacts (in percent)") +
       my_theme() +
-      theme(axis.text.x = element_blank(), axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
+      theme(axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
       theme(axis.ticks.x = element_line(size = 0)) +
-      theme(legend.position = "bottom", legend.title = element_blank())
+      theme(legend.position = "bottom", legend.title = element_blank()) +
+      theme(axis.text.x = element_text(hjust=-0.0001))  +
+      scale_x_discrete(
+        breaks = combined_levels[unique_positions],  # Only put breaks at selected positions
+        labels = unique_A_values                     # Use corresponding unique A values as labels
+      )
     
     p1_work <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
                                  filter(!is.na(!!sym(com))) %>%
                                  filter(!is.na(TypeOfContact)) %>% 
                                  filter(TypeOfContact %in% c("Work")) %>%
                                  filter(value > -150) %>%  filter(value < 100) %>%
-                                 filter(!is.na(TypeOfContact)) %>% group_by(!!sym(com), TypeOfContact, time), aes(!!sym(com), value, color = !!sym(com), fill = !!sym(com))) +
+                                 filter(!is.na(TypeOfContact)) %>% group_by(!!sym(com), TypeOfContact, time), aes(combined, value, color = !!sym(com), fill = !!sym(com))) +
       sm_raincloud(aes(stat = median_cl), 
                    point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
                      nudge.x = -0.1,
@@ -147,16 +161,20 @@ for (com in comorbidities){
       scale_fill_manual(values = palette()) +
       scale_color_manual(values = palette2()) +
       scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
-      facet_grid(~(time), switch="both")+
+      #facet_grid(~(time), switch="both")+
       ggtitle("Work") +
       theme_minimal() +
       theme(panel.spacing = unit(4, "lines")) +
       ylab("Change of No. of \n Contacts (in percent)") +
       my_theme() +
-      theme(axis.text.x = element_blank(), axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
+      theme(axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
       theme(axis.ticks.x = element_line(size = 0)) +
-      theme(legend.position = "bottom", legend.title = element_blank())
-    
+      theme(legend.position = "bottom", legend.title = element_blank()) +
+      theme(axis.text.x = element_text(hjust=-0.0001))  +
+      scale_x_discrete(
+        breaks = combined_levels[unique_positions],  # Only put breaks at selected positions
+        labels = unique_A_values                     # Use corresponding unique A values as labels
+      )
     ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
     ggsave(paste0("CollectionViolinplots_", com, ".pdf"),  dpi = 500, w = 24, h = 9)
