@@ -9,8 +9,8 @@ library(sdamr)
 library(here)
 
 here()
-source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
-source("./AnalysisSP/SecondOrderContactsPaper/mytheme.r")
+source("./git/second-order-contacts/R/DataCleaningPrepForContactAnalysis.R")
+source("./git/second-order-contacts/R/mytheme.r")
 
 palette <- function() {
   c("#3C5488FF", "#3C5488FF",  "#3C5488FF")
@@ -67,7 +67,7 @@ prepandemic_contacts_absolute_daily <- ggplot(data_reduced_tidy %>%
                boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
                violin.params = list(width = 1), sep_level = 2)  +
   scale_fill_manual(values = palette()) +
-  ylab("Reported Number\nof Contacts (2019)") +
+  ylab("Converted Number\nof Daily Contacts (2019)") +
   xlab("") +
   scale_y_continuous(trans=scales::pseudo_log_trans(base = 10), breaks = c(0,1,3,10,30,100,300)) +
   theme_minimal() +
@@ -90,6 +90,10 @@ round(quantile(data2019leisure$value_daily, na.rm=TRUE))
 # Pandemic Contact Data (2020, 2021, 2023) -------------------------------------------------------
 
 palette <- function() {
+  c("#3C5488FF", "#3C5488FF",  "#3C5488FF", "#3C5488FF")
+}
+
+palette2 <- function() {
   c("#3C5488FF", "#3C5488FF",  "#3C5488FF", "#3C5488FF")
 }
 
@@ -133,8 +137,10 @@ third_boxplot <- third_boxplot %>% filter(TypeOfContact == "Leisure")
 
 data_reduced_tidy_rel$group <- as.character(data_reduced_tidy_rel$group)
 
-pandemic_contacts_relative_leisure <- ggplot(data_reduced_tidy_rel %>%  
-    filter((TypeOfContact %in% c("Leisure"))) %>% #Need to replace "Work" by "Leisure" if one is interested in leisure contacts instead
+my_comparisons <- list(c("03/2020", "Summer\n2021"))
+
+pandemic_contacts_relative_work <- ggplot(data_reduced_tidy_rel %>%  
+    filter((TypeOfContact %in% c("Work"))) %>% #Need to replace "Work" by "Leisure" if one is interested in leisure contacts instead
     filter(WhoseContacts == "Respondent") %>% filter(!is.na(value)) %>%
    filter(value > -150) %>% filter(value < 100) %>%  
     filter(!is.na(TypeOfContact))) +
@@ -146,31 +152,15 @@ pandemic_contacts_relative_leisure <- ggplot(data_reduced_tidy_rel %>%
       boxplot.params =  list(alpha = 0.0, width = 0.0), 
               violin.params = list(width = 1),
               shape = 21, sep_level = 2)  +
-  # geom_boxplot(data = first_boxplot,
-  #              stat = "identity",
-  #              mapping = aes(x = time, fill = time, lower  = FirstQuartile,
-  #                            upper  = ThirdQuartile,
-  #                            middle = Median,
-  #                            ymin   = -100, # optional
-  #                            ymax   = 0), width = 0.1 # optional
-  # ) +
-  # geom_boxplot(data = second_boxplot,
-  #              stat = "identity",
-  #              mapping = aes(x = time, fill = time, lower  = FirstQuartile,
-  #                            upper  = ThirdQuartile,
-  #                            middle = Median,
-  #                            ymin   = -100, # optional
-  #                            ymax   = 0), width = 0.1 # optional
-  # ) +
-  # geom_boxplot(data = third_boxplot,
-  #              stat = "identity",
-  #              mapping = aes(x = time, fill = time, lower  = FirstQuartile, 
-  #                            upper  = ThirdQuartile,
-  #                            middle = Median,
-  #                            ymin   = -100, # optional
-  #                            ymax   = 0), width = 0.1 # optional
-  # ) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
+  geom_bracket(
+    xmin = "03/2020", xmax = "Summer\n2021", y.position = 85,
+    label = "***", label.size = 15, size = 1.2, vjust = 0.5
+  ) +
+  geom_bracket(
+    xmin = "Summer\n2021", xmax = "01/2023", y.position = 100,
+    label = "***", label.size = 15, size = 1.2, vjust = 0.5
+  ) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100),limits = c(-100,100)) +
   scale_color_manual(values = palette2()) +
   scale_fill_manual(values = palette()) +
   facet_grid(~(TypeOfContact)) +

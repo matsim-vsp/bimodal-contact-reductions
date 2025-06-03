@@ -12,8 +12,8 @@ library(here)
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
 here()
-source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
-source("./AnalysisSP/SecondOrderContactsPaper/mytheme.r")
+source("./R/DataCleaningPrepForContactAnalysis.R")
+source("./R/mytheme.r")
 
 palette <- function() {
   c("#3C5488FF", "#DC0000FF")
@@ -33,33 +33,49 @@ data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(gender = case_when(gen
 data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(time = case_when(time == "Summer 2021" ~ "Summer\n2021", .default = time))
 data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("03/2020", "Summer\n2021", "01/2023"))
 
-p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+data_reduced_tidy_rel <- data_reduced_tidy_rel %>% filter(gender %in%  c("male", "female"))
+data_reduced_tidy_rel$combined = interaction(data_reduced_tidy_rel$gender, data_reduced_tidy_rel$time)
+combined_levels <- levels(interaction(data_reduced_tidy_rel$gender, data_reduced_tidy_rel$time))
+A_values <- data_reduced_tidy_rel$time[match(combined_levels, data_reduced_tidy_rel$combined)]
+
+unique_A_values <- unique(A_values)
+unique_positions <- sapply(unique_A_values, function(a) {
+  # For each unique A value, find the first position where it appears
+  which(A_values == a)[1]
+})
+
+p1_work <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(gender)) %>% filter(gender %in% c("male", "female")) %>%
     filter(!is.na(TypeOfContact)) %>% 
-    filter(TypeOfContact %in% c("Leisure")) %>% 
-    #filter(TypeOfContact %in% c("Work")) %>% 
+    #filter(TypeOfContact %in% c("Leisure")) %>% 
+    filter(TypeOfContact %in% c("Work")) %>% 
     filter(value > -150) %>%  filter(value < 100) %>%
-    filter(!is.na(TypeOfContact)) %>% group_by(gender, TypeOfContact, time), aes(gender, value, color = gender, fill = gender)) +
+    filter(!is.na(TypeOfContact)) %>% group_by(gender, TypeOfContact, time), aes(combined, value, color = gender, fill = gender)) +
   sm_raincloud(aes(stat = median_cl), 
                point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
-                 nudge.x = -0.1,
+                 nudge.x = -0.12,
                  jitter.width = 0.1, jitter.height = 0.01      
                )), 
                boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
-               violin.params = list(width = 1),
+               violin.params = list(width = 1.4, scale = "area"),
                shape = 21, sep_level = 2)  +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
-  facet_grid(~(time), switch="both")+
-  ggtitle("Leisure") +
+  #facet_grid(~(time), switch="both")+
+  ggtitle("Work") +
   theme_minimal() +
-  theme(panel.spacing = unit(4, "lines")) +
+  #theme(panel.spacing = unit(4, "lines")) +
   ylab("Change of No. of \n Contacts (in percent)") +
   my_theme() +
-  theme(axis.text.x = element_blank(), axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
+  theme(axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
   theme(axis.ticks.x = element_line(size = 0)) +
-  theme(legend.position = "bottom", legend.title = element_blank())
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(axis.text.x = element_text(hjust=-0.0001))  +
+  scale_x_discrete(
+    breaks = combined_levels[unique_positions],  # Only put breaks at selected positions
+    labels = unique_A_values                     # Use corresponding unique A values as labels
+  ) 
 
 ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
