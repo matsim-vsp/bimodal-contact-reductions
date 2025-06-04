@@ -30,11 +30,11 @@ data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = 
 
 
 palette <- function() {
-  c("#3C5488FF", "#DC0000FF")
+  c("#DC0000FF", "#3C5488FF")
 }
 
 palette2 <- function() {
-  c("#2C3E65FF", "#A90000FF")
+  c("#A90000FF", "#2C3E65FF")
 }
 
 
@@ -152,12 +152,12 @@ p4 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>%
   theme(panel.spacing = unit(2, "lines")) +
   ylab("Number of\nContacts (2019)") +
   my_theme() +
-  theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
+  theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x=element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank())
   #guides(fill=guide_legend(nrow=2,byrow=TRUE))
 
-ggsave("ViolinplotsPrePandemic_AttCarefulnessScore.pdf", p4, dpi = 500, w = 9, h = 9)
-ggsave("ViolinplotsPrePandemic_AttCarefulnessScore.png", p4, dpi = 500, w = 7.5, h = 9)
+ggsave("WorkvsLeisureViolin_AttitudeScore2019.pdf", p4, dpi = 500, w = 9, h = 9)
+ggsave("WorkvsLeisureViolin_AttitudeScore2019.png", p4, dpi = 500, w = 9, h = 9)
 
 data2019work <- data_reduced_tidy %>% filter(TypeOfContact == "Work") %>% 
   filter(time %in% c("2019")) %>%
