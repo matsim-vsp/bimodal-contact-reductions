@@ -11,7 +11,7 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 ## Top level files
 
 - `DataCleaningPrepForContactAnalysis.R`: Contains the cleaning of the anonymized data. Is called in most subsequent scripts to prepare the necessary data
-- `WholeSampleContactAnalysis.R`: Contains contact analysis for whole sample. Contains code to produce Figure 1.
+- `ContactAnalysis_FullSample.R`: Contains contact analysis for whole sample. Contains code to produce Figure 1, Supplementary Figure 2, Supplementary Figure 8, Supplementary Figure 9.
 - `Subanalysis_Careful.R`: Contains subanalysis by risk perception groups (risk-averse vs risk-tolerant participants). Contains code to produce Figure 3, Figure 4, Figure 5, and Figure 6.
 - `Subanalysis_Age.R`: Contains subanalysis by age bracket (18-39, 40-59, 60+). Contains code to produce Figure 14 and Figure 15
 - `Subanalysis_Gender.R`: Contains subanalysis by gender. Contains code to produce Figure 16 and Figure 17.
