@@ -5,8 +5,13 @@ library(ggrepel)
 library(here)
 
 here()
-source("/Users/sydney/git/second-order-contacts/R/DataCleaningPrepForContactAnalysis.R")
-source("/Users/sydney/git/second-order-contacts/R/mytheme.R")
+source("./R/DataCleaningPrepForContactAnalysis.R")
+source("./R/mytheme.R")
+
+
+# Gender Distribution -----------------------------------------------------
+
+# Produces Supplementary Figure 1A
 
 genderdf <- data_reduced %>% count(gender) %>%   
   mutate(csum = rev(cumsum(rev(n))), 
@@ -17,38 +22,6 @@ genderdf <- genderdf %>% mutate(gender_eng = case_when(gender == "Männlich" ~"m
                                                        gender == "Weiblich" ~"female", 
                                                        gender == "Divers" ~"diverse", 
                                                        gender == "Ich möchte nicht antworten" ~"I Don't Want To Answer"))
-
-blank_theme <- theme_minimal()+
-  theme(
-    axis.title.x = element_blank(),
-    axis.title.y = element_blank(),
-    panel.border = element_blank(),
-    panel.grid=element_blank(),
-    axis.ticks = element_blank(),
-    plot.title=element_text(size=14, face="bold")
-  )
-
-
-palette <- function() {
-  c("#B09C85FF", "#3C5488FF", "#DC0000FF")
-}
-
-GenderPlot <- ggplot(genderdf %>% filter(gender != "Ich möchte nicht antworten"), aes(x="", y=n, fill=gender_eng))+
-  geom_bar(width = 1, stat = "identity") +
-  coord_polar("y", start=0) +
-  scale_fill_manual(values = palette()) + 
-  blank_theme +
-  # my_theme() +
-  theme(axis.text.x=element_blank(), legend.title = element_blank()) +
-  theme(legend.position = "right", legend.key.size = unit(1.2, 'cm')) +
-  xlab("") +
-  ylab("") +
-  theme(element_text(size = 40), legend.text = element_text(size=30))
-# geom_label_repel(data = gender %>% filter(gender != "Ich möchte nicht antworten"),
-#                aes(y = pos, label = paste0(round(100*n/sum(n)), "%")),
-#                size = 4.5, nudge_x = 1, show.legend = FALSE)
-
-#ggsave("Gender.png", GenderPlot, dpi = 500, w = 7.5, h = 7.5)
 
 genderdf <- genderdf %>% filter(gender != "Ich möchte nicht antworten") %>% mutate(percent = 100 * n / sum(n), sum = sum(n))
 
@@ -63,6 +36,11 @@ GenderPlot <- ggplot(genderdf , aes(gender_eng, percent)) +
   xlab("Gender") +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   my_theme() 
+
+
+# Age Distribution --------------------------------------------------------
+
+# Produces Supplementary Figure 1B
 
 AgeData <- data_reduced %>% select(year_of_birth) %>% mutate(age = 2023-year_of_birth) %>%
   mutate(age_bracket = case_when(age < 20 ~ "18-39",
@@ -85,6 +63,12 @@ AgePlot <- ggplot(AgeData, aes(age_bracket, percent)) +
   my_theme() 
 ggsave("Age.png", AgePlot, dpi = 500, w = 7.5, h = 7.5)
 
+
+
+# Household Size Distribution ---------------------------------------------
+
+# Produces Supplementary Figure 1C
+
 data_reduced$respondent_hsld_size_2019 <- as.character(data_reduced$respondent_hsld_size_2019)
 HouseholdData <- data_reduced %>% 
   mutate(respondent_hsld_size_2019 = case_when(respondent_hsld_size_2019 %in% c("5", "6", "80", "7", "8", "11") ~ "5+", .default = respondent_hsld_size_2019)) %>% 
@@ -102,6 +86,10 @@ HouseholdPlot <- HouseholdData %>% mutate(percent = 100 * n / sum(n), sum = sum(
   my_theme()
 
 
+# Comorbidity Distribution ------------------------------------------------
+
+# Produces Supplementary Figure 1D
+
 comorbidities <- data_reduced %>% count(cond_none) %>%
   mutate(cond_none_eng = case_when(cond_none == "Ja" ~"No", cond_none == "Nicht Gewählt" ~ "Yes"))
 
@@ -115,10 +103,9 @@ ComorbiditiesPlot <- comorbidities %>% filter(!is.na(cond_none)) %>% mutate(perc
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   my_theme()
 
-ggsave("Comorbidities.png", ComorbiditiesPlot, dpi = 500, w = 7.5, h = 7.5)
-
+# Arrangement of subfigures and saving of final plot
 
 ggarrange(GenderPlot, AgePlot, ggparagraph(text="   ", face = "italic", size = 14, color = "black"), ggparagraph(text="   ", face = "italic", size = 14, color = "black") , HouseholdPlot, ComorbiditiesPlot, labels = c("A", "B", "", "", "C", "D"), nrow = 3, ncol = 2,font.label = list(size = 40), heights = c(1,0.05,1))
 
-ggsave("BasicInfoSurvey.pdf", dpi = 500, w = 19, h = 18)
-ggsave("BasicInfoSurvey.png", dpi = 500, w = 19, h = 18)
+ggsave("SupplementaryFigure1.pdf", dpi = 500, w = 19, h = 18)
+ggsave("SupplementaryFigure1.png", dpi = 500, w = 19, h = 18)

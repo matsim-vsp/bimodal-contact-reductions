@@ -102,12 +102,12 @@ pandemic_contacts_relative_leisure <- ggplot(data_reduced_tidy_rel %>%
   my_theme()
 
 ggarrange(pandemic_contacts_relative_work, pandemic_contacts_relative_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37))
-ggsave("CollectionViolinplots_RemainingRespondent.pdf", dpi = 500, w = 24, h = 9)
-ggsave("CollectionViolinplots_RemainingRespondent.png", dpi = 500, w = 24, h = 9)
+ggsave("Figure1.pdf", dpi = 500, w = 24, h = 9)
+ggsave("Figure1.png", dpi = 500, w = 24, h = 9)
 
 # Analysis of Contact Reductions of Household Members ---------------------
 
-# Produces Supplementary Figure 3
+# Produces Supplementary Figure 8
 
 data_reduced_tidy_rel <- data_reduced_tidy_rel %>% mutate(time = case_when(time == "Summer 2021" ~ "Summer\n2021", .default = time))
 data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("03/2020", "Summer\n2021", "01/2023"))
@@ -161,8 +161,8 @@ pandemic_contacts_relative_leisure_hh <- ggplot(data_reduced_tidy_rel %>%
 
 ggarrange(pandemic_contacts_relative_work_hh, pandemic_contacts_relative_leisure_hh, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("CollectionViolinplots_HHMember.pdf",  dpi = 500, w = 24, h = 9)
-ggsave("CollectionViolinplots_HHMember.png", dpi = 500, w = 24, h = 9)
+ggsave("SupplementaryFigure8.pdf",  dpi = 500, w = 24, h = 9)
+ggsave("SupplementaryFigure8.png", dpi = 500, w = 24, h = 9)
 
 # Analysis of Contact Reductions of Closest Contacts ----------------------
 
@@ -204,8 +204,8 @@ pandemic_contacts_relative_leisure_cc <- ggplot(data_reduced_tidy_rel %>%
   ) 
 ggarrange(pandemic_contacts_relative_work_cc, pandemic_contacts_relative_leisure_cc, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("CollectionViolinplots_cc.pdf",  dpi = 500, w = 24, h = 9)
-ggsave("CollectionViolinplots_cc.png", dpi = 500, w = 24, h = 9)
+ggsave("SupplementaryFigure9.pdf",  dpi = 500, w = 24, h = 9)
+ggsave("SupplementaryFigure9.png", dpi = 500, w = 24, h = 9)
 
 # Mean Reduction Participant vs HH vs CC ----------------------------------
 
