@@ -15,7 +15,7 @@ library(here)
 #In the first part of this script we compare the incidence of the respondents of the survey to the official incidence reported by RKI
 
 here()
-source("./R/DataCleaningPrepForContactAnalysis.R")
+source("/Users/sydney/git/second-order-contacts/R/DataCleaningPrepForContactAnalysis.R")
 
 ## RISK-PERCEPTION SCORE
 
@@ -111,7 +111,7 @@ data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>%
     filter(!is.na(value)) %>% 
     filter(value < 500) %>%
     filter(TypeOfContact %in% c("Work", "Leisure"))  %>%  
-    group_by(RiskyCarefulAtt, TypeOfContact) %>% summarise(median = median(value), twentyfive = quantile(value, 0.25), seventyfive = quantile(value, 0.75))
+    group_by(RiskyCarefulAtt, TypeOfContact) %>% summarise(mean = mean(value), median = median(value), twentyfive = quantile(value, 0.25), seventyfive = quantile(value, 0.75))
 
 p4 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(RiskyCarefulAtt)) %>% 

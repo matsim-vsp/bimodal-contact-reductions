@@ -12,8 +12,8 @@ library(here)
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
 here()
-source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
-source("./AnalysisSP/SecondOrderContactsPaper/mytheme.r")
+source("./R/DataCleaningPrepForContactAnalysis.R")
+source("./R/mytheme.r")
 
 palette <- function() {
   c("#3C5488FF", "#DC0000FF")
