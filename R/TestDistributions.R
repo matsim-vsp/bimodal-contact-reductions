@@ -1,6 +1,7 @@
 library(tidyverse)
 library(stats)
 library(coin)
+library(here)
 
 #The following script applies Kolmogorov-Smirnov-Tests and permutation tests to test for difference in distributions.
 #The script is split into the following sections:
@@ -14,8 +15,8 @@ library(coin)
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
 here()
-source("./AnalysisSP/SecondOrderContactsPaper/DataCleaningPrepForContactAnalysis.R")
-source("./AnalysisSP/SecondOrderContactsPaper/mytheme.r")
+source("./git/second-order-contacts/R/DataCleaningPrepForContactAnalysis.R")
+source("./git/second-order-contacts/R/mytheme.r")
 
 # Work --------------------------------------------------------------------
 
@@ -126,10 +127,12 @@ data_reducedWork <- data_reduced %>% filter(respondent_work_rel_2019_2020 < 150)
   filter(respondent_work_rel_2019_2021 < 150) %>%
   filter(respondent_work_rel_2019_2023 < 150)
 
-#03/2020
+#2019
 data_reducedWorkAverse <- data_reducedWork %>% filter(RiskyCarefulAtt == "Risk-averse")
 data_reducedWorkTolerant <- data_reducedWork %>% filter(RiskyCarefulAtt == "Risk-tolerant")
+ks.test(data_reducedWorkAverse$respondent_work_2019, data_reducedWorkTolerant$respondent_work_2019)
 
+#03/2020
 ks.test(data_reducedWorkAverse$respondent_work_rel_2019_2020, data_reducedWorkTolerant$respondent_work_rel_2019_2020)
 
 #Summer 2021
@@ -140,7 +143,7 @@ ks.test(data_reducedWorkAverse$respondent_work_rel_2019_2023, data_reducedWorkTo
 
 # Leisure Risk-Averse vs Risk-Tolerant ---------------------------------------
 
-#03/2020
+#2019
 
 data_reducedLeisure <- data_reduced %>% filter(respondent_leisure_rel_2019_2020 < 150) %>%
   filter(respondent_leisure_rel_2019_2021 < 150) %>%
@@ -148,7 +151,9 @@ data_reducedLeisure <- data_reduced %>% filter(respondent_leisure_rel_2019_2020 
 
 data_reducedLeisureAverse <- data_reducedLeisure %>% filter(RiskyCarefulAtt == "Risk-averse")
 data_reducedLeisureTolerant <- data_reducedLeisure %>% filter(RiskyCarefulAtt == "Risk-tolerant")
+ks.test(data_reducedLeisureAverse$respondent_leisure_2019, data_reducedLeisureTolerant$respondent_leisure_2019)
 
+#03/2020
 ks.test(data_reducedLeisureAverse$respondent_leisure_rel_2019_2020, data_reducedLeisureTolerant$respondent_leisure_rel_2019_2020)
 
 #Summer 2021
@@ -493,6 +498,12 @@ data_reduced <- data_reduced %>% mutate(num_c19_infs_eng = case_when(num_c19_inf
                                                                      num_c19_infs == "Ich möchte nicht antworten" ~ "I Don't Want To Answer"))                              
 
 data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = c("0", "1", "2", "3", "I Don't Want To Answer"))
+
+data_reduced <- data_reduced %>% mutate(gender = case_when(gender == "Weiblich" ~ "female", 
+                                                           gender == "Männlich" ~ "male", 
+                                                           gender == "Ich möchte nicht antworten" ~ "I Don't Want To Answer",
+                                                           gender == "Diverse" ~ "diverse"
+                                                           ))
 
 data_reducedFemale <- data_reduced %>% filter(gender == "female") %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% mutate(num_c19_infs_eng = as.numeric(num_c19_infs_eng)-1)
 data_reducedMale <- data_reduced %>% filter(gender == "male") %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% mutate(num_c19_infs_eng = as.integer(num_c19_infs_eng)-1)

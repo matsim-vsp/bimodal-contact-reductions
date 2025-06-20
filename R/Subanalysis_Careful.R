@@ -15,7 +15,11 @@ library(here)
 #In the first part of this script we compare the incidence of the respondents of the survey to the official incidence reported by RKI
 
 here()
+<<<<<<< HEAD
 source("/Users/sydney/git/second-order-contacts/R/DataCleaningPrepForContactAnalysis.R")
+=======
+source("./git/second-order-contacts/R/DataCleaningPrepForContactAnalysis.R")
+>>>>>>> refs/remotes/origin/main
 
 ## RISK-PERCEPTION SCORE
 
@@ -30,11 +34,11 @@ data_reduced$num_c19_infs_eng <- factor(data_reduced$num_c19_infs_eng, levels = 
 
 
 palette <- function() {
-  c("#3C5488FF", "#DC0000FF")
+  c("#DC0000FF", "#3C5488FF")
 }
 
 palette2 <- function() {
-  c("#2C3E65FF", "#A90000FF")
+  c("#A90000FF", "#2C3E65FF")
 }
 
 
@@ -64,10 +68,10 @@ unique_positions <- sapply(unique_A_values, function(a) {
   which(A_values == a)[1]
 })
 
-p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+p1_work <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(RiskyCarefulAtt)) %>% 
     filter(!is.na(TypeOfContact)) %>% 
-    filter(TypeOfContact %in% c("Leisure")) %>%
+    filter(TypeOfContact %in% c("Work")) %>%
     filter(value > -150) %>%  filter(value < 100) %>%
     filter(!is.na(TypeOfContact)), aes(combined, value, color = RiskyCarefulAtt, fill = RiskyCarefulAtt)) +
     sm_raincloud(aes(stat = median_cl), 
@@ -80,9 +84,10 @@ p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Responde
               shape = 21, sep_level = 2)  +
   scale_fill_manual(values = palette()) +
   scale_color_manual(values = palette2()) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100), limits = c(-100,100)) +
+  #ylim(c(-100,100)) +
   #facet_grid(~(time), switch="both")+
-  ggtitle("Leisure") +
+  ggtitle("Work") +
   theme_minimal() +
   #theme(panel.spacing = unit(4, "lines")) +
   ylab("Change of No. of \n Contacts (in percent)") +
@@ -95,12 +100,24 @@ p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Responde
     breaks = combined_levels[unique_positions],  # Only put breaks at selected positions
     labels = unique_A_values                     # Use corresponding unique A values as labels
   ) 
+
+my_comparisons <- list( c("Risk-averse.03/2020", "Risk-tolerant.03/2020"), 
+                        c("Risk-averse.Summer\n2021", "Risk-tolerant.Summer\n2021"),
+                        c("Risk-averse.01/2023", "Risk-tolerant.01/2023"))
+p1_leisureb <- p1_leisure +  
+  stat_compare_means(comparisons = my_comparisons, label.y = c(80), symnum.args = list(cutpoints = c(0, 0.01, 0.05, 0.1, Inf), symbols = c("***", "**", "*", "ns")), bracket.size=1, size = 10)
+
+my_comparisons <- list( c("Risk-averse.03/2020", "Risk-tolerant.03/2020"))
+p1_workb <- p1_work +  
+  stat_compare_means(comparisons = my_comparisons, label.y = c(80), symnum.args = list(cutpoints = c(0, 0.01, 0.05, 0.1, Inf), symbols = c("***", "**", "*", "ns")), bracket.size=1, size = 10)
+
+
 ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("CollectionViolinplots_AttCarefulnessScoreLeisure.png",  p1_leisure, dpi = 500, w = 12, h = 9)
-ggsave("CollectionViolinplots_AttCarefulnessScoreLeisure.pdf", p1_leisure, dpi = 500, w = 12, h = 9)
-ggsave("CollectionViolinplots_AttCarefulnessScoreWork.png",  p1_work, dpi = 500, w = 12, h = 9)
-ggsave("CollectionViolinplots_AttCarefulnessScoreWork.pdf", p1_work, dpi = 500, w = 12, h = 9)
+ggsave("CollectionViolinplots_AttCarefulnessScoreLeisure.png",  p1_leisureb, dpi = 500, w = 12, h = 9)
+ggsave("CollectionViolinplots_AttCarefulnessScoreLeisure.pdf", p1_leisureb, dpi = 500, w = 12, h = 9)
+ggsave("CollectionViolinplots_AttCarefulnessScoreWork.png",  p1_workb, dpi = 500, w = 12, h = 9)
+ggsave("CollectionViolinplots_AttCarefulnessScoreWork.pdf", p1_workb, dpi = 500, w = 12, h = 9)
 
 
 # Pre-Pandemic Contacts ---------------------------------------------------
@@ -139,12 +156,12 @@ p4 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>%
   theme(panel.spacing = unit(2, "lines")) +
   ylab("Number of\nContacts (2019)") +
   my_theme() +
-  theme(axis.text.x = element_blank(), axis.title.x = element_blank()) +
+  theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x=element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank())
   #guides(fill=guide_legend(nrow=2,byrow=TRUE))
 
-ggsave("ViolinplotsPrePandemic_AttCarefulnessScore.pdf", p4, dpi = 500, w = 9, h = 9)
-ggsave("ViolinplotsPrePandemic_AttCarefulnessScore.png", p4, dpi = 500, w = 7.5, h = 9)
+ggsave("WorkvsLeisureViolin_AttitudeScore2019.pdf", p4, dpi = 500, w = 9, h = 9)
+ggsave("WorkvsLeisureViolin_AttitudeScore2019.png", p4, dpi = 500, w = 9, h = 9)
 
 data2019work <- data_reduced_tidy %>% filter(TypeOfContact == "Work") %>% 
   filter(time %in% c("2019")) %>%

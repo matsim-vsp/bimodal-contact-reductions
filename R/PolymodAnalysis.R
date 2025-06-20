@@ -34,13 +34,13 @@ polymod_germany_working <- polymod_germany %>% filter(participants.part_occupati
 german_part_id <- unique(polymod_germany_working$participants.part_id)
 polymod_contacts_work <- polymod_contacts %>% filter(contacts.part_id %in% german_part_id)
 work <- polymod_contacts_work %>% group_by(contacts.part_id) %>% summarise(Work = sum(contacts.cnt_work)) %>% mutate(group = 1)
-mean(work$work, na.rm=TRUE)
+mean(work$Work, na.rm=TRUE)
 median(work$work)
 max(work$work, na.rm=TRUE)
 min(work$work, na.rm=TRUE)
 
 work_polymod <- ggplot(work) +
-  sm_raincloud(mapping=aes(x=group, y=work), fill = "#3C5488FF",
+  sm_raincloud(mapping=aes(x=group, y=Work), fill = "#3C5488FF",
                point.params = list(size = 3, shape = 21, alpha = 0.4, color = "#3C5488FF", fill = "#3C5488FF", position = sdamr::position_jitternudge(
                  nudge.x = -0.1,
                  jitter.width = 0.1, jitter.height = 0.01      
@@ -78,7 +78,7 @@ leisure_polymod <- ggplot(leisure) +
                violin.params = list(width = 1),
                shape = 21, sep_level = 2)  +
   scale_fill_manual(values = palette()) +
-  #ylab("Reported Number\nof Contacts (POLYMOD)") +
+  ylab("Reported Number\nof Contacts (POLYMOD)") +
   ylab("") +
   xlab("Leisure") +
   scale_y_continuous(trans=scales::pseudo_log_trans(base = 10), breaks = c(0,1,3,10,30,100,300)) +
