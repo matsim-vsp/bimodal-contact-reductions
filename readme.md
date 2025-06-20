@@ -20,7 +20,7 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 - `ContactAnalysis_RiskPerception.R` Analysis of contact data, differentiated by risk perception group. Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the two subpopulations. Contains the code to produce Figures 3, 4, 5, and Supplementary Figure 4 [X].
 
-- `Subanalysis_Age.R` Analysis of contact data, differentiated by age group (18-39, 40-59, 60+). Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the three age groups. Contains the code to produce Figures **XX, XX, and XX**.
+- `ContactAnalysis_Age.R` Analysis of contact data, differentiated by age group (18-39, 40-59, 60+). Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the three age groups. Contains the code to produce Supplementary Figures 10, 11, and 12 [X].
 
 - `Subanalysis_Gender.R` Analysis of contact data, differentiated by gender (female, male; as only 7 participants reported their gender as *diverse*, they are excluded from this analysis). Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the genders. Contains the code to produce Figures **XX, XX, and XX**.
 
