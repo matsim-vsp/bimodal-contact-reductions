@@ -12,7 +12,7 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 - `DataCleaningPrepForContactAnalysis.R`: Contains the cleaning of the anonymized data. Is called in most subsequent scripts to prepare the necessary data
 
-- `ContactAnalysis_FullSample.R`: Contains contact analysis for whole sample. Contains code to produce Figure 1, Supplementary Figure 2, Supplementary Figure 8, Supplementary Figure 9.
+- `ContactAnalysis_FullSample.R`: Contains contact analysis for whole sample. Contains code to produce Figure 1, Supplementary Figure 2, Supplementary Figure 8, Supplementary Figure  [X].
 
 - `DemographicExploration.R` First demographic exploration of the survey data. Explores age, gender, householdsize, and comorbiditiy distribution of sample. Contains the code to produce Figure **XX**.
 
