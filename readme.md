@@ -1,4 +1,4 @@
-This is the repository for the 2025 study ``Trimodal Contact Reductions and the Persistence of Social Homophily during the COVID-19 pandemic''.
+This is the repository for the 2025 study ``Bimodal Contact Reductions and Social Homophily during the COVID-19 pandemic: an analysis''.
 
 The repository contains all material to reproduce the analysis.
 The survey in the original German is available on [OSF](https://osf.io/rtjzu), as is the anonymized data ([OSF](https://osf.io/7vzgd/))
@@ -16,7 +16,7 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 - `DemographicExploration.R` First demographic exploration of the survey data. Explores age, gender, householdsize, and comorbiditiy distribution of sample. Contains the code to produce Supplementary Figure 1 [X].
 
-- `PolymodAnalysis.R` Analysis of German [POLYMOD](https://doi.org/10.1371/journal.pmed.0050074) data. Explores demographic distributions of German sample, depicts their distribution of work and leisure contacts. Contains the code to produce Table **XX** and Figure **XX**.
+- `PolymodAnalysis.R` Analysis of German [POLYMOD](https://doi.org/10.1371/journal.pmed.0050074) data. Explores demographic distributions of German sample, depicts their distribution of work and leisure contacts. Contains the code to produce Supplementary Table 1 [X].
 
 - `Subanalysis_Careful.R` Analysis of contact data, differentiated by risk perception group. Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the two subpopulations. Contains the code to produce Figures **XX, XX, and XX**.
 
