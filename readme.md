@@ -18,7 +18,7 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 - `PolymodAnalysis.R` Analysis of German [POLYMOD](https://doi.org/10.1371/journal.pmed.0050074) data. Explores demographic distributions of German sample, depicts their distribution of work and leisure contacts. Contains the code to produce Supplementary Table 1 [X].
 
-- `Subanalysis_Careful.R` Analysis of contact data, differentiated by risk perception group. Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the two subpopulations. Contains the code to produce Figures **XX, XX, and XX**.
+- `ContactAnalysis_RiskPerception.R` Analysis of contact data, differentiated by risk perception group. Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the two subpopulations. Contains the code to produce Figures 3, 4, 5, and Supplementary Figure 4 [X].
 
 - `Subanalysis_Age.R` Analysis of contact data, differentiated by age group (18-39, 40-59, 60+). Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the three age groups. Contains the code to produce Figures **XX, XX, and XX**.
 
