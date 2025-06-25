@@ -18,6 +18,8 @@ here()
 source("./git/second-order-contacts/R/DataCleaningPrepForContactAnalysis.R")
 source("./git/second-order-contacts/R/mytheme.r")
 
+#1: Comparison of distribution of change of number of work/leisure contacts between different time points --> Applied to whole sample
+
 # Work --------------------------------------------------------------------
 
 #03/2020 vs Summer 2021
@@ -63,11 +65,8 @@ ggplot() +
   geom_ribbon(data = ecdf_comp2023, aes(ymin = lci, ymax = uci, x = respondent_work_rel_2019_2023), alpha = 0.3, fill = "green")+
   geom_line(data = ecdf_comp2023, aes(y=ecdf, x = respondent_work_rel_2019_2023), color = "green", size = 1) +
   xlab("Blue = 03/2020, Red = Summer2021,\nGreen = 01/2023") +
-  xlim(-100,150) +
+  scale_x_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), limits = c(-100,100)) +
   my_theme() 
-
-ggsave("ECDFWork.png", dpi = 500, w = 12, h = 6)
-
 
 # Leisure --------------------------------------------------------------------
 
@@ -114,12 +113,12 @@ ggplot() +
   geom_ribbon(data = ecdf_comp2023, aes(ymin = lci, ymax = uci, x = respondent_leisure_rel_2019_2023), alpha = 0.3, fill = "green")+
   geom_line(data = ecdf_comp2023, aes(y=ecdf, x = respondent_leisure_rel_2019_2023), color = "green", size = 1) +
   xlab("Blue = 03/2020, Red = Summer2021,\nGreen = 01/2023") +
-  xlim(-100,150) +
+  scale_x_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), limits = c(-100,100)) +
   my_theme() 
 
 ggsave("ECDFLeisure.png", dpi = 500, w = 12, h = 6)
 
-# DIFFERENCES BETWEEN RISK-AVERSE AND RISK-TOLERANT PARTICIPANTS ----------
+#2: For every time point: Difference in distributions between risk-averse and risk-tolerant individuals
 
 # Work Risk-Averse vs Risk-Tolerant ---------------------------------------
 
@@ -206,7 +205,7 @@ for(context in contexts){
       geom_line(data = ecdf_compAverse, aes(y=ecdf, x = !!sym(column), color = "Risk-Averse"), size = 1) +
       xlab("Change of No. of Contacts (percent)") +
       ylab("ECDF") +
-      xlim(-100,100) +
+      scale_x_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), limits = c(-100,100)) +
       my_theme()  +
       ggtitle(paste(tools::toTitleCase(context), pointintime)) +
       theme(legend.position = "bottom") +
@@ -317,7 +316,7 @@ ggplot() +
 
 ks.test(ecdf_compAverse$date_f1_inf, ecdf_compTolerant$date_f1_inf)
 
-# DIFFERENCES BETWEEN DIFFERENT AGE GROUPS ----------
+#3: For every time point: Difference in distribution between different age groups
 
 data_reducedWork1839<- data_reducedWork %>% filter(age_bracket == "18-39")
 data_reducedWork4059 <- data_reducedWork %>% filter(age_bracket == "40-59")
@@ -460,7 +459,7 @@ ks.test(ecdf_comp1839$date_f1_inf, ecdf_comp60$date_f1_inf)
 ks.test(ecdf_comp60$date_f1_inf, ecdf_comp4059$date_f1_inf)
 
 
-# DIFFERENCES BETWEEN GENDERS ----------
+#4: For every time point: Difference in distribution between female and male participants
 
 #Work
 
@@ -574,7 +573,7 @@ ggplot() +
 
 ks.test(ecdf_compFemale$date_f1_inf, ecdf_compMale$date_f1_inf)
 
-# DIFFERENCES BETWEEN NO/SOME COMORBIDITY ----------
+#5: For every time point: Difference in distribution between participants with and without comorbidity
 
 #Work
 
@@ -682,7 +681,7 @@ ggplot() +
 
 ks.test(ecdf_compNone$date_f1_inf, ecdf_compSome$date_f1_inf)
 
-# DIFFERENCE PARTICIPANTS, HH MEMBERS AND CC ------------------------------
+#6: For every time point: Difference in distribution between a) participant and hh members and b) participant and closest contact (CC).
 
 #Work
 data_reducedWork <- data_reduced %>% filter(respondent_work_rel_2019_2020 < 150) %>%

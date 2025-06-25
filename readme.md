@@ -26,7 +26,7 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 - `ContactAnalysis_Comorbidities.R` Analysis of contact data, differentiated by presence/absence of comorbidity. Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the two subpopulations. Contains the code to produce Supplementary Figure 16 and 17 [X].
 
-- `TestDistribution.R`: Applies Kolmogorov-Smirnov-tests and permutation tests to test for difference in distributions. 
+- `KolmogorovSmirnovTest.R`: Applies Kolmogorov-Smirnov-tests and permutation tests to test for difference in distributions. 
 
 ## Miscellaneous files
 - `DataComposition.R` : Contains some preliminary analysis and data validation. Figures produced in this script are used in presentations, but are not part of the manuscript.
