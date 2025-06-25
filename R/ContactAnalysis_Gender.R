@@ -44,10 +44,12 @@ unique_positions <- sapply(unique_A_values, function(a) {
   which(A_values == a)[1]
 })
 
+
+# Produces Supplementary Figure 14 ----------------------------------------
+
 p1_work <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(gender)) %>% filter(gender %in% c("male", "female")) %>%
     filter(!is.na(TypeOfContact)) %>% 
-    #filter(TypeOfContact %in% c("Leisure")) %>% 
     filter(TypeOfContact %in% c("Work")) %>% 
     filter(value > -150) %>%  filter(value < 100) %>%
     filter(!is.na(TypeOfContact)) %>% group_by(gender, TypeOfContact, time), aes(combined, value, color = gender, fill = gender)) +
@@ -77,10 +79,42 @@ p1_work <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent"
     labels = unique_A_values                     # Use corresponding unique A values as labels
   ) 
 
+p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Respondent") %>% 
+                    filter(!is.na(gender)) %>% filter(gender %in% c("male", "female")) %>%
+                    filter(!is.na(TypeOfContact)) %>% 
+                    filter(TypeOfContact %in% c("Leisure")) %>% 
+                    filter(value > -150) %>%  filter(value < 100) %>%
+                    filter(!is.na(TypeOfContact)) %>% group_by(gender, TypeOfContact, time), aes(combined, value, color = gender, fill = gender)) +
+  sm_raincloud(aes(stat = median_cl), 
+               point.params = list(size = 3, shape = 21, alpha = 0.4, position = sdamr::position_jitternudge(
+                 nudge.x = -0.12,
+                 jitter.width = 0.1, jitter.height = 0.01      
+               )), 
+               boxplot.params =  list(alpha = 0.0, width = 0.0, notch = TRUE), 
+               violin.params = list(width = 1.4, scale = "area"),
+               shape = 21, sep_level = 2)  +
+  scale_fill_manual(values = palette()) +
+  scale_color_manual(values = palette2()) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(-100, -50, 0,50, 100)) +
+  #facet_grid(~(time), switch="both")+
+  ggtitle("Leisure") +
+  theme_minimal() +
+  #theme(panel.spacing = unit(4, "lines")) +
+  ylab("Change of No. of \n Contacts (in percent)") +
+  my_theme() +
+  theme(axis.title.x = element_blank(), plot.title = element_text(hjust=0.5)) +
+  theme(axis.ticks.x = element_line(size = 0)) +
+  theme(legend.position = "bottom", legend.title = element_blank()) +
+  theme(axis.text.x = element_text(hjust=-0.0001))  +
+  scale_x_discrete(
+    breaks = combined_levels[unique_positions],  # Only put breaks at selected positions
+    labels = unique_A_values                     # Use corresponding unique A values as labels
+  ) 
+
 ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("CollectionViolinplots_Gender.pdf", dpi = 500, w = 24, h = 9)
-ggsave("CollectionViolinplots_Gender.png", dpi = 500, w = 24, h = 9)
+#ggsave("CollectionViolinplots_Gender.pdf", dpi = 500, w = 24, h = 9)
+#ggsave("CollectionViolinplots_Gender.png", dpi = 500, w = 24, h = 9)
 
 
 # Mean Reduction ----------------------------------------------------------
@@ -92,6 +126,8 @@ print(data_reduced_tidy_rel %>%
         summarise(meanRed = mean(value)), n = 100)
 
 # Number of Infections -------------------------------------------------------
+
+# Produces Supplementary Figure 15A
 
 data_reduced <- data_reduced %>% mutate(gender = case_when(gender == "Weiblich" ~ "female",
                                                            gender == "Männlich" ~ "male", 
@@ -143,6 +179,8 @@ no_infections <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To An
 
 # ECDF -------------------------------------------------------
 
+# Produces Supplementary Figure 15B
+
 data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
                                         .default = as.Date(as.character(date_f1_inf)))) %>%
                                 filter(date_f1_inf != as.Date("1922-03-01")) %>%
@@ -173,7 +211,9 @@ my_theme()
 #ggsave("ECDF_Gender.pdf", p2, dpi = 500, w = 9, h = 9)
 #ggsave("ECDF_Gender.png", p2, dpi = 500, w = 9, h = 9)
 
-ggarrange(no_infections, ecdf, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
+# Arrangement of subfigures and saving of Supplementary Figure 15
 
-ggsave("NoInfectionsECDF_Gender.pdf", dpi = 500, w = 22, h = 9) 
-ggsave("NoInfectionsECDF_Gender.png", dpi = 500, w = 22, h = 9) 
+#ggarrange(no_infections, ecdf, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
+
+#ggsave("NoInfectionsECDF_Gender.pdf", dpi = 500, w = 22, h = 9) 
+#ggsave("NoInfectionsECDF_Gender.png", dpi = 500, w = 22, h = 9) 
