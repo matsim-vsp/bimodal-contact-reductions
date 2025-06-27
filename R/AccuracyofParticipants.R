@@ -5,11 +5,10 @@ library(ggiraphExtra)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
-# Aim of FIRST PART of this script:
-# Survey respondents could forward the survey to their CC
-# This script compares the answers of the secondary respondents (referred to as 'second responds')
-# to the answers of the initial respondents (referred to as 'first respondent')
-# (Internal node: Slide 52 f.)
+# This script produces Supplementary Figure 6,7, and 8 of Supplementary Section Accuracy of Participants’ Reported Contact Numbers.
+# In order to recreate these plots, you need access to the survey data CONTAINING the User Ids.
+
+# Data prep
 
 data_reduced <- read_csv(file = "/Users/sydney/Desktop/TwitterLimeSurvey/twitter_data.csv")
 
@@ -111,7 +110,7 @@ data_both <- data_both %>% mutate(Diff = value_first_respondent - value_second_r
 data_both$time <- factor(data_both$time, levels = c("2019", "03_2020", "summer_2021", "01_2023"))
 
 palette <- function() {
-  c("#f1a340", "#998ec3")
+  c("#DC0000FF", "#3C5488FF")
 }
 
 data_both <- data_both %>% mutate(pairing = case_when(id_second_respondent == "262c9b2a-0ce2-40b5-9ba6-a658eebbc336" ~ "1st Pair", 
@@ -124,158 +123,93 @@ data_both <- data_both %>% mutate(pairing = case_when(id_second_respondent == "2
   id_second_respondent == "2b4b3e90-5603-4150-a96d-ee40f0229c61" ~ "8th Pair",
 id_second_respondent =="c60925b1-155c-43dd-a2e6-d6ddd2c5219d" ~ "9th Pair"))
 
-#Difference all categories
-ggplot(data_both %>% filter(id_second_respondent != "c34b67f3-53ca-47e4-82b2-56a7bc7f2c44") %>% filter(category %in% c("work", "leisure"))) + 
-  geom_col(aes(x = time, y = Diff, fill= factor(category)), position = "dodge", size = 3) +
-  theme_minimal() +
-  facet_wrap(~pairing, nrow=3) +
-  ylab("No. of Contacts Reported by Original Participant Minus\n No. of Contacts Reported by CC themselves") +
-  xlab("Point In Time") +
+
+# Accuracy of Household Reporting
+# Produces Supplementary Figure 6
+
+households <- data_both %>% filter(id_second_respondent != "c34b67f3-53ca-47e4-82b2-56a7bc7f2c44") %>% 
+  filter(category == "hsldsize") %>% filter(time == "2019") %>% select(c("pairing", "value_first_respondent", "value_second_respondent"))
+households <- households %>% pivot_longer(cols = c("value_first_respondent", "value_second_respondent"))
+households <- households %>% mutate(name = case_when(name == "value_first_respondent" ~ "Original Participant",
+                                                     name == "value_second_respondent" ~ "Closest Contact"))
+households$name <- factor(households$name, levels = c("Original Participant", "Closest Contact"))
+
+palette <- function() {
+  c("#3C5488FF", "#DC0000FF")
+}
+
+ggplot(households) + 
+  geom_point(aes(x = time, y = value, color = name), position = position_dodge2(width = 1), size = 5) +
+  theme_bw() +
+  facet_wrap(~pairing, nrow=1) +
+  ylab("Number of\nHousehold Members") +
+  xlab("") +
   theme(legend.position = "bottom", legend.title=element_blank()) +
   theme(text = element_text(size = 30)) +
-  scale_fill_manual(values = palette())
+  theme(axis.ticks.x = element_blank(), axis.text.x = element_blank()) +
+  scale_color_manual(values = palette()) 
 
-ggsave("AssumedMinusActual.pdf", dpi = 500, w = 27, h = 12)
-ggsave("AssumedMinusActual.png", dpi = 500, w = 27, h = 12)
+#ggsave("AccuracyHousehold.pdf", dpi = 500, w = 20, h = 6)
+#ggsave("AccuracyHousehold.png", dpi = 500, w = 20, h = 6)
 
+# Accuracy of Work Contacts Reporting
+# Produces Supplementary Figure 7
 
-#Difference household
-ggplot(data_both %>% filter(category == "hsldsize")) + 
-  geom_point(aes(x = time, y = Diff, colour = factor(category)), size = 3) +
-  theme_linedraw() +
-  facet_wrap(~id_second_respondent, nrow=2) +
-  scale_color_manual(values = palette()) +
-  ylab("Assumed # Contacts CC - #Actual Contacts CC") +
+data_both <- data_both %>% mutate(time = case_when(time == "03_2020" ~ "03/2020",
+                                                   time == "summer_2021" ~ "Summer\n2021",
+                                                   time == "01_2023" ~ "01/2023",
+                                                   .default = time))
+
+data_both$time <- factor(data_both$time, levels = c("2019", "03/2020", "Summer\n2021", "01/2023"))
+
+work <- data_both %>% filter(id_second_respondent != "c34b67f3-53ca-47e4-82b2-56a7bc7f2c44") %>% 
+  filter(category == "work") %>% select(c("time", "pairing", "value_first_respondent", "value_second_respondent"))
+work <- work %>% pivot_longer(cols = c("value_first_respondent", "value_second_respondent"))
+work <- work %>% mutate(name = case_when(name == "value_first_respondent" ~ "Original Participant",
+                                                     name == "value_second_respondent" ~ "Closest Contact"))
+work$name <- factor(work$name, levels = c("Original Participant", "Closest Contact"))
+
+palette <- function() {
+  c("#3C5488FF", "#DC0000FF")
+}
+
+ggplot(work) + 
+  geom_point(aes(x = time, y = value, color = name), position = position_dodge2(width = 1), size = 5) +
+  theme_bw() +
+  facet_wrap(~pairing, nrow=3) +
+  ylab("Number of\nContacts") +
   xlab("") +
   theme(legend.position = "bottom", legend.title=element_blank()) +
-  theme(text = element_text(size = 22)) +
-  theme(axis.text.x = element_text(angle = 90)) 
+  theme(text = element_text(size = 30)) +
+  scale_color_manual(values = palette()) 
 
-ggsave("AssumedMinusActualHousehold.pdf", dpi = 500, w = 21, h = 9)
-ggsave("AssumedMinusActualHousehold.png", dpi = 500, w = 21, h = 9)
+#ggsave("AccuracyWork.pdf", dpi = 500, w = 20, h = 12)
+#ggsave("AccuracyWork.png", dpi = 500, w = 20, h = 12)
 
-p1 <- ggplot(data_both %>% filter(category == "hsldsize"), aes(time, Diff)) +
-  geom_boxplot(color = "#E4572E", linewidth = 1.1) +
-  theme_minimal() +
-  ggtitle("Household Size") +
-  xlab("Point In Time") +
-  ylab("Assumed # Contacts CC \n Minus #Actual Contacts CC") +
-  theme(text = element_text(size = 22))
+# Accuracy of Leisure Contacts Reporting
+# Produces Supplementary Figure 8
 
-ggsave("AssumedMinusActualHouseholdBoxPlot.pdf", dpi = 500, w = 8, h = 4.5)
-ggsave("AssumedMinusActualHouseholdBoxPlot.png", dpi = 500, w = 8, h = 4.5)
+leisure <- data_both %>% filter(id_second_respondent != "c34b67f3-53ca-47e4-82b2-56a7bc7f2c44") %>% 
+  filter(category == "leisure") %>% select(c("time", "pairing", "value_first_respondent", "value_second_respondent"))
+leisure <- leisure %>% pivot_longer(cols = c("value_first_respondent", "value_second_respondent"))
+leisure <- leisure %>% mutate(name = case_when(name == "value_first_respondent" ~ "Original Participant",
+                                         name == "value_second_respondent" ~ "Closest Contact"))
+leisure$name <- factor(leisure$name, levels = c("Original Participant", "Closest Contact"))
 
-#Difference work
-ggplot(data_both %>% filter(category == "work")) + 
-  geom_point(aes(x = time, y = Diff, colour = factor(category)), size = 3) +
-  theme_linedraw() +
-  facet_wrap(~id_second_respondent, nrow=2) +
-  scale_color_manual(values = palette()) +
-  ylab("Assumed # Contacts CC - #Actual Contacts CC") +
-  xlab("Assumed # Contacts CC \n Minus #Actual Contacts CC") +
-  theme(legend.position = "bottom", legend.title=element_blank()) +
-  theme(text = element_text(size = 25)) +
-  theme(axis.text.x = element_text(angle = 90)) 
+palette <- function() {
+  c("#3C5488FF", "#DC0000FF")
+}
 
-ggsave("AssumedMinusActualWork.pdf", dpi = 500, w = 21, h = 9)
-ggsave("AssumedMinusActualWork.png", dpi = 500, w = 21, h = 9)
-
-p2 <- ggplot(data_both %>% filter(category == "work"), aes(time, Diff)) +
-  geom_boxplot(color = "#E4572E", linewidth = 1.1) +
-  theme_minimal() +
-  xlab("Time") +
-  ggtitle("Work Contacts") +
-  ylab("Assumed # Contacts CC \n Minus #Actual Contacts CC") +
-  theme(text = element_text(size = 25))
-
-ggsave("AssumedMinusActualWorkBoxPlot.pdf", dpi = 500, w = 8, h = 4.5)
-ggsave("AssumedMinusActualWorkBoxPlot.png", dpi = 500, w = 8, h = 4.5)
-
-#Difference school
-ggplot(data_both %>% filter(category == "school")) + 
-  geom_point(aes(x = time, y = Diff, colour = factor(category)), size = 3) +
-  theme_linedraw() +
-  facet_wrap(~id_second_respondent, nrow=2) +
-  scale_color_manual(values = palette()) +
-  ylab("Assumed # Contacts CC - #Actual Contacts CC") +
+ggplot(leisure) + 
+  geom_point(aes(x = time, y = value, color = name), position = position_dodge2(width = 1), size = 5) +
+  theme_bw() +
+  facet_wrap(~pairing, nrow=3) +
+  ylab("Number of\nContacts") +
   xlab("") +
   theme(legend.position = "bottom", legend.title=element_blank()) +
-  theme(text = element_text(size = 22)) +
-  theme(axis.text.x = element_text(angle = 90)) 
+  theme(text = element_text(size = 30)) +
+  scale_color_manual(values = palette()) 
 
-ggsave("AssumedMinusActualSchool.pdf", dpi = 500, w = 21, h = 9)
-ggsave("AssumedMinusActualSchool.png", dpi = 500, w = 21, h = 9)
-
-ggplot(data_both %>% filter(category == "school"), aes(time, Diff)) +
-  geom_boxplot() +
-  theme_minimal() +
-  xlab("Time") +
-  ylab("Difference") +
-  theme(text = element_text(size = 22))
-
-ggsave("AssumedMinusActualSchoolBoxPlot.pdf", dpi = 500, w = 8, h = 4)
-ggsave("AssumedMinusActualSchoolBoxPlot.png", dpi = 500, w = 8, h = 4)
-
-#Difference leisure
-ggplot(data_both %>% filter(category == "leisure")) + 
-  geom_point(aes(x = time, y = Diff, colour = factor(category)), size = 3) +
-  theme_linedraw() +
-  facet_wrap(~id_second_respondent, nrow=2) +
-  scale_color_manual(values = palette()) +
-  ylab("Assumed # Contacts CC - #Actual Contacts CC") +
-  xlab("") +
-  theme(legend.position = "bottom", legend.title=element_blank()) +
-  theme(text = element_text(size = 22)) +
-  theme(axis.text.x = element_text(angle = 90)) 
-
-ggsave("AssumedMinusActualLeisure.pdf", dpi = 500, w = 21, h = 9)
-ggsave("AssumedMinusActualLeisure.png", dpi = 500, w = 21, h = 9)
-
-p3 <- ggplot(data_both %>% filter(category == "leisure"), aes(time, Diff)) +
-  geom_boxplot(color = "#E4572E", linewidth = 1.1) +
-  theme_minimal() +
-  xlab("Time") +
-  ggtitle("Leisure Contacts") +
-  ylab("") +
-  theme(text = element_text(size = 25))
-
-p <- arrangeGrob(p2,p3, nrow=1)
-ggsave("AssumedMinusActualBoxPlot.pdf", p, dpi = 500, w = 24, h = 5)
-ggsave("AssumedMinusActualBoxPlot.png", p, dpi = 500, w = 24, h = 5)
-
-ggsave("AssumedMinusActualLeisureBoxPlot.pdf", dpi = 500, w = 8, h = 4.5)
-ggsave("AssumedMinusActualLeisureBoxPlot.png", dpi = 500, w = 8, h = 4.5)
-
-
-#Computation of remaining % of contacts for respondent, pre-pandemic and during-pandemic CC
-# Respondent
-data_reduced <- data_reduced %>% mutate(red_respondent_work_2019_2020 = 100-(100/respondent_work_2019)*(respondent_work_2019-respondent_work_03_2020)) %>%
-  mutate(red_respondent_work_2019_2021 = 100-(100/respondent_work_2019)*(respondent_work_2019-respondent_work_summer_2021)) %>%
-  mutate(red_respondent_work_2019_2023 = 100-(100/respondent_work_2019)*(respondent_work_2019-respondent_work_01_2023)) %>%
-  mutate(red_respondent_all_2019_2020 = 100-(100/respondent_all_2019)*(respondent_all_2019-respondent_all_03_2020)) %>%
-  mutate(red_respondent_all_2019_2021 = 100-(100/respondent_all_2019)*(respondent_all_2019-respondent_all_summer_2021)) %>%
-  mutate(red_respondent_all_2019_2023 = 100-(100/respondent_all_2019)*(respondent_all_2019-respondent_all_01_2023)) %>%
-  mutate(red_respondent_leisure_2019_2020 = 100-(100/respondent_leisure_2019)*(respondent_leisure_2019-respondent_leisure_03_2020)) %>%
-  mutate(red_respondent_leisure_2019_2021 = 100-(100/respondent_leisure_2019)*(respondent_leisure_2019-respondent_leisure_summer_2021)) %>%
-  mutate(red_respondent_leisure_2019_2023 = 100-(100/respondent_leisure_2019)*(respondent_leisure_2019-respondent_leisure_01_2023))
-# Pre-Pandemic CC
-data_reduced <- data_reduced %>% mutate(red_cc_pre_work_2019_2020 = 100-(100/cc_pre_work_2019)*(cc_pre_work_2019-cc_pre_work_03_2020)) %>%
-  mutate(red_cc_pre_work_2019_2021 = 100-(100/cc_pre_work_2019)*(cc_pre_work_2019-cc_pre_work_summer_2021)) %>%
-  mutate(red_cc_pre_work_2019_2023 = 100-(100/cc_pre_work_2019)*(cc_pre_work_2019-cc_pre_work_01_2023)) %>%
-  mutate(red_cc_pre_all_2019_2020 = 100-(100/cc_pre_all_2019)*(cc_pre_all_2019-cc_pre_all_03_2020)) %>%
-  mutate(red_cc_pre_all_2019_2021 = 100-(100/cc_pre_all_2019)*(cc_pre_all_2019-cc_pre_all_summer_2021)) %>%
-  mutate(red_cc_pre_all_2019_2023 = 100-(100/cc_pre_all_2019)*(cc_pre_all_2019-cc_pre_all_01_2023)) %>%
-  mutate(red_cc_pre_leisure_2019_2020 = 100-(100/cc_pre_leisure_2019)*(cc_pre_leisure_2019-cc_pre_leisure_03_2020)) %>%
-  mutate(red_cc_pre_leisure_2019_2021 = 100-(100/cc_pre_leisure_2019)*(cc_pre_leisure_2019-cc_pre_leisure_summer_2021)) %>%
-  mutate(red_cc_pre_leisure_2019_2023 = 100-(100/cc_pre_leisure_2019)*(cc_pre_leisure_2019-cc_pre_leisure_01_2023))
-# During-Pandemic CC 
-data_reduced <- data_reduced %>% mutate(red_cc_during_work_2019_2020 = 100-(100/cc_during_work_2019)*(cc_during_work_2019-cc_during_work_03_2020)) %>%
-  mutate(red_cc_during_work_2019_2021 = 100-(100/cc_during_work_2019)*(cc_during_work_2019-cc_during_work_summer_2021)) %>%
-  mutate(red_cc_during_work_2019_2023 = 100-(100/cc_during_work_2019)*(cc_during_work_2019-cc_during_work_01_2023)) %>%
-  mutate(red_cc_during_all_2019_2020 = 100-(100/cc_during_all_2019)*(cc_during_all_2019-cc_during_all_03_2020)) %>%
-  mutate(red_cc_during_all_2019_2021 = 100-(100/cc_during_all_2019)*(cc_during_all_2019-cc_during_all_summer_2021)) %>%
-  mutate(red_cc_during_all_2019_2023 = 100-(100/cc_during_all_2019)*(cc_during_all_2019-cc_during_all_01_2023)) %>%
-  mutate(red_cc_during_leisure_2019_2020 = 100-(100/cc_during_leisure_2019)*(cc_during_leisure_2019-cc_during_leisure_03_2020)) %>%
-  mutate(red_cc_during_leisure_2019_2021 = 100-(100/cc_during_leisure_2019)*(cc_during_leisure_2019-cc_during_leisure_summer_2021)) %>%
-  mutate(red_cc_during_leisure_2019_2023 = 100-(100/cc_during_leisure_2019)*(cc_during_leisure_2019-cc_during_leisure_01_2023))
+#ggsave("AccuracyLeisure.pdf", dpi = 500, w = 20, h = 12)
+#ggsave("AccuracyLeisure.png", dpi = 500, w = 20, h = 12)
 

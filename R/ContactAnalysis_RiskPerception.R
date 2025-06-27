@@ -57,9 +57,7 @@ data_reduced_tidy_rel$time <- factor(data_reduced_tidy_rel$time, levels = c("03/
 
 # Work Contact Analysis ---------------------------------------------------
 
-
 # Produces Figure 3 -------------------------------------------------------
-
 
 data_reduced_tidy_rel$combined = interaction(data_reduced_tidy_rel$RiskyCarefulAtt, data_reduced_tidy_rel$time)
 combined_levels <- levels(interaction(data_reduced_tidy_rel$RiskyCarefulAtt, data_reduced_tidy_rel$time))
@@ -256,14 +254,14 @@ p3 <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
                           RiskyCarefulAtt == "Risk-averse" ~ 350*(n/350 + 1.96*(((n/350*(1-n/350))/350)^0.5)))) %>%
   mutate(uci = case_when(RiskyCarefulAtt == "Risk-tolerant" ~ 100/43*uci,
                           RiskyCarefulAtt == "Risk-averse" ~ 100/350*uci)) %>%
-  ggplot(aes(num_c19_infs_eng, percent/100, fill = RiskyCarefulAtt)) +
+  ggplot(aes(num_c19_infs_eng, percent, fill = RiskyCarefulAtt)) +
   #geom_col(position = position_dodge(preserve = 'single')) +
   geom_bar(stat = "identity", position = "dodge", width = 0.8) +
-  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci/100, ymax=uci/100, color = RiskyCarefulAtt), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=2.5) +
+  geom_errorbar(aes(x=num_c19_infs_eng, ymin=lci, ymax=uci, color = RiskyCarefulAtt), position = position_dodge(0.8), width = 0.3, alpha=0.9, size=2.5) +
   theme_minimal() +
-  ylab("Share\n(percent)") +
+  ylab("Share\n(in percent)") +
   xlab("Number of Infections") +
-  scale_y_continuous(breaks = c(0,0.25, 0.50)) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50)) +
   theme(text = element_text(size = 30)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   #labs(fill="Behavioral Group") +
@@ -279,5 +277,5 @@ p3 <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
 
 ggarrange(p3, p2, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("Figure5.pdf", dpi = 500, w = 21, h = 12) 
-ggsave("Figure5.png", dpi = 500, w = 21, h = 12) 
+ggsave("NoInfectionsECDF_AttCarefulnessScore_Figure5.pdf", dpi = 500, w = 21, h = 12) 
+ggsave("NoInfectionsECDF_AttCarefulnessScore_Figure5.png", dpi = 500, w = 21, h = 12) 
