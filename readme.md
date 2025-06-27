@@ -26,9 +26,13 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 - `ContactAnalysis_Comorbidities.R` Analysis of contact data, differentiated by presence/absence of comorbidity. Depicts number of contacts, distribution of number of infections, and ECDF of timing of first infection for the two subpopulations. Contains the code to produce Supplementary Figure 16 and 17 [X].
 
-- `AccuracyofParticipants.R`Compares the number of contacts participants reported their closests contacts (CCs) to the number of contacts the CCs reported for themselves. Contqins the code to produce Supplementary Figure 6,7, and 8 [X].
+- `AccuracyofParticipants.R`Compares the number of contacts participants reported their closests contacts (CCs) to the number of contacts the CCs reported for themselves. Contains the code to produce Supplementary Figure 6,7, and 8 [X].
 
-- `KolmogorovSmirnovTest.R`: Applies Kolmogorov-Smirnov-tests and permutation tests to test for difference in distributions. 
+- `KolmogorovSmirnovTest.R`: Applies Kolmogorov-Smirnov-tests and permutation tests to test for difference in distributions of change of number of contacts.  [X]. 
+
+- `GroupassignmentsSankey.R`: Takes Bayesian model outputs as inputs. Based on fitting, assigns groups _Strong reduction_, _Intermediate Reduction_, and _Little Change_ to reported no. of contacts.
+
+- `SankeyPlots.R`: Takes output from GroupAssignmentSankey.R as input. Converts data to appropiate format for Sankey plots. Contains the code to produce Figure 2. 
 
 ## Miscellaneous files
 - `mytheme.R`: Creates a personalized theme that is applied to all figures. 
