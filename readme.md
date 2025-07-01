@@ -30,9 +30,11 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 - `KolmogorovSmirnovTest.R`: Applies Kolmogorov-Smirnov-tests and permutation tests to test for difference in distributions of change of number of contacts.  [X]. 
 
-- `GroupassignmentsSankey.R`: Takes Bayesian model outputs as inputs. Based on fitting, assigns groups _Strong reduction_, _Intermediate Reduction_, and _Little Change_ to reported no. of contacts.
+- `GroupassignmentSankey.R`: Takes Bayesian model outputs as inputs. Based on fitting, assigns groups _Strong reduction_, _Intermediate Reduction_, and _Little Change_ to reported no. of contacts [X].
 
-- `SankeyPlots.R`: Takes output from GroupAssignmentSankey.R as input. Converts data to appropiate format for Sankey plots. Contains the code to produce Figure 2. 
+- `SankeyPlots.R`: Takes output from GroupAssignmentSankey.R as input. Converts data to appropiate format for Sankey plots. Contains the code to produce Figure 2 [X]. 
+
+- `CorrelationAnalysis-SocialHomophily.R`: Computes correlation coefficients for participants' and CC's number of contacts. Produces Table 3 and Figure 6 [X].
 
 ## Miscellaneous files
 - `mytheme.R`: Creates a personalized theme that is applied to all figures. 
