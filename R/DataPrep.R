@@ -2,13 +2,14 @@ library(tidyverse)
 library(igraph)
 library(gridExtra)
 library(ggiraphExtra)
+library(here)
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
-# Aim of this script:
-# Clean and prepare data for contact analysis
+# Aim of this script: Clean and prepare data for contact analysis
  
-raw_data <- readRDS(file = "/Users/sydney/git/twitter-study/data/cleaned_data.rds") #Place to enter the data's path
+here()
+raw_data <- readRDS(file = "./data/cleaned_data.rds") #Place to enter the data's path
 
 # Reducing data frame to the variables of interest ------------------------
 
@@ -55,8 +56,8 @@ data_reduced <- raw_data %>% select(ref, origin, gender, highest_educational_qua
                                     cc_weekly_cont_during_pandemic_2019_leisure_cont, cc_weekly_cont_during_pandemic_03_2020_leisure_cont, cc_weekly_cont_during_pandemic_summer_2021_leisure_cont, cc_weekly_cont_during_pandemic_01_2023_leisure_cont, 
                                     c19_vaccination_status, c19_vaccination_details_vaccine_dose_1, c19_vaccination_details_vaccine_dose_2, c19_vaccination_details_vaccine_dose_3, c19_vaccination_details_vaccine_dose_4)
 
-## Renaming some of the columns to facilitate analysis
-# Renaming done for RESPONDENT
+# Renaming some of the columns to facilitate analysis
+# Renaming columns containing respondents' contact data
 colnames(data_reduced)[which(names(data_reduced) == "cc_change_during_pandemic")] <- "respondent_cc_change"
 colnames(data_reduced)[which(names(data_reduced) == "total_hsld_size_persons_under_14")] <- "respondent_hsld_size_persons_under_14"
 colnames(data_reduced)[which(names(data_reduced) == "hsld_size_2019_")] <- "respondent_hsld_size_2019"
@@ -81,7 +82,7 @@ data_reduced <- data_reduced %>% mutate(respondent_all_2019 = respondent_hsld_si
   mutate(respondent_all_summer_2021 = respondent_hsld_size_summer_2021 + respondent_school_summer_2021 +respondent_work_summer_2021 + respondent_leisure_summer_2021) %>%
   mutate(respondent_all_01_2023 = respondent_hsld_size_01_2023 + respondent_school_01_2023 +respondent_work_01_2023 + respondent_leisure_01_2023)
 
-#Renaming done for house hold member of respondent
+# Renaming columns containing household members' contact data
 colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__2019_work_uni")] <- "hhmember_work_2019"
 colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__03_2020_work_uni")] <- "hhmember_work_03_2020"
 colnames(data_reduced)[which(names(data_reduced) == "hsld_cont__summer_2021_work_uni")] <- "hhmember_work_summer_2021"
@@ -100,8 +101,7 @@ data_reduced <- data_reduced %>% mutate(hhmember_all_2019 = respondent_hsld_size
   mutate(hhmember_all_summer_2021 = respondent_hsld_size_summer_2021 + hhmember_school_summer_2021 + hhmember_work_summer_2021 + hhmember_leisure_summer_2021) %>%
   mutate(hhmember_all_01_2023 = respondent_hsld_size_01_2023 + hhmember_school_01_2023 + hhmember_work_01_2023 + hhmember_leisure_01_2023)
 
-
-# Renaming done for CC PRE pandemic
+# Renaming columns containing pre-pandemic CCs' contact data
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_2019_num_hsld_members")] <- "cc_pre_hsld_size_2019"
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_03_2020_num_hsld_members")] <- "cc_pre_hsld_size_03_2020"
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_pre_pandemic_summer_2021_num_hsld_members")] <- "cc_pre_hsld_size_summer_2021"
@@ -124,7 +124,7 @@ data_reduced <- data_reduced %>% mutate(cc_pre_all_2019 = cc_pre_hsld_size_2019 
   mutate(cc_pre_all_summer_2021 = cc_pre_hsld_size_summer_2021 + cc_pre_school_summer_2021 +cc_pre_work_summer_2021 + cc_pre_leisure_summer_2021) %>%
   mutate(cc_pre_all_01_2023 = cc_pre_hsld_size_01_2023 + cc_pre_school_01_2023 +cc_pre_work_01_2023 + cc_pre_leisure_01_2023)
 
-# Renaming done for CC DURING pandemic
+# Renaming columns containing during-pandemic CCs' contact data
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_during_pandemic_2019_num_hsld_members")] <- "cc_during_hsld_size_2019"
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_during_pandemic_03_2020_num_hsld_members")] <- "cc_during_hsld_size_03_2020"
 colnames(data_reduced)[which(names(data_reduced) == "cc_hsld_size_during_pandemic_summer_2021_num_hsld_members")] <- "cc_during_hsld_size_summer_2021"
@@ -147,7 +147,7 @@ data_reduced <- data_reduced %>% mutate(cc_during_all_2019 = cc_during_hsld_size
   mutate(cc_during_all_summer_2021 = cc_during_hsld_size_summer_2021 + cc_during_school_summer_2021 +cc_during_work_summer_2021 + cc_during_leisure_summer_2021) %>%
   mutate(cc_during_all_01_2023 = cc_during_hsld_size_01_2023 + cc_during_school_01_2023 + cc_during_work_01_2023 + cc_during_leisure_01_2023)
 
-##Adding age brackets
+# Adding age brackets
 data_reduced <- data_reduced %>% mutate(age_bracket = case_when(year_of_birth <= 1963 ~ "60+",
                                                                 year_of_birth <= 1973 ~ "40-59",
                                                                 year_of_birth <= 1983 ~ "40-59",
@@ -156,7 +156,8 @@ data_reduced <- data_reduced %>% mutate(age_bracket = case_when(year_of_birth <=
 
 data_reduced$age_bracket <- factor(data_reduced$age_bracket, levels = c("18-39", "40-59", "60+"))                                                             
 
-#Data Prep Carefulness of Respondents
+
+# Grouping by Risk Perception Score ---------------------------------------
 
 data_reduced <- data_reduced %>% mutate(attitudes_precautions_mar2020_low_infection_risk_perception = case_when(attitudes_precautions_mar2020_low_infection_risk_perception %in% c("viel weniger", "weniger", "etwas weniger") ~ "Risk-averse",
                                                                                                 attitudes_precautions_mar2020_low_infection_risk_perception == "genauso" ~ "Neutral",
@@ -228,7 +229,7 @@ data_reduced <- data_reduced %>% mutate(attitudes_precautions_mar2020_low_infect
                                                                                                 beh_change_start_pandemic_meet_close_despite_restrict == "genauso" ~ "Neutral",
                                                                                                 beh_change_start_pandemic_meet_close_despite_restrict %in% c("etwas mehr", "mehr", "viel mehr") ~ "Risk-tolerant"))
 
-# Convert Responses to Attitude Questions to Integers such that I can compute a "carefulness score"
+# Converting responses to attidue questions to integers to be able to compute a risk-perception score
 data_reduced <- data_reduced %>% mutate(attitudes_precautions_mar2020_low_infection_risk_perception_int = case_when(attitudes_precautions_mar2020_low_infection_risk_perception == "Risk-averse" ~ 1,
                                                                                                                 attitudes_precautions_mar2020_low_infection_risk_perception == "Neutral" ~ 0,
                                                                                                                 attitudes_precautions_mar2020_low_infection_risk_perception == "Risk-tolerant" ~ -1),
@@ -323,6 +324,7 @@ data_reduced$beh_change_start_pandemic_work_from_home_int <- as.integer(data_red
 data_reduced$beh_change_start_pandemic_children_limited_contacts_int_int <- as.integer(data_reduced$beh_change_start_pandemic_children_limited_contacts_int)
 data_reduced$beh_change_start_pandemic_meet_close_despite_restrict_int <- as.integer(data_reduced$beh_change_start_pandemic_meet_close_despite_restrict_int)
 
+# Computation of risk-perception score
 data_reduced <- data_reduced %>% mutate(attitudeScore = attitudes_precautions_mar2020_low_infection_risk_perception_int +                
                                     attitudes_precautions_mar2020_risky_infection_course_assessment_int +            
                                     attitudes_precautions_mar2020_high_risk_perception_int +                     
@@ -346,6 +348,7 @@ data_reduced <- data_reduced %>% mutate(attitudeScore = attitudes_precautions_ma
                                     beh_change_start_pandemic_children_limited_contacts_int +
                                     beh_change_start_pandemic_meet_close_despite_restrict_int)
 
+# Grouping participants according to their risk perception score
 data_reduced <- data_reduced %>% mutate(RiskyCarefulAtt = case_when(attitudeScore %in% c(-9,-8,-7,-6,-5,-4,-3,-2,-1, 0,1,2,3) ~ "Risk-tolerant",
                                                                 attitudeScore %in% c(4,5,6,7,8,9) ~ "Risk-averse")) %>%
                                 mutate(RiskyCarefulBeh = case_when(behaviorChangeScore %in% c(-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1) ~ "Risk-tolerant",
@@ -355,8 +358,7 @@ data_reduced$RiskyCarefulAtt <- factor(data_reduced$RiskyCarefulAtt, levels = c(
 data_reduced$RiskyCarefulBeh <- factor(data_reduced$RiskyCarefulBeh, levels = c("Risk-tolerant", "Risk-averse"))
 
 
-#Adding relative no. of contacts
-
+# Computation of relative (to 2019) number of contacts
 data_reduced <- data_reduced %>% mutate(respondent_work_rel_2019_2020 = -(respondent_work_2019-respondent_work_03_2020)/respondent_work_2019*100) %>%
                                   mutate(respondent_work_rel_2019_2021 = -(respondent_work_2019-respondent_work_summer_2021)/respondent_work_2019*100) %>%
                                   mutate(respondent_work_rel_2019_2023 = -(respondent_work_2019-respondent_work_01_2023)/respondent_work_2019*100) %>%
@@ -464,7 +466,7 @@ data_reduced <- data_reduced %>% mutate(cc_during_work_ln_2019_2020 = log(cc_dur
                                   mutate(cc_during_all_ln_2019_2023 = log(cc_during_all_01_2023/cc_during_all_2019))
 
 
-## Turning data into tidy format (absolute no of contacts)
+# Turning data into tidy format (absolute number of contacts)
 
 data_reduced_tidy <- data_reduced %>% #select(-c(respondent_hsld_size_persons_under_14, number_of_children_under_18)) %>%
                                       select(-contains("rel")) %>% 
@@ -489,7 +491,7 @@ data_reduced_tidy$time <- factor(data_reduced_tidy$time, levels = c("2019", "03/
 data_reduced_tidy$TypeOfContact <- factor(data_reduced_tidy$TypeOfContact, levels = c("Work", "Leisure", "School", "All"))
 data_reduced_tidy$WhoseContacts <- factor(data_reduced_tidy$WhoseContacts, levels = c("Respondent", "Household Members", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
 
-## Turning data into tidy format (relative no of contacts)
+## Turning data into tidy format (relative number of contacts)
 
 data_reduced <- tibble::rowid_to_column(data_reduced, "ID")
 
@@ -536,34 +538,7 @@ for(context in contexts){
   }
 }
 
-
-## Turning data into tidy format (ln change)
-
-data_reduced_tidy_ln <- data_reduced %>% select(contains(c("date_f1_inf", "date_s2_inf", "date_t3_inf", "num_c19_infs", "respondent_cc_change", "year", "gender", "age_bracket", "cond", "attitude", "beh_change", "ln", "RiskyCarefulAtt")))
-
-data_reduced_tidy_ln <- data_reduced_tidy_ln %>% pivot_longer(cols = 64:112)
-
-data_reduced_tidy_ln <- data_reduced_tidy_ln  %>% mutate(time = case_when(
-                                                          str_detect(name, "ln_2019_2020") ~ "03/2020",
-                                                          str_detect(name, "ln_2019_2021") ~ "Summer 2021",
-                                                          str_detect(name, "ln_2019_2023") ~ "01/2023")) %>%
-                                  mutate(WhoseContacts = case_when(str_detect(name, "respondent") ~ "Respondent",
-                                  str_detect(name, "cc_pre") ~ "Closest Contact (Pre-Covid)",
-                                  str_detect(name, "cc_during") ~ "Closest Contact (During-Covid)",
-                                  str_detect(name, "hhmember") ~ "Household Members")) %>%
-                                  mutate(TypeOfContact = case_when(str_detect(name, "work") ~ "Work",
-                                  str_detect(name, "school") ~ "School",
-                                  str_detect(name, "leisure") ~ "Leisure",
-                                  str_detect(name, "all") ~ "All"))
-
-data_reduced_tidy_ln$time <- factor(data_reduced_tidy_ln$time, levels = c("2019", "03/2020", "Summer 2021", "01/2023"))
-data_reduced_tidy_ln$TypeOfContact <- factor(data_reduced_tidy_ln$TypeOfContact, levels = c("Work", "Leisure", "School", "All"))
-data_reduced_tidy_ln$WhoseContacts <- factor(data_reduced_tidy_ln$WhoseContacts, levels = c("Respondent", "Household Members", "Closest Contact (Pre-Covid)", "Closest Contact (During-Covid)"))
-
-data_reduced_tidy_ln$value[is.nan(data_reduced_tidy_ln$value)] <- -1000
-data_reduced_tidy_ln$value[is.na(data_reduced_tidy_ln$value)] <- -1000
-
-### Prep for Correlation Analyis
+# Preparation for correlation analyis/social homophily analysis
 
 data_reduced$respondent_work_2019[is.na(data_reduced$respondent_work_2019)] <- -1000
 data_reduced$respondent_leisure_2019[is.na(data_reduced$respondent_leisure_2019)] <- -1000
@@ -615,9 +590,9 @@ data_reduced$cc_pre_leisure_rel_2019_2023[is.na(data_reduced$cc_pre_leisure_rel_
 data_reduced$cc_pre_all_rel_2019_2023[is.na(data_reduced$cc_pre_all_rel_2019_2023)] <- -1000
 
 
-# Group addition
+# Assigning participants to groups (strong reduction, intermediate reduction, little change)
 
-group_belonging <- read_csv("/Users/sydney/git/second-order-contacts/AnalysisSP/TrimodalGroups/GroupAssignment.csv")
+group_belonging <- read_csv("./data/GroupAssignment.csv")
 
 data_reduced_tidy_rel$value <- round(data_reduced_tidy_rel$value)
 data_reduced_tidy_rel <- data_reduced_tidy_rel %>% 

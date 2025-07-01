@@ -10,7 +10,7 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 ## Top level files
 
-- `DataCleaningPrepForContactAnalysis.R`: Contains the cleaning of the anonymized data. Is called in most subsequent scripts to prepare the necessary data
+- `DataPrep.R`: Contains the cleaning of the anonymized data. Is called in most subsequent scripts [X].
 
 - `ContactAnalysis_FullSample.R`: Contains contact analysis for whole sample. Contains code to produce Figure 1, Supplementary Figure 2, Supplementary Figure 8, Supplementary Figure  [X].
 
