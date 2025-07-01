@@ -1,13 +1,13 @@
-library(tidyverse)
-library(MMWRweek)
-library(see)
-library(RColorBrewer)
-library(patchwork)
-library(ggpubr)
-library(ggh4x)
-library(scales)
-library(smplot2)
-library(here)
+library(tidyverse) #version 2.0.0
+library(MMWRweek) #version 0.1.3
+library(see) #version 0.8.4
+library(RColorBrewer) #version 1.1.3
+library(patchwork) #version 1.2.0
+library(ggpubr) #version 0.6.0
+library(ggh4x) #version 0.3.1
+library(scales) #version 1.3.0
+library(smplot2) #version 0.2.4
+library(here) #version 1.0.1
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -113,8 +113,8 @@ p1_leisure <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Responde
 
 ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-#ggsave("CollectionViolinplots_Gender.pdf", dpi = 500, w = 24, h = 9)
-#ggsave("CollectionViolinplots_Gender.png", dpi = 500, w = 24, h = 9)
+#ggsave(paste0("./plots/","CollectionViolinplots_Gender.pdf"), dpi = 500, w = 24, h = 9)
+#ggsave(paste0("./plots/","CollectionViolinplots_Gender.png"), dpi = 500, w = 24, h = 9)
 
 
 # Mean Reduction ----------------------------------------------------------
@@ -173,8 +173,8 @@ no_infections <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To An
   scale_color_manual(values = palette2()) +
   my_theme()
 
-#ggsave("NoInfections_Gender.pdf", p3, dpi = 500, w = 9, h = 9)
-#ggsave("NoInfections_Gender.png", p3, dpi = 500, w = 9, h = 9)
+#ggsave(paste0("./plots/","NoInfections_Gender.pdf"), p3, dpi = 500, w = 9, h = 9)
+#ggsave(paste0("./plots/","NoInfections_Gender.png"), p3, dpi = 500, w = 9, h = 9)
 
 # ECDF -------------------------------------------------------
 
@@ -207,12 +207,12 @@ theme(text = element_text(size = 30)) +
 scale_color_manual(values = palette()) +
 my_theme()
 
-#ggsave("ECDF_Gender.pdf", p2, dpi = 500, w = 9, h = 9)
-#ggsave("ECDF_Gender.png", p2, dpi = 500, w = 9, h = 9)
+#ggsave(paste0("./plots/","ECDF_Gender.pdf"), p2, dpi = 500, w = 9, h = 9)
+#ggsave(paste0("./plots/","ECDF_Gender.png"), p2, dpi = 500, w = 9, h = 9)
 
 # Arrangement of subfigures and saving of Supplementary Figure 15
 
 ggarrange(no_infections, ecdf, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("NoInfectionsECDF_Gender_Suppl15.pdf", dpi = 500, w = 22, h = 9) 
-ggsave("NoInfectionsECDF_Gender_Suppl15.png", dpi = 500, w = 22, h = 9) 
+ggsave(paste0("./plots/","NoInfectionsECDF_Gender_Suppl15.pdf"), dpi = 500, w = 22, h = 9) 
+ggsave(paste0("./plots/","NoInfectionsECDF_Gender_Suppl15.png"), dpi = 500, w = 22, h = 9) 

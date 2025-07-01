@@ -1,7 +1,7 @@
-library(tidyverse)
-library(stats)
-library(coin)
-library(here)
+library(tidyverse) #version 2.0.0
+library(stats) #version 4.4.1 
+library(coin) #version 1.4.3
+library(here) #version 1.0.1
 
 #The following script applies Kolmogorov-Smirnov-Tests and permutation tests to test for difference in distributions.
 #The script is split into the following sections:
@@ -116,7 +116,7 @@ ggplot() +
   scale_x_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), limits = c(-100,100)) +
   my_theme() 
 
-ggsave("ECDFLeisure.png", dpi = 500, w = 12, h = 6)
+#ggsave(paste0("./plots/", "ECDFLeisure.png"), dpi = 500, w = 12, h = 6)
 
 #2: For every time point: Difference in distributions between risk-averse and risk-tolerant individuals
 
@@ -227,14 +227,14 @@ for(context in contexts){
       leisure2023 <- plot
     }
   
-    ggsave(paste0("KolmogorovTestRiskPerc", context, time, ".pdf"), plot, dpi = 500, w = 12, h = 6)
-    ggsave(paste0("KolmogorovTestRiskPerc", context, time, ".png"), dpi = 500, w = 12, h = 6)
+    #ggsave(paste0("./plots/""KolmogorovTestRiskPerc", context, time, ".pdf"), plot, dpi = 500, w = 12, h = 6)
+    #ggsave(paste0("./plots/""KolmogorovTestRiskPerc", context, time, ".png"), dpi = 500, w = 12, h = 6)
   }
 }
 
 ggarrange(work2020, work2021, work2023, leisure2020, leisure2021, leisure2023, labels = c("A", "B", "C", "D", "E", "F"), nrow = 3, ncol = 2,font.label = list(size = 37), common.legend=TRUE, legend = "bottom")
-ggsave("KolmogorovTestRiskPerc.pdf", dpi = 5, w = 24, h = 18)
-ggsave("KolmogorovTestRiskPerc.png", dpi = 5, w = 24, h = 18)
+ggsave(paste0("./plots/""KolmogorovTestRiskPerc.pdf"), dpi = 5, w = 24, h = 18)
+ggsave(paste0("./plots/""KolmogorovTestRiskPerc.png"), dpi = 5, w = 24, h = 18)
 
 # Difference Number of Infections -----------------------------------------
 

@@ -1,8 +1,8 @@
-library(tidyverse)
-library(ggpubr)
-library(scales)
-library(ggrepel)
-library(here)
+library(tidyverse) #version 2.0.0
+library(ggpubr) #version 0.6.0
+library(scales) #version 1.3.0
+library(ggrepel) #version 0.9.6
+library(here) #version 1.0.1
 
 here()
 source("./R/DataCleaningPrepForContactAnalysis.R")
@@ -61,8 +61,8 @@ AgePlot <- ggplot(AgeData, aes(age_bracket, percent)) +
   xlab("Age Bracket") +
   scale_y_continuous(labels = scales::label_percent(scale = 1, accuracy = 1), breaks = c(0,25, 50,75,100)) +
   my_theme() 
-ggsave("Age.png", AgePlot, dpi = 500, w = 7.5, h = 7.5)
-
+ggsave(paste0("./plots/","Age.png"), AgePlot, dpi = 500, w = 7.5, h = 7.5)
+ggsave(paste0("./plots/","Age.pdf"), AgePlot, dpi = 500, w = 7.5, h = 7.5)
 
 
 # Household Size Distribution ---------------------------------------------
@@ -107,5 +107,5 @@ ComorbiditiesPlot <- comorbidities %>% filter(!is.na(cond_none)) %>% mutate(perc
 
 ggarrange(GenderPlot, AgePlot, ggparagraph(text="   ", face = "italic", size = 14, color = "black"), ggparagraph(text="   ", face = "italic", size = 14, color = "black") , HouseholdPlot, ComorbiditiesPlot, labels = c("A", "B", "", "", "C", "D"), nrow = 3, ncol = 2,font.label = list(size = 40), heights = c(1,0.05,1))
 
-ggsave("SupplementaryFigure1.pdf", dpi = 500, w = 19, h = 18)
-ggsave("SupplementaryFigure1.png", dpi = 500, w = 19, h = 18)
+ggsave(paste0("./plots/","SupplementaryFigure1.pdf"), dpi = 500, w = 19, h = 18)
+ggsave(paste0("./plots/","SupplementaryFigure1.png"), dpi = 500, w = 19, h = 18)

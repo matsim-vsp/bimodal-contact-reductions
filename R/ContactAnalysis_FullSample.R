@@ -1,12 +1,12 @@
-library(tidyverse)
-library(igraph)
-library(gridExtra)
-library(ggiraphExtra)
-library(Hmisc)
-library(ggpubr)
-library(smplot2)
-library(sdamr)
-library(here)
+library(tidyverse) #version 2.0.0
+library(igraph) #version 2.1.4
+library(gridExtra) #version 2.3 
+library(ggiraphExtra) #version 0.3.0
+library(Hmisc) #version 5.2.1
+library(ggpubr) #version 0.6.0
+library(smplot2) #version
+library(sdamr) #version 0.2.0
+library(here) #version 1.0.1
 
 #Data prep cor contact analysis, personalized theme is loaded, manual color palette is created
 here()
@@ -38,8 +38,8 @@ filter(WhoseContacts=="Respondent"), aes(TypeOfContact, value, fill = "#3C5488FF
   theme_minimal() +
   my_theme()
 
-ggsave("SupplementaryFigure2.pdf", prepandemic_contacts_absolute, dpi = 500, w = 7.5, h = 9)
-ggsave("SupplementaryFigure2.png", prepandemic_contacts_absolute, dpi = 500, w = 7.5, h = 9)
+ggsave(paste0("./plots/","SupplementaryFigure2.pdf"), prepandemic_contacts_absolute, dpi = 500, w = 7.5, h = 9)
+ggsave(paste0("./plots/","SupplementaryFigure2.png"), prepandemic_contacts_absolute, dpi = 500, w = 7.5, h = 9)
 
 
 # Analysis of Contact Reductions (03/2020, Summer 2021, 01/2023) ----------
@@ -102,8 +102,8 @@ pandemic_contacts_relative_leisure <- ggplot(data_reduced_tidy_rel %>%
   my_theme()
 
 ggarrange(pandemic_contacts_relative_work, pandemic_contacts_relative_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37))
-ggsave("Figure1.pdf", dpi = 500, w = 24, h = 9)
-ggsave("Figure1.png", dpi = 500, w = 24, h = 9)
+ggsave(paste0("./plots/","Figure1.pdf"), dpi = 500, w = 24, h = 9)
+ggsave(paste0("./plots/","Figure1.png"), dpi = 500, w = 24, h = 9)
 
 # Analysis of Contact Reductions of Household Members ---------------------
 
@@ -161,8 +161,8 @@ pandemic_contacts_relative_leisure_hh <- ggplot(data_reduced_tidy_rel %>%
 
 ggarrange(pandemic_contacts_relative_work_hh, pandemic_contacts_relative_leisure_hh, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("SupplementaryFigure8.pdf",  dpi = 500, w = 24, h = 9)
-ggsave("SupplementaryFigure8.png", dpi = 500, w = 24, h = 9)
+ggsave(paste0("./plots/","SupplementaryFigure8.pdf"),  dpi = 500, w = 24, h = 9)
+ggsave(paste0("./plots/","SupplementaryFigure8.png"), dpi = 500, w = 24, h = 9)
 
 # Analysis of Contact Reductions of Closest Contacts ----------------------
 
@@ -204,8 +204,8 @@ pandemic_contacts_relative_leisure_cc <- ggplot(data_reduced_tidy_rel %>%
   ) 
 ggarrange(pandemic_contacts_relative_work_cc, pandemic_contacts_relative_leisure_cc, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("SupplementaryFigure9.pdf",  dpi = 500, w = 24, h = 9)
-ggsave("SupplementaryFigure9.png", dpi = 500, w = 24, h = 9)
+ggsave(paste0("./plots/","SupplementaryFigure9.pdf"),  dpi = 500, w = 24, h = 9)
+ggsave(paste0("./plots/","SupplementaryFigure9.png"), dpi = 500, w = 24, h = 9)
 
 # Mean Reduction Participant vs HH vs CC ----------------------------------
 

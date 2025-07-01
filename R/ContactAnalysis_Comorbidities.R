@@ -1,11 +1,11 @@
-library(tidyverse)
-library(MMWRweek)
-library(see)
-library(RColorBrewer)
-library(patchwork)
-library(ggpubr)
-library(ggh4x)
-library(here)
+library(tidyverse) #version 2.0.0.
+library(MMWRweek) #version 0.1.3
+library(see) #version 0.8.4
+library(RColorBrewer) #version 1.1.3
+library(patchwork) #version 1.2.0
+library(ggpubr) #version 0.6.0
+library(ggh4x) #version 0.3.1
+library(here) #version 1.0.1
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -142,8 +142,8 @@ for (com in comorbidities){
       )
     ggarrange(p1_work, p1_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-    ggsave(paste0("CollectionViolinplots_", com, ".pdf"),  dpi = 500, w = 24, h = 9)
-    ggsave(paste0("CollectionViolinplots_", com, ".png"), dpi = 500, w = 24, h = 9)
+    ggsave(paste0("./plots/","CollectionViolinplots_", com, ".pdf"),  dpi = 500, w = 24, h = 9)
+    ggsave(paste0("./plots/","CollectionViolinplots_", com, ".png"), dpi = 500, w = 24, h = 9)
 
     #Produces Supplementary Figure 17B
     ecdf_comp <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>% group_by(!!sym(com)) %>% 
@@ -214,12 +214,12 @@ for (com in comorbidities){
     theme(legend.title = element_blank(), legend.position = "bottom")  +
     my_theme()
 
-    #ggsave(paste0("NumberOfInfection_", com, ".pdf"), p3, dpi = 500, w = 9, h = 9)
-    #ggsave(paste0("NumberOfInfection_", com,".png"), p3, dpi = 500, w = 9, h = 9)
+    #ggsave(paste0("./plots/","NumberOfInfection_", com, ".pdf"), p3, dpi = 500, w = 9, h = 9)
+    #ggsave(paste0("./plots/","NumberOfInfection_", com,".png"), p3, dpi = 500, w = 9, h = 9)
 
 
   ggarrange(p3, ecdf, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-  ggsave("NoInfectionsECDF_cond_none_Suppl17.pdf", dpi = 500, w = 22, h = 9) 
-  ggsave("NoInfectionsECDF_cond_none_Suppl17.png", dpi = 500, w = 22, h = 9) 
+  ggsave(paste0("./plots/","NoInfectionsECDF_cond_none_Suppl17.pdf"), dpi = 500, w = 22, h = 9) 
+  ggsave(paste0("./plots/","NoInfectionsECDF_cond_none_Suppl17.png"), dpi = 500, w = 22, h = 9) 
 }

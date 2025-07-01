@@ -1,8 +1,8 @@
-library(tidyverse)
-library(ggsankey)
-library(here)
-library(ggsankeyfier)
-library(ggpubr)
+library(tidyverse) #version 2.0.0
+library(ggsankey) #version 0.0.99999
+library(here) #version 1.0.1 
+library(ggsankeyfier) #version 0.1.8
+library(ggpubr) #version 0.6.0   
 
 here()
 source("./R/mytheme.r")
@@ -164,5 +164,5 @@ Leisureplot <- ggplot(LeisureSankey,
 
 ggarrange(Workplot, Leisureplot, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 45), heights = c(1,1), common.legend = TRUE, legend="bottom")
 
-#ggsave("Sankey.pdf", dpi = 500, w = 20, h = 7.5) 
-#ggsave("Sankey.png", dpi = 500, w = 20, h = 7.5)
+#ggsave(paste0("./plots/", "Sankey.pdf"), dpi = 500, w = 20, h = 7.5) 
+#ggsave(paste0("./plots/", "Sankey.png"), dpi = 500, w = 20, h = 7.5)

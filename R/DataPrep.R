@@ -1,8 +1,8 @@
-library(tidyverse)
-library(igraph)
-library(gridExtra)
-library(ggiraphExtra)
-library(here)
+library(tidyverse) #version: 2.0.0
+library(igraph) #version: 2.1.4
+library(gridExtra) #version: 2.3
+library(ggiraphExtra) #version: 0.3.0
+library(here) #version: 1.0.1
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -534,7 +534,7 @@ for(context in contexts){
   if(time_ch == "01/2023"){
     time_ch <- "012023"
   }
-  write_csv(data_reduced_tidy_rel_fit_work, paste0(context, time_ch, ".csv"))
+  write_csv(data_reduced_tidy_rel_fit_work, paste0("./data/", context, time_ch, ".csv"))
   }
 }
 

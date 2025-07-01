@@ -1,7 +1,7 @@
 
-library(tidyverse)
-library(viridis)
-library(here)
+library(tidyverse) #version 2.0.0
+library(viridis) #version 0.6.5
+library(here) #version 1.0.1
 
 here()
 source("./R/DataCleaningPrepForContactAnalysis.R")
@@ -90,7 +90,7 @@ filter(cc_pre_leisure_01_2023 != -1000)) +  #If one's interested in the correlat
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5)) 
 
   
-  #ggsave(paste0("CorrelationPlotRespCC_", "leisure_012023" , ".pdf"), dpi = 500, w = 9, h = 10)
-  #ggsave(paste0("CorrelationPlotRespCC_", "leisure", "_0123", ".png"), dpi = 500, w =  9, h = 10)
+  #ggsave(paste0("./plots/","CorrelationPlotRespCC_", "leisure_012023" , ".pdf"), dpi = 500, w = 9, h = 10)
+  #ggsave(paste0("./plots/","CorrelationPlotRespCC_", "leisure", "_0123", ".png"), dpi = 500, w =  9, h = 10)
 
 

@@ -1,8 +1,8 @@
-library(tidyverse)
-library(ggsankey)
-library(here)
-library(ggsankeyfier)
-library(ggpubr)
+library(tidyverse) #version 2.0.0
+library(ggsankey) #version 0.0.99999
+library(here) #version 1.0.1
+library(ggsankeyfier) #version 0.1.8 g
+library(ggpubr) #version 0.6.0
 
 # This script assigns the contact reductions of the participants to the groups "Strong Reduction", "Intermediate Reduction", and "Little Change".
 # The output of this script is used for the Sankey plot.

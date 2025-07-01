@@ -1,7 +1,7 @@
-library(tidyverse)
-library(igraph)
-library(gridExtra)
-library(ggiraphExtra)
+library(tidyverse) #version 2.0.0
+library(igraph) #version 2.1.4
+library(gridExtra) #version 2.3
+library(ggiraphExtra) #version 0.3.0
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -149,8 +149,8 @@ ggplot(households) +
   theme(axis.ticks.x = element_blank(), axis.text.x = element_blank()) +
   scale_color_manual(values = palette()) 
 
-#ggsave("AccuracyHousehold.pdf", dpi = 500, w = 20, h = 6)
-#ggsave("AccuracyHousehold.png", dpi = 500, w = 20, h = 6)
+#ggsave(paste0("./plots/", "AccuracyHousehold.pdf"), dpi = 500, w = 20, h = 6)
+#ggsave(paste0("./plots/", "AccuracyHousehold.png"), dpi = 500, w = 20, h = 6)
 
 # Accuracy of Work Contacts Reporting
 # Produces Supplementary Figure 7
@@ -183,8 +183,8 @@ ggplot(work) +
   theme(text = element_text(size = 30)) +
   scale_color_manual(values = palette()) 
 
-#ggsave("AccuracyWork.pdf", dpi = 500, w = 20, h = 12)
-#ggsave("AccuracyWork.png", dpi = 500, w = 20, h = 12)
+#ggsave(paste0("./plots/", "AccuracyWork.pdf"), dpi = 500, w = 20, h = 12)
+#ggsave(paste0("./plots/", "AccuracyWork.png"), dpi = 500, w = 20, h = 12)
 
 # Accuracy of Leisure Contacts Reporting
 # Produces Supplementary Figure 8
@@ -210,6 +210,6 @@ ggplot(leisure) +
   theme(text = element_text(size = 30)) +
   scale_color_manual(values = palette()) 
 
-#ggsave("AccuracyLeisure.pdf", dpi = 500, w = 20, h = 12)
-#ggsave("AccuracyLeisure.png", dpi = 500, w = 20, h = 12)
+#ggsave(paste0("./plots/", "AccuracyLeisure.pdf"), dpi = 500, w = 20, h = 12)
+#ggsave(paste0("./plots/", "AccuracyLeisure.png"), dpi = 500, w = 20, h = 12)
 

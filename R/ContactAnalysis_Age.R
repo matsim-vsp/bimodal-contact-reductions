@@ -1,8 +1,8 @@
-library(tidyverse)
-library(MMWRweek)
-library(see)
-library(RColorBrewer)
-library(patchwork)
+library(tidyverse) #version 2.0.0
+library(MMWRweek) #version 0.1.3
+library(see) #version 0.8.4 
+library(RColorBrewer) #version 1.1.3
+library(patchwork) #version 1.2.0
 
 here()
 source("./R/DataCleaningPrepForContactAnalysis.R")
@@ -81,8 +81,8 @@ agegroups_work <- ggplot(data_reduced_tidy_rel %>% filter(WhoseContacts == "Resp
 
 ggarrange(agegroups_work, agegroups_leisure, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("SupplementaryFigure10.pdf",  dpi = 500, w = 24, h = 9)
-ggsave("SupplementaryFigure10.png", dpi = 500, w = 24, h = 9)
+ggsave(paste0("./plots/", "SupplementaryFigure10.pdf"),  dpi = 500, w = 24, h = 9)
+ggsave(paste0("./plots/","SupplementaryFigure10.png"), dpi = 500, w = 24, h = 9)
 
 # Mean Reduction ----------------------------------------------------------
 
@@ -146,8 +146,8 @@ p3 <- data_reduced %>% group_by(age_bracket)  %>%
                    axis.ticks.length = unit(20, "pt")) +
   my_theme()
 
-#ggsave("SupplementaryFigure12A.pdf", p3, dpi = 500, w = 9, h = 9)
-#ggsave("SupplementaryFigure12A.png", p3, dpi = 500, w = 9, h = 9)
+#ggsave(paste0("./plots/","SupplementaryFigure12A.pdf"), p3, dpi = 500, w = 9, h = 9)
+#ggsave(paste0("./plots/","SupplementaryFigure12A.png"), p3, dpi = 500, w = 9, h = 9)
 
 
 # ECDF Timing of First Infection ------------------------------------------
@@ -183,5 +183,5 @@ p2 <- ggplot(ecdf_comp, aes(date_f1_inf)) +
 
 ggarrange(p3, p2, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("SupplementaryFigure12.pdf", dpi = 500, w = 21, h = 12) 
-ggsave("SupplementaryFigure12.png", dpi = 500, w = 21, h = 12) 
+ggsave(paste0("./plots/","SupplementaryFigure12.pdf"), dpi = 500, w = 21, h = 12) 
+ggsave(paste0("./plots/","SupplementaryFigure12.png"), dpi = 500, w = 21, h = 12) 

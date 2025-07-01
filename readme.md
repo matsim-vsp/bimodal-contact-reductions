@@ -36,6 +36,8 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 - `CorrelationAnalysis-SocialHomophily.R`: Computes correlation coefficients for participants' and CC's number of contacts. Produces Table 3 and Figure 6 [X].
 
+- `BayesianReductionModel.ipynb`: Bayesian reduction model to fit one to four distributions to the contact data. Leave-one-out cross validation is used for model comparison. 
+
 ## Miscellaneous files
 - `mytheme.R`: Creates a personalized theme that is applied to all figures. 
 

@@ -1,14 +1,14 @@
-library(tidyverse)
-library(MMWRweek)
-library(see)
-library(RColorBrewer)
-library(patchwork)
-library(ggpubr)
-library(ggh4x)
-library(smplot2)
-library(scales)
-library(ggbreak)
-library(here)
+library(tidyverse) #version 2.0.0
+library(MMWRweek) #version 0.1.3
+library(see) #version 0.8.4
+library(RColorBrewer) #version 1.1.3
+library(patchwork) #version 1.2.0
+library(ggpubr) #version 0.6.0
+library(ggh4x) #version 0.3.1
+library(scales) #version 1.3.0
+library(smplot2) #version 0.2.4
+library(here) #version 1.0.1
+library(ggbreak) #version 0.1.4
 
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
@@ -103,8 +103,8 @@ my_comparisons <- list( c("Risk-averse.03/2020", "Risk-tolerant.03/2020"))
 p1_workb <- p1_work +  
   stat_compare_means(comparisons = my_comparisons, label.y = c(80), symnum.args = list(cutpoints = c(0, 0.01, 0.05, 0.1, Inf), symbols = c("***", "**", "*", "ns")), bracket.size=1, size = 10)
 
-ggsave("Figure3.png",  p1_workb, dpi = 500, w = 12, h = 9)
-ggsave("Figure3.pdf", p1_workb, dpi = 500, w = 12, h = 9)
+ggsave(paste0("./plots/","Figure3.png"),  p1_workb, dpi = 500, w = 12, h = 9)
+ggsave(paste0("./plots/","Figure3.pdf"), p1_workb, dpi = 500, w = 12, h = 9)
 
 
 # Leisure Contact Analysis ------------------------------------------------
@@ -148,8 +148,8 @@ p1_leisureb <- p1_leisure +
   stat_compare_means(comparisons = my_comparisons, label.y = c(80), symnum.args = list(cutpoints = c(0, 0.01, 0.05, 0.1, Inf), symbols = c("***", "**", "*", "ns")), bracket.size=1, size = 10)
 
 
-ggsave("Figure4.png",  p1_leisureb, dpi = 500, w = 12, h = 9)
-ggsave("Figure4.pdf", p1_leisureb, dpi = 500, w = 12, h = 9)
+ggsave(paste0("./plots/","Figure4.png"),  p1_leisureb, dpi = 500, w = 12, h = 9)
+ggsave(paste0("./plots/","Figure4.pdf"), p1_leisureb, dpi = 500, w = 12, h = 9)
 
 
 # Analysis of Pre-Pandemic Contacts ---------------------------------------
@@ -188,8 +188,8 @@ p4 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>%
   theme(axis.text.x = element_blank(), axis.title.x = element_blank(), axis.ticks.x=element_blank()) +
   theme(legend.position = "bottom", legend.title = element_blank())
 
-ggsave("SupplementaryFigure4.pdf", p4, dpi = 500, w = 9, h = 9)
-ggsave("SupplementaryFigure4.png", p4, dpi = 500, w = 9, h = 9)
+ggsave(paste0("./plots/","SupplementaryFigure4.pdf"), p4, dpi = 500, w = 9, h = 9)
+ggsave(paste0("./plots/","SupplementaryFigure4.png"), p4, dpi = 500, w = 9, h = 9)
 
 # ECDF --------------------------------------------------------------------
 
@@ -227,8 +227,8 @@ scale_x_date(date_labels = "'%y")+
 #scale_y_continuous(labels=percent) +
 my_theme()
 
-#ggsave("Figure5A.pdf", p2, dpi = 500, w = 9, h = 9)
-#ggsave("Figure5A.png", p2, dpi = 500, w = 7.5, h = 8)
+#ggsave(paste0("./plots/","Figure5A.pdf"), p2, dpi = 500, w = 9, h = 9)
+#ggsave(paste0("./plots/","Figure5A.png"), p2, dpi = 500, w = 7.5, h = 8)
 
 
 # Number of Infections ----------------------------------------------------
@@ -270,12 +270,12 @@ p3 <- data_reduced %>% filter(num_c19_infs_eng != "I Don't Want To Answer") %>%
   scale_color_manual(values = palette2()) +
     my_theme()
 
-#ggsave("Figure5B.pdf", p3, dpi = 500, w = 9, h = 9)
-#ggsave("Figure5B.png", p3, dpi = 500, w = 9, h = 9)
+#ggsave(paste0("./plots/","Figure5B.pdf"), p3, dpi = 500, w = 9, h = 9)
+#ggsave(paste0("./plots/","Figure5B.png"), p3, dpi = 500, w = 9, h = 9)
 
 # Arrangement of subfigures and saving of Figure 5
 
 ggarrange(p3, p2, labels = c("A", "B"), nrow = 1, ncol = 2,font.label = list(size = 37), heights = c(1,1,1.25), common.legend = TRUE, legend = "bottom")
 
-ggsave("NoInfectionsECDF_AttCarefulnessScore_Figure5.pdf", dpi = 500, w = 21, h = 12) 
-ggsave("NoInfectionsECDF_AttCarefulnessScore_Figure5.png", dpi = 500, w = 21, h = 12) 
+ggsave(paste0("./plots/","NoInfectionsECDF_AttCarefulnessScore_Figure5.pdf"), dpi = 500, w = 21, h = 12) 
+ggsave(paste0("./plots/","NoInfectionsECDF_AttCarefulnessScore_Figure5.png"), dpi = 500, w = 21, h = 12) 
