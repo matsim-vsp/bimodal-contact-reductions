@@ -1,4 +1,4 @@
-This is the repository for the 2025 study ``Bimodal Contact Reductions and Social Homophily during COVID-19''.
+This is the repository for the 2025 study _Bimodal Contact Reductions and Social Homophily during COVID-19_.
 
 The repository contains all material to reproduce the analysis.
 The [survey in the original German](https://osf.io/rtjzu) and the [anonymized data](https://osf.io/7vzgd/) are available on OSF.
