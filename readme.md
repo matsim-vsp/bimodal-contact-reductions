@@ -41,4 +41,6 @@ The survey in the original German is available on [OSF](https://osf.io/rtjzu), a
 
 ## Instructions for reproducibility
 
-TO DO
+1. Put the preprocessed data from OSF into the folder called `data`. The cleaned data set called cleaned_data.rds.
+2. Run the scripts in the R folder to reproduce the plots.
+3. The resulting plots can be found in the plots folder. Each scripts generates a PDF and PNG version of the plot.
