@@ -12,8 +12,8 @@ library(here) #version 1.0.1
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
 here()
-source("./R/DataCleaningPrepForContactAnalysis.R")
-source("./R/mytheme.r")
+source("./R/DataPrep.R")
+source("./R/mytheme.R")
 
 palette <- function() {
   c("#3C5488FF", "#DC0000FF")

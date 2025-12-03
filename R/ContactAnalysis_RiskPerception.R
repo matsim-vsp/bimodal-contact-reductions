@@ -13,8 +13,8 @@ library(ggbreak) #version 0.1.4
 # Author: S. Paltra, contact: paltra@tu-berlin.de
 
 here()
-source("./R/DataCleaningPrepForContactAnalysis.R")
-source("./R/DataCleaningPrepForContactAnalysis.R")
+source("./R/DataPrep.R")
+source("./R/mytheme.R")
 
 
 # Data Prep for Figures ---------------------------------------------------
@@ -164,6 +164,12 @@ data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>%
     filter(TypeOfContact %in% c("Work", "Leisure"))  %>%  
     group_by(RiskyCarefulAtt, TypeOfContact) %>% summarise(mean = mean(value), median = median(value), twentyfive = quantile(value, 0.25), seventyfive = quantile(value, 0.75))
 
+data_reduced_tidy$RiskyCarefulAtt <- factor(data_reduced_tidy$RiskyCarefulAtt, levels = c("Risk-averse", "Risk-tolerant"))
+
+palette <- function() {
+  c("#3C5488FF", "#DC0000FF")
+}
+
 p4 <- ggplot(data_reduced_tidy %>% filter(WhoseContacts == "Respondent") %>% 
     filter(!is.na(RiskyCarefulAtt)) %>% 
     filter(!is.na(TypeOfContact)) %>% filter(time ==  "2019") %>% 
@@ -193,6 +199,16 @@ ggsave(paste0("./plots/","SupplementaryFigure4.png"), p4, dpi = 500, w = 9, h = 
 
 # ECDF --------------------------------------------------------------------
 
+palette <- function() {
+  c("#3C5488FF", "#DC0000FF")
+}
+
+
+palette2 <- function() {
+  c("#2C3E65FF", "#A90000FF")
+}
+
+
 # Produces Figure 5A
 
 data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_inf) ~ as.Date("3000-01-01"),
@@ -201,6 +217,8 @@ data_reduced <- data_reduced %>% mutate(date_f1_inf = case_when(is.na(date_f1_in
                                 filter(date_f1_inf != as.Date("1965-06-12")) %>%
                                 filter(date_f1_inf != as.Date("2000-12-13")) %>%
                                 filter(date_f1_inf != as.Date("2019-12-21")) 
+
+data_reduced$RiskyCarefulAtt <- factor(data_reduced$RiskyCarefulAtt, levels = c("Risk-averse", "Risk-tolerant"))
 
 ecdf_comp <- data_reduced %>% filter(!is.na(RiskyCarefulAtt)) %>% group_by(RiskyCarefulAtt) %>% 
 count(date_f1_inf) %>% mutate(cum = cumsum(n)) %>% mutate(sum = sum(n)) %>%
@@ -215,14 +233,18 @@ ecdf_comp <- ecdf_comp %>% mutate(lci = (cum/sum - 1.96*(((cum/sum*(1-cum/sum))/
   mutate(uci = (cum/sum + 1.96*(((cum/sum*(1-cum/sum))/sum)^0.5))) %>%
   mutate(uci = case_when(uci > 1 ~ 1, .default = uci))
 
+ecdf_comp$RiskyCarefulAtt <- factor(ecdf_comp$RiskyCarefulAtt, levels = c("Risk-averse", "Risk-tolerant"))
+
+
 p2 <- ggplot(ecdf_comp, aes(date_f1_inf)) +
-geom_ribbon(aes(ymin = lci, ymax = uci, x = date_f1_inf, , fill = RiskyCarefulAtt), alpha = 0.3)+
+geom_ribbon(aes(ymin = lci, ymax = uci, x = date_f1_inf, fill = RiskyCarefulAtt), alpha = 0.3)+
 geom_line(aes(y=ecdf,  color = RiskyCarefulAtt), size = 2) +
 theme_minimal() +
 ylab("Empirical Cumulative \n Distribution Function") +
 xlab("Date of\n1st Infection") +
 coord_cartesian(xlim=c(as.Date("2020-03-01"), as.Date("2023-08-01"))) +
 scale_color_manual(values = palette()) +
+scale_fill_manual(values = palette()) +
 scale_x_date(date_labels = "'%y")+
 #scale_y_continuous(labels=percent) +
 my_theme()

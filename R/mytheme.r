@@ -1,6 +1,6 @@
 library(tidyverse)
 
-my_theme <- function(base_size = 32,
+my_theme <- function(base_size = 30,
                         base_family = "Helvetica",
                                  panel_width = 6, 
                                  panel_height = 4,
